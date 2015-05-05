@@ -1,3 +1,6 @@
-## 하코사: 데이터 시각화 스터디
+## 발표내용
 
-이곳에서 과제 및 샘플 코드 관리를 할 예정입니다.
+line element
+ellipse element
+circle element
+rect element
