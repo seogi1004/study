@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<svg width="100%" height="500px">
+    <path id="path"  fill="none" stroke="silver"></path>
+</svg>
+
+<script src="matrix.js"></script>
+<script>
+
+    var path = document.getElementById( 'path' );
+    var mtrx = new Matrix();
+    var centerX = 200;
+    var centerY = 200;
+    var thetaStep = 0.005;
+    var depth = 180/2;
+    var width = 180/2;
+    var height = 180/2;
+    var speed = 50;
+    var currVert = [];
+    var curr2D = [];
+    var vtxs = [];
+
+    vtxs[ 0 ] = [ width, height, -depth ];
+    vtxs[ 1 ] = [ width, -height, -depth ];
+    vtxs[ 2 ] = [ -width, -height, -depth ];
+    vtxs[ 3 ] = [ -width, height, -depth ];
+    vtxs[ 4 ] = [ width, height, depth ];
+    vtxs[ 5 ] = [ width, -height ,depth ];
+    vtxs[ 6 ] = [ -width, -height, depth ];
+    vtxs[ 7 ] = [ -width, height, depth ];
+
+    function centerVertex( xy ){
+        return [ xy[0] + centerX, xy[1] + centerY ];
+    }
+
+    function render(){
+        var pathData = [];
+        for( var i= 0, count=vtxs.length; i < count ; i += 1 ){
+            var rotateMatrixXYZ = mtrx.transform( vtxs[ i ] );
+            var zScaleXY = zScale( rotateMatrixXYZ, 300 );
+            pathData[ i ] = centerVertex( zScaleXY );
+        }
+        path.setAttribute( 'd', getD( pathData ) );
+    }
+
+    function getD( xy ){
+
+        var p1 = xy[ 0 ];
+        var p2 = xy[ 1 ];
+        var p3 = xy[ 2 ];
+        var p4 = xy[ 3 ];
+        var p5 = xy[ 4 ];
+        var p6 = xy[ 5 ];
+        var p7 = xy[ 6 ];
+        var p8 = xy[ 7 ];
+
+        return  mTo( p1 ) + lTo( p2 ) + lTo( p3 ) + lTo( p4 ) + lTo( p1 ) +
+                lTo( p5 ) + lTo( p6 ) + lTo( p7 ) + lTo( p8 ) + lTo( p5 ) +
+                mTo( p4 ) + lTo( p8 ) +
+                mTo( p3 ) + lTo( p7 ) +
+                mTo( p2 ) + lTo( p6 ) +
+                mTo( p1 ) + lTo( p5 );
+    }
+
+    function mTo( point ){ return 'M '+point.join( ' ')+ ' '; }
+    function lTo( point ){ return 'L '+point.join( ' ')+ ' '; }
+
+    function zScale( xyz, dstnc ){
+        var scale = dstnc / ( dstnc + xyz[2] );
+        return [ xyz[ 0 ] * scale, xyz[ 1 ] * scale ];
+    }
+
+    function startup(){
+        var start = new Date();
+        var now;
+        var dir = -1;
+
+        setTimeout( function(){
+            var rndX = Math.random() * 10;
+            var rndY = Math.random() * 10;
+            var rndZ = Math.random() * 10;
+
+            setInterval( function(){
+                now = new Date();
+                if( now - start > 5000 ){
+                    dir *= -1;
+                    rndX = Math.random() * 10;
+                    rndY = Math.random() * 10;
+                    rndZ = Math.random() * 10;
+                    start = now;
+                }
+
+                mtrx.rotateX( dir * thetaStep * rndX );
+                mtrx.rotateY( dir * thetaStep * rndY );
+                mtrx.rotateZ( dir * thetaStep * rndZ );
+                render();
+            }, speed )
+        }, 3000 );
+
+        render();
+    }
+    startup();
+
+</script>
+</body>
+</html>
