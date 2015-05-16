@@ -1,5 +1,5 @@
 jui.ready([ "jquery", "util.svg" ], function($, SVGUtil) {
-    var svg = new SVGUtil($("#text1")[0], { width: "100%", height: 250 });
+    var svg = new SVGUtil($("#text1")[0], { width: "100%", height: 150 });
 
     svg.text({
         "font-size": 40,
