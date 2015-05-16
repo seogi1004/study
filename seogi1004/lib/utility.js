@@ -1,4 +1,6 @@
 function printXML(svg) {
+    svg.render();
+
     var g = svg.root.get(0),
         $root = $(svg.root.element).parent();
 

@@ -7,6 +7,11 @@
 <script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="../lib/jui.chart.min.js"></script>
 <script src="../lib/utility.js"></script>
+<style>
+    iframe {
+        border-width: 0px !important;
+    }
+</style>
 </head>
 
 <body style="display: none">
@@ -25,15 +30,107 @@
 
     <article>
         <h2>
-            Text element
+            SVG text element
         </h2>
     </article>
 
     <article>
-        <h3>
-            Slide with an image
-        </h3>
+        <h3>Important</h3>
+        <h5>Text 위치는 Top이 아닌 Bottom 기준</h5>
+
+        <br/>
         <p id="text1"><script src="text1.js"></script></p>
+    </article>
+
+    <article>
+        <h3>Text Anchor</h3>
+        <br/>
+        <p id="text2"><script src="text2.js"></script></p>
+    </article>
+
+    <article>
+        <h3>Fill & Stroke</h3>
+        <br/>
+        <p id="text3"><script src="text3.js"></script></p>
+    </article>
+
+    <article>
+        <h3>Vertical & Rotate Text</h3>
+        <h5>Vertical Text 관련 속성은 크롬에서만 동작함</h5>
+
+        <br/>
+        <p id="text4"><script src="text4.js"></script></p>
+    </article>
+
+    <article>
+        <h3>Text Length</h3>
+
+        <br/>
+        <p id="text5"><script src="text5.js"></script></p>
+    </article>
+
+    <article>
+        <h2>
+            SVG tspan element
+        </h2>
+    </article>
+
+    <article>
+        <h3>Style & Line break</h3>
+
+        <br/>
+        <p id="tspan1"><script src="tspan1.js"></script></p>
+    </article>
+
+    <article>
+        <h3>Positioning</h3>
+
+        <br/>
+        <p id="tspan2"><script src="tspan2.js"></script></p>
+    </article>
+
+    <article>
+        <h2>
+            SVG tref element
+        </h2>
+    </article>
+
+    <article>
+        <h3>Reusing text</h3>
+        <h5>모든 브라우저 지원하지 않음</h5>
+
+        <br/>
+        <p id="tref1"><script src="tref1.js"></script></p>
+    </article>
+
+    <article>
+        <h2>
+            SVG textPath element
+        </h2>
+    </article>
+
+    <article>
+        <h3>Path + textPath</h3>
+
+        <br/>
+        <p>
+            <iframe src="textpath1.html" style="height: 200px !important;"></iframe>
+            <pre>&lt;defs>
+   &lt;path id="textpath1" d="M75,20 a1,1 0 0,0 100,0">&lt;/path>
+&lt;/defs>
+&lt;use xlink:href="#textpath1" fill="none" stroke="red">&lt;/use>
+&lt;text x="10" y="100" stroke="#000">
+    &lt;textPath xlink:href="#textpath1">Text along a curved path...&lt;/textPath>
+&lt;/text></pre>
+        </p>
+    </article>
+
+    <article>
+        <h3>JUI + textPath</h3>
+        <br/>
+        <p>
+            <iframe src="textpath2.html" style="height: 450px !important;"></iframe>
+        </p>
     </article>
 </section>
 
