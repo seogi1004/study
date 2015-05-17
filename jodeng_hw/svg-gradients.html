@@ -27,9 +27,9 @@
 
 <h2>LinerGradient</h2>
 <ul>
-    <li>수평 그라데이션 : Y1 및 Y2는 동일하고 X1과 X2가 다른 경우</li>
-    <li>수직 그라데이션 : X1과 X2는 동일하고 Y1 및 Y2가 다른 경우</li>
-    <li>각도 그라데이션 : X1과 X2는 다르고 Y1 및 Y2가 다른 경우</li>
+    <li>수평 그라데이션 : X1과 X2가 다르고 Y1와 Y2가 동일한 경우</li>
+    <li>수직 그라데이션 : X1과 X2는 동일하고 Y1와 Y2가 다른 경우</li>
+    <li>각도 그라데이션 : X1과 X2는 다르고 Y1와 Y2가 다른 경우</li>
 </ul>
 
 <xmp class="src-mode">
@@ -96,6 +96,31 @@
 
 
 <h2>RadialGradient</h2>
+- cx, cy, r 바깥쪽 원 속성<br/>
+- fx, fy 안쪽 원 속성<br/>
+<xmp class="src-mode">
+    <svg height="150" width="500">
+        <defs>
+            <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                <stop offset="0%" style="stop-color:#ff0000;
+      stop-opacity:0"/>
+                <stop offset="100%" style="stop-color:#00ff00;stop-opacity:1"/>
+            </radialGradient>
+        </defs>
+        <ellipse cx="200" cy="70" rx="85" ry="55" fill="url(#grad1)"/>
+    </svg>
+
+    <svg height="150" width="500">
+        <defs>
+            <radialGradient id="grad2" cx="50%" cy="50%" r="50%" fx="0%" fy="50%">
+                <stop offset="0%" style="stop-color:rgb(255,255,255);
+      stop-opacity:0"/>
+                <stop offset="100%" style="stop-color:rgb(0,0,255);stop-opacity:1"/>
+            </radialGradient>
+        </defs>
+        <ellipse cx="200" cy="70" rx="85" ry="55" fill="url(#grad2)"/>
+    </svg>
+</xmp>
 <svg height="150" width="500">
     <defs>
         <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
@@ -109,7 +134,7 @@
 
 <svg height="150" width="500">
     <defs>
-        <radialGradient id="grad2" cx="20%" cy="30%" r="30%" fx="50%" fy="50%">
+        <radialGradient id="grad2" cx="50%" cy="50%" r="50%" fx="0%" fy="50%">
             <stop offset="0%" style="stop-color:rgb(255,255,255);
       stop-opacity:0"/>
             <stop offset="100%" style="stop-color:rgb(0,0,255);stop-opacity:1"/>
