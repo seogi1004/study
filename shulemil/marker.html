@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+    <title>SVG Marker Element</title>
+    <style>
+        #testStyle {stroke:#6666ff;
+            stroke-width: 1px;
+            fill: none;
+            marker-start: url(#markerCircle);
+            marker-end: url(#markerArrow);
+        }
+    </style>
+</head>
+<body>
+
+<svg width="600px" height="100px">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refx="0" refy="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+
+    <line x1="50" y1="50" x2="250" y2="50" stroke="#000" stroke-width="5" marker-end="url(#arrow)" />
+</svg>
+
+<svg width="600px" height="100px">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refx="0" refy="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+
+    <line x1="295" y1="50" x2="95" y2="75" stroke="#000" stroke-width="5" marker-end="url(#arrow)" />
+</svg>
+
+<svg width="600px" height="100px">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refx="0" refy="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+
+    <line x1="50" y1="50" x2="250" y2="50" stroke="#000" stroke-width="5" marker-end="url(#arrow)" />
+</svg>
+
+<svg width="600px" height="100px">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refx="0" refy="3" orient="auto" markerUnits="strokeWidth" viewBox="0 0 20 20">
+            <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+
+    <line x1="50" y1="50" x2="250" y2="50" stroke="#000" stroke-width="5" marker-end="url(#arrow)" />
+</svg>
+
+<svg width="600px" height="400px" class="example">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refx="0" refy="3" orient="auto" markerUnits="strokeWidth" viewBox="0 0 20 20">
+            <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+
+    <marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
+        <circle cx="2" cy="2" r="2" stroke="none" fill="#f00"/>
+    </marker>
+
+    <polyline points="50,100 250,100 250,200 350,200" fill="none" stroke="#000" stroke-width="10" marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)" />
+    <path d="M50,100 l0,200 l50,0" stroke="#000" fill="none" stroke-width="10"  marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)" />
+    <line x1="50" y1="100" x2="220" y2="270" stroke="#000" stroke-width="10" marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)"/>
+</svg>
+
+</body>
+</html>
