@@ -1,0 +1,257 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>SVG - Transformation</title>
+    <style>
+        .src-mode {
+            background-color: lightblue;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<h1>Transformation</h1>
+SVG이미지에서는 생성된 Shapes(circle, rect, line, poligon, text etc.,)들의 변형시키는 것이 가능하다. (ex. move, scale, rotate)<br/>
+수직 또는 대각선 텍스트를 표현하는데도 편리한 방법을 제공한다.<br/>
+
+<h1>transform 속성 - 적용 범위</h1>
+
+<ul>
+    <li>&lt;circle&gt;&lt;rect&gt;&lt;text&gt;&lt;line&gt;와 같은 Shape들</li>
+    <li>&lt;g&gt; : 효과적으로 한번에 전체 그룹에 변형</li>
+    <li>패턴을 칠하고 gradient를 변형시키는 것이 가능</li>
+</ul>
+
+<h1>Functions</h1>
+
+<ul>
+    <li>translate()</li>
+    <li>rotate()</li>
+    <li>scale()</li>
+    <li>skew()</li>
+    <li>matrix()</li>
+</ul>
+
+<h2>Translate</h2>
+- 이동<br/>
+- translate(50, 25)<br>
+-> x축으로 50, y축으로 25 만큼 이동해라.
+
+<xmp class="src-mode">
+    <rect x="20" y="20" width="50" height="50"
+          style="fill: #cc3333"/>
+
+    <rect x="20" y="20" width="50" height="50"
+          style="fill: #3333cc"
+          transform="translate(75,25)"/>
+</xmp>
+
+<svg width="500" height="150">
+    <rect x="20" y="20" width="50" height="50"
+          style="fill: #cc3333"/>
+
+    <rect x="20" y="20" width="50" height="50"
+          style="fill: #3333cc"
+          transform="translate(50,50)"/>
+</svg>
+
+
+<h2>Rotate</h2>
+- 회전<br/>
+- rotate(15)<br/>
+-> (0,0)을 기준으로 15도 회전해라.<br/>
+- 시계 방향으로 회전 (0 ~ 360)<br/>
+- 반시계 방향으로 회전 (-40) : '-'음수 표시<br/>
+
+<xmp class="src-mode">
+    <rect x="20" y="20" width="40" height="40"
+          style="stroke: #3333cc; fill:none;"
+            />
+
+    <rect x="20" y="20" width="40" height="40"
+          style="fill: #3333cc"
+          transform="rotate(15)"
+    //rotate(15, 20, 20) rotate(15, 40, 40)
+    />
+</xmp>
+
+<svg width="500" height="150">
+    <rect x="20" y="20" width="40" height="40"
+          style="stroke: #3333cc; fill:none;"
+            />
+
+    <rect x="20" y="20" width="40" height="40"
+          style="fill: #3333cc"
+          transform="rotate(15)"
+            />
+
+    <rect x="100" y="20" width="40" height="40"
+          style="stroke: #3333cc; fill:none;"
+            />
+
+    <rect x="100" y="20" width="40" height="40"
+          style="fill: #3333cc"
+          transform="rotate(15, 100, 20)"
+            />
+
+    <rect x="180" y="20" width="40" height="40"
+          style="stroke: #3333cc; fill:none;"
+            />
+
+    <rect x="180" y="20" width="40" height="40"
+          style="fill: #3333cc"
+          transform="rotate(15, 200, 40)"
+            />
+</svg>
+
+
+<h2>Scale</h2>
+- scale(2) // x축, y축 2배 <br/>
+- scale(2, 3) // x축 2배, y축 3배 <br/>
+
+<xmp class="src-mode">
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:none;"/>
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #000000; fill:none;"
+          transform="scale(2)"/>
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #0000ff; fill:none;"
+          transform="scale(2,3)"/>
+</xmp>
+<svg width="100" height="150">
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:none;"/>
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #000000; fill:none;"
+          transform="scale(2)"/>
+</svg>
+
+<svg width="100" height="150">
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:none;"/>
+
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #0000ff; fill:none;"
+          transform="scale(2,3)"/>
+</svg>
+
+<h3>Mirror (거울 효과)</h3>
+
+<xmp class="src-mode">
+    <path d="M20,20 l20,20 l0,20 l-20,20 Z"
+          style="stroke: #3333cc; fill:#00ff00;"/>
+
+    <path d="M20,20 l20,20 l0,20 l-20,20 Z"
+          style="stroke: #000000; fill:#ffff00;"
+          transform="translate(100, 0) scale(-1, 1) "/>
+</xmp>
+<svg width="500" height="150">
+    <path d="M20,20 l20,20 l0,20 l-20,20 Z"
+          style="stroke: #3333cc; fill:#00ff00;"/>
+
+    <path d="M20,20 l20,20 l0,20 l-20,20 Z"
+          style="stroke: #000000; fill:#ffff00;"
+          transform="translate(100, 0) scale(-1, 1) "/>
+</svg>
+
+
+<h2>Skew</h2>
+- 비틀기<br/>
+- skewX(), skewY()함수를 이용해 x축, y축으로 비튼(?) 기울인다.<br/>
+- 실제로, 특정 각도를 지정해주면 축을 기울인다.
+<xmp class="src-mode">
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:none;"/>
+
+    <!-- skewX() -->
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:#ba6098;"
+          transform="skewX(85)"/>
+
+    <rect x="50" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(10)"/>
+    <rect x="100" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(45)"/>
+    <rect x="150" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(60)"/>
+
+    <!-- skewY() -->
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:#47c27c;"
+          transform="skewY(85)"/>
+
+    <rect x="50" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(60)"/>
+    <rect x="100" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(45)"/>
+    <rect x="150" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(10)"/>
+</xmp>
+<svg width="500" height="500">
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:none;"/>
+    <!-- skewX() -->
+
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:#ba6098;"
+          transform="skewX(85)"/>
+
+    <rect x="50" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(10)"/>
+    <rect x="100" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(45)"/>
+    <rect x="150" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#de97c3;"
+          transform="skewX(60)"/>
+
+    <!-- skewY() -->
+    <rect x="10" y="10" width="20" height="30"
+          style="stroke: #3333cc; fill:#47c27c;"
+          transform="skewY(85)"/>
+
+    <rect x="50" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(60)"/>
+    <rect x="100" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(45)"/>
+    <rect x="150" y="10" width="20" height="30"
+          style="stroke: #000000; fill:#82e4b2;"
+          transform="skewY(10)"/>
+</svg>
+
+<h2>Matrix</h2>
+<embed src="./svg/matrix.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+<h3>Translate</h3>
+<embed src="./svg/matrixTranslate.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+<h3>Rotate</h3>
+<embed src="./svg/matrixRotate.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+<h3>Scale</h3>
+<embed src="./svg/matrixScale.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+<h3>Skew</h3>
+<h4>skewX</h4>
+<embed src="./svg/matrixSkewX.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+<h4>skewY</h4>
+<embed src="./svg/matrixSkewY.svg" width="640" height="120" type="image/svg+xml"></embed>
+
+</body>
+</html>

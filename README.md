@@ -1,3 +1,17 @@
-## 하코사: 데이터 시각화 스터디
+# SVG study
+        * 2015.04.17 Homework - Gradient, Transformation
 
-이곳에서 과제 및 샘플 코드 관리를 할 예정입니다.
+        ## Gradient
+        `jodeng_hw/svg-gradients.html`
+
+        1. LinearGradient
+        2. RadialGradient
+
+        ## Transformation
+        `jodeng_hw/svg-transformation.html`
+
+        1. translate
+        2. rotate
+        3. scale
+        4. skewtrix
+        5. matrix
