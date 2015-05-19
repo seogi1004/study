@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+
+        circle{
+            cursor: move;
+        }
+
+        .label{
+            font-size: 10px;
+            text-anchor: middle;
+        }
+
+        #txt-info{
+            font-size: 50px;
+            fill: silver;
+            text-anchor: end;
+        }
+    </style>
+</head>
+<body>
+
+<svg width="500" height="500" style="background-color: aliceblue; background-color: ">
+    <circle id="cc1" class="c" r="50" cx="100" cy="200" fill="cornflowerblue"/>
+    <circle id="cc2" class="c" r="50" cx="200" cy="200" fill="salmon"/>
+    <path id="pth3" stroke="yellowgreen" stroke-dasharray="5 2"/>
+    <path id="pth2" stroke="dodgerblue" stroke-dasharray="5 2"/>
+    <path id="pth1" stroke="red" stroke-width="2"/>
+    <text id="txt-pth1" class="label" ></text>
+    <text id="txt-pth2" class="label" ></text>
+    <text id="txt-pth3" class="label" ></text>
+    <text id="txt-info" x="490" y="490" ></text>
+
+</svg>
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script>
+
+    var $body = $( 'body' );
+    var $cc1 = $( '#cc1' );
+    var $cc2 = $( '#cc2' );
+    var $pth1 = $( '#pth1' );
+    var $pth2 = $( '#pth2' );
+    var $pth3 = $( '#pth3' );
+    var $txt = $( '#txt' );
+    var $txt_pth1 = $( '#txt-pth1' );
+    var $txt_pth2 = $( '#txt-pth2' );
+    var $txt_pth3 = $( '#txt-pth3' );
+    var $txt_info = $( '#txt-info' );
+
+    initEvent();
+    update( );
+
+
+    function initEvent(){
+        $('.c' ).on( 'mousedown', function( event ){
+            var $this = $( this );
+            var scrx = event.screenX;
+            var scry = event.screenY;
+            $this.sx = Number( $this.attr( 'cx' ) );
+            $this.sy = Number( $this.attr( 'cy' ) );
+
+            $body.on( 'mousemove', function( event ){
+                var x = $this.sx + event.screenX - scrx;
+                var y = $this.sy + event.screenY - scry;
+                $this.attr( { cx:x, cy:y } );
+                update( );
+            });
+
+            $body.on( 'mouseup', function(){
+                $body.off( 'mousemove' );
+                $body.off( 'mouseup' );
+            });
+        });
+    }
+
+
+    function update( ){
+        var cc1Pos = [ Number( $cc1.attr( 'cx' ) ), Number( $cc1.attr( 'cy' ) ) ];
+        var cc2Pos = [ Number( $cc2.attr( 'cx' ) ), Number( $cc2.attr( 'cy' ) ) ];
+        
+        renderPoint( cc1Pos, cc2Pos );
+        renderPath( cc1Pos, cc2Pos );
+        renderInfo( cc1Pos, cc2Pos );
+    }
+    
+    function renderPoint( cc1Pos, cc2Pos ){
+        $txt_pth1.text( 'A( '+cc1Pos.join()+' )').attr( { x:cc1Pos[0], y:cc1Pos[1] } );
+        $txt_pth2.text( 'B( '+cc2Pos.join()+' )').attr( { x:cc2Pos[0], y:cc2Pos[1] } );;
+        $txt_pth3.text( 'C( '+cc2Pos[0]+','+cc1Pos[1]+' )').attr( { x:cc2Pos[0], y:cc1Pos[1] } );;
+    }
+
+    function renderPath( cc1Pos, cc2Pos ){
+        var cc1 = cc1Pos.join( ' ' );
+        var cc2 = cc2Pos.join( ' ' );
+        var d1 = 'M ' + cc1 + ' L ' + cc2;
+        var d2 = 'M ' + cc1 + ' L ' + cc2Pos[0] + ' ' + cc1Pos[1];
+        var d3 = 'M ' + cc2 + ' L ' + cc2Pos[0] + ' ' + cc1Pos[1];
+        
+        $pth1.attr( 'd' , d1 );
+        $pth2.attr( 'd' , d2 );
+        $pth3.attr( 'd' , d3 );
+    }
+
+    function renderInfo( cc1Pos, cc2Pos ){
+        $txt_info.text( Number( getDistance( cc1Pos, cc2Pos )).toFixed(2 ) +'px' );
+    }
+
+
+    function getDistance( pos1, pos2 ){
+        var a = pos2[ 0 ] - pos1[ 0 ];
+        var b = pos2[ 1 ] - pos1[ 1 ];
+
+        //두 점 사이 거리 구하기
+        return Math.sqrt( (a*a) + (b*b) );
+    }
+
+    function toDegree( rad ){
+        return rad * 180 / Math.PI;
+    }
+</script>
+</body>
+</html>
