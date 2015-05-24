@@ -61,17 +61,38 @@
 ## switch element [Link](http://www.w3.org/TR/SVG11/struct.html#SwitchElement)
 switch element는 attributes('requiredFeatures', 'requiredExtensions', 'systemLanguage')의 기입된 user language 또는 user agent 정보에 따라 view 을 하는 기능을 제공. 
 
-    <switch>
-        <g systemLanguage="en-UK">
-            <text x="10" y="20">UK English</text>
-        </g>
-        <g systemLanguage="en">
-            <text x="10" y="20">English</text>
-        </g>
-        <g systemLanguage="es">
-            <text x="10" y="20">Spanish</text>
-        </g>
-    </switch>
+- only one Element Selecting (모두 통과하는 조건의 경우 맨 앞의 동일 조건의 element 가 선택됨)
+- 많은 예제들에서 사용하고 있는 g element 이외의 element 도 사용가능
+- attributes 인 requiredFeatures, requiredExtensions, systemLanguage 의 경우 switch 의 하위 element 로만 사용 가능한 것이 아니라 모든 엘리먼트에서 swtich element와 관계 없이 독립적으로 사용 가능하다.
+ (타 element에서 위 attributes 사용 시 해당 조건이 통과될 경우에만 화면에 노출 된다.)
+ 
+        <switch>
+            <g systemLanguage="en-UK">
+                <text x="10" y="20">UK English</text>
+            </g>
+            <g systemLanguage="en">
+                <text x="10" y="20">English</text>
+            </g>
+            <g systemLanguage="es">
+                <text x="10" y="20">Spanish</text>
+            </g>
+        </switch>
+
+[Link](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute)
+### attributes - requiredFeatures
+[Link](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/requiredFeatures)
+
+- 브라우저에서 기능 지원 여부 확인
+
+### attributes - requiredExtensions
+[Link](http://www.w3.org/TR/SVG/struct.html#RequiredExtensionsAttribute)
+[Link](https://svgwg.org/svg2-draft/struct.html#RequiredExtensionsAttribute)
+
+- FF 에서만 지원(현재)
+- 확장에 필요한 리스트를 정의하는 기능. 
+- 스펙에 정의된 기능을 넘어서는 기능을 삽입.
+- 각 확장은 url reference 를 참조 
+
 
 ## image element [Link](http://www.w3.org/TR/SVG11/struct.html#ImageElement)
 
