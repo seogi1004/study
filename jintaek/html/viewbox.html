@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head lang="ko">
+    <meta charset="UTF-8" />
+    <title>SVG - Viewport</title>
+</head>
+<body>
+
+<!--
+    viewBox :
+        - min-x : svg내부에 출력되는 요소들의 x축 원점좌표.
+       - min-y : svg내부에 출력되는 요소들의 y축 원점좌표.
+       - widht : viewport width값.
+       - height : viewport height값.
+-->
+
+
+<h1>Viewbox</h1>
+
+
+<ul>
+    <li>
+        preserveAspectRatio를 설정하지 않아도 기본적으로 종횡비유지(preserveAspectRatio="xMidYMid meet")가 적용되어 작은쪽에 맞게 비율이 조정된다.<br/>
+        preserveAspectRatio를 none으로 설정할 경우 비율이 유지 되지않고 viewport에 맞게 조정된다.
+    </li>
+
+    <li>
+        <strong>heina92 님이 공유해 주신 사이트의 데모를 들어가서 'Show x & y Guidelines'를 선택 후 보면 더 쉽게 이해 할 수 있다. (강추)</strong> <br/>
+        <a href="http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html" target="_blank">interactive-svg-coordinate-system</a>
+    </li>
+</ul>
+
+<p>주황색 점선은 현재 viewport의 크기</p>
+
+<svg width="500px" height="300px" style="border:2px solid #efefef;">
+    <text x="10" y="50%" font-size="15">종횡비 유지(preserveAspectRatio="xMidYMid meet")</text>
+    <svg width="500px" height="300px" viewBox="0 0 500 600">
+        <rect x="0" y="0" width="100%" height="100%" stroke="#ffaa00" stroke-width="5" stroke-dasharray="10,10" fill="transparent" />
+        <rect x="40" y="40" width="100" height="100" fill="#fff" stroke="#ffaa00" stroke-width="5"/>
+    </svg>
+</svg>
+
+<svg width="500px" height="300px" style="border:2px solid #efefef;">
+    <text x="10" y="50%" font-size="15">종횡비 유지안함(preserveAspectRatio="none")일 경우</text>
+    <svg width="500px" height="300px" viewBox="0 0 500 600" preserveAspectRatio="none">
+        <rect x="0" y="0" width="100%" height="100%" stroke="#ffaa00" stroke-width="5" stroke-dasharray="10,10" fill="transparent" />
+        <rect x="40" y="40" width="100" height="100" fill="#fff" stroke="#ffaa00" stroke-width="5"/>
+    </svg>
+</svg>
+
+<h2>PreserveAspectRatio</h2>
+<img src="../img/PreserveAspectRatio.png" />
+
+</body>
+</html>
