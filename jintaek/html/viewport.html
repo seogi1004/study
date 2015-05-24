@@ -3,35 +3,81 @@
 <head lang="ko">
     <meta charset="UTF-8" />
     <title>SVG - Viewport</title>
+    <link rel="stylesheet" href="../css/base.css"/>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../css/common.css"/>
+    <link rel="stylesheet" href="../css/prettify.css" />
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/prettify.js"></script>
+    <script src="../js/common.js"></script>
+
+    <style>
+        .line {fill:none; stroke-width: 1.5;  stroke: #000;}
+    </style>
 </head>
-<body>
 
-<h1>Viewport</h1>
+<body onload="prettyPrint()">
 
-<ul>
-    <li>viewport 안에 새로운 뷰포트를 생성할 수 있다.</li>
-    <li>viewport 영역의 하위 element들은 viewport의 원점(좌측 상단)을 기준으로 좌표를 가진다.</li>
-    <li> + element들이 겹쳐있을 경우 나중에 작성한 element의 순서가 앞으로 온다.</li>
-</ul>
+<header id="header">
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">SVG</a>
+            </div>
+            <!--<div id="navbar" class="collapse navbar-collapse">-->
+            <!--<ul class="nav navbar-nav">-->
+            <!--<li class="active"><a href="#">Home</a></li>-->
+            <!--<li><a href="#about">About</a></li>-->
+            <!--<li><a href="#contact">Contact</a></li>-->
+            <!--</ul>-->
+            <!--</div>-->
+        </div>
+    </nav>
+</header>
 
-<svg width="700px" height="700px" style="outline: 4px solid #ff7a00; overflow:visible">
-    <text x="10" y="30" font-size="20">뷰포트 1</text>
-    <circle cx="100" cy="100" r="20" fill="#92CCA6" />
-    <circle cx="90" cy="90" r="20" fill="#FF4848" opacity="0.8" />
 
-    <svg id="up" x="100" y="100" width="500px" height="500px">
-        <rect x="0" y="0" width="100%" height="100%" style="stroke:#92CCA6; stroke-width: 10; fill:#fff;" />
-        <text x="10" y="30" font-size="20">뷰포트 2</text>
-        <circle cx="200" cy="0" r="20" fill="#FF4848" />
-    </svg>
+<div class="container">
 
-    <svg x="300" y="50" width="500px" height="500px">
-        <rect x="0" y="0" width="100%" height="100%" style="stroke:#FF4848; stroke-width: 13; fill:#fff;" />
-        <text x="10" y="30" font-size="20">뷰포트 3</text>
-    </svg>
+    <div class="page-header">
+        <h2>viewbox</h2>
+    </div>
 
-    <!--<use xlink:href="#up" />-->
-</svg>
+
+    <section class="section">
+        <h3>Example</h3>
+        <p>
+            viewport 영역의 하위 엘리먼트들은 viewport의 원점(좌측 상단)을 기준으로 좌표를 가진다.<br/>
+            중첩이 가능하고 하위에 생성된 viewport는 새로운 좌표계를 가진다.
+        </p>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">viewport</div>
+            <div class="panel-body">
+
+                <svg width="700px" height="700px" style="overflow:visible">
+                    <rect x="0" y="0" width="100%" height="100%" style="fill:#FFDDA6;" />
+                    <text x="10" y="30" font-size="20">뷰포트 1</text>
+                    <svg id="up" x="100" y="100" width="500px" height="500px">
+                        <rect x="0" y="0" width="100%" height="100%" style="fill:#FFA9B0;" />
+                        <rect x="0" y="0" width="100%" height="100%" style="fill:#CCD1FF;" />
+                        <text x="10" y="30" font-size="20">뷰포트 2</text>
+                    </svg>
+                </svg>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</div>
 
 </body>
 </html>
