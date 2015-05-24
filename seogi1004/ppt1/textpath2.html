@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../lib/jui.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../lib/jui.chart.min.js"></script>
+<script>
+jui.define("chart.brush.textpath", [], function() {
+    var TextPathBrush = function() {
+        var self = this;
+
+        function getTextPath() {
+            var buffer = [];
+
+            for(var i = 0; i < 500; i++) {
+                buffer.push(self.brush.text);
+            }
+
+            return buffer.join("");
+        }
+
+        this.createLine = function(pos, index) {
+            var x = pos.x,
+                y = pos.y;
+
+            var p = this.chart.svg.path({
+                id : "textPath" + index
+            });
+
+            if(pos.length > 0) {
+                p.MoveTo(x[0], y[0]);
+
+                var px = this.curvePoints(x),
+                    py = this.curvePoints(y);
+
+                for(var i = 0; i < x.length - 1; i++) {
+                    p.CurveTo(px.p1[i], py.p1[i], px.p2[i], py.p2[i], x[i + 1], y[i + 1]);
+                }
+            }
+
+            return p;
+        }
+
+        this.draw = function() {
+            var path = this.getXY(),
+                defs = this.chart.svg.defs(),
+                g = this.chart.svg.group();
+
+            for(var k = 0; k < path.length; k++) {
+                var line = this.createLine(path[k], k);
+                defs.append(line);
+
+                var text = this.chart.svg.text({
+                    "font-size" : this.brush.size,
+                    fill : this.color(k)
+                }, function() {
+                    self.chart.svg.textPath({
+                        "xlink:href": "#textPath" + k
+                    }).html(getTextPath());
+                });
+                g.append(text);
+            }
+
+            return g;
+        }
+    }
+
+    TextPathBrush.setup = function() {
+        return {
+            size : 15,
+            text : "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        }
+    }
+
+    return TextPathBrush;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder" ], function(chart) {
+    var c = chart("#chart", {
+        width : "100%",
+        height : 400,
+        axis : {
+            x : {
+                type : "block",
+                domain : "month",
+                line : true // 'solid' or true
+            },
+            y : {
+                type : "range",
+                domain : [ 0, 120 ],
+                step : 4,
+                line : "solid"
+            },
+            data : getRandomData()
+        },
+        brush : {
+            type : "textpath",
+            target : [ "sales", "profit" ]
+        },
+        render : false
+    });
+
+    $("#reload").on("click", function(e) {
+        c.updateBrush(0, {
+            text : $("#text").val(),
+            size : $("#size").val()
+        });
+
+        c.axis(0).update(getRandomData());
+        c.render();
+    });
+});
+
+function getRandomData() {
+    var data = [];
+
+    for(var i = 1; i <= 12; i++) {
+        var sales = Math.floor(Math.random() * 100) + 10,
+            profit = Math.floor(Math.random() * 100) + 10;
+
+        data.push({ month : i, sales : sales, profit : profit });
+    }
+
+    return data;
+}
+</script>
+</head>
+<body class="jui">
+<div class="group">
+    <input id="text" type="text" class="input" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" placeholder="Text" style="width: 300px;" />
+    <input id="size" type="number" class="input" value="15" min="10" placeholder="Size" style="width: 70px;" />
+    <a id="reload" href="#" class="btn btn-gray">Reload</a>
+</div>
+
+<div id="chart"></div>
+</body>
+</html>
