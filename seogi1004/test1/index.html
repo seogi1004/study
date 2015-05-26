@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>How to use text in SVG</title>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../lib/jui.chart.min.js"></script>
+<script>
+jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Math2) {
+    return {
+        start: function(list) {
+            console.log("start");
+        },
+        move: function(list, seq) {
+            var newList = [];
+
+            for(var i = 0; i < list.length; i++) {
+                newList[i] = {
+                    cx: list[i].cx + seq,
+                    cy: list[i].cy + seq,
+                    fill: (seq % 2) ? "red" : "blue"
+                }
+            }
+
+            console.log("move");
+
+            return newList;
+        },
+        end: function() {
+            console.log("end");
+        },
+
+        width: 500,
+        height: 500,
+        fps: 60,
+        timeout: 5000,
+        count: 360,
+        radius: 5
+    }
+});
+</script>
+<script src="template.js"></script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
