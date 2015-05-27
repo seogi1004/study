@@ -35,7 +35,7 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
                     setTimeout(moveElement, 1000);
                 } else {
-                    var retList = handler.move(list, seq);
+                    var retList = handler.move(seq, seqLimit);
 
                     // 리턴 값이 있을 경우
                     if(_.typeCheck("array", retList)) {
@@ -52,8 +52,8 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
             fps = handler.fps || 60;
             timeout = handler.timeout || 5000;
-            count = handler.count || 300;
-            radius = handler.radius || 5;
+            count = handler.count || 36;
+            radius = handler.radius || 3;
             seqLimit = timeout / fps;
 
             // 초기 데이터 설정
