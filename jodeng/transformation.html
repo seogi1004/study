@@ -4,7 +4,7 @@
 		<title>Transformation - translate, scale, rotate, skew</title>
 	</head>
 	<body>
-		<svg width="610px" height="1835">
+		<svg width="610px" height="2035">
 			<defs>
 				<pattern id="rulerPattern" patternUnits="userSpaceOnUse"
 						x="0" y="0" width="10" height="10"
@@ -234,7 +234,30 @@
 				<use xlink:href="#box" transform="translate(-100,-100) scale(3)"/>
 				
 			</g>
-			
+
+			<g transform=translate(0,1835)>
+				<g style="stroke: gray; stroke-dasharray: 4 4;">
+				    <line x1="0" y1="0" x2="200" y2="0"/>
+				    <line x1="20" y1="0" x2="20" y2="90"/>
+				    <line x1="120" y1="0" x2="120" y2="90"/>
+				</g>
+
+				<g transform="translate(20, 0)">    
+				    <g transform="skewX(30)">    
+				        <polyline points="50 0, 0 0, 0 50"   
+				             style="fill: none; stroke: black; stroke-width: 2;"/>
+				        <text x="0" y="60">skewX</text>    
+				    </g>
+				</g>
+
+				<g transform="translate(120, 0)">     
+				    <g transform="skewY(30)">
+				        <polyline points="50 0, 0 0, 0 50"
+				            style="fill: none; stroke: black; stroke-width: 2;"/>
+				        <text x="0" y="60">skewY</text>
+				    </g>
+				</g>
+			</g>
 		</svg>
 	</body>
 </html>
