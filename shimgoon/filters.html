@@ -1,0 +1,97 @@
+<!DOCTYPE>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE-Edge">
+	<title>SVG  - Filters</title>
+	<style type="text/css">
+		body, div, h1, h2, ul, li, p, a { padding:0; margin:0; }
+		body { background-color:#ccc; }
+		h2 { margin:5px 0;}
+		li ul { padding-left:10px; margin-left:20px; }
+		svg { background-color:#fff; margin-left:20px; }
+		
+		#wrap { margin-left:10px; }
+		svg { background-color:#fff; margin:0 0 10px 20px; }
+	</style>
+</head>
+<body>
+	<div id="wrap">
+		<h1>Filters</h1>
+		<ul>
+			<li>
+				- 지원브라우저
+				<ul>
+					<li>IE - 10</li>
+					<li>Chrome - 8.0</li>
+					<li>Firefox - 3.0</li>
+					<li>Safari - 6.0</li>
+					<li>Opera - 9.6</li>
+				</ul>
+			</li>
+			<li>- filter 요소를 통해 정의</li>
+			<li>
+				- Elements
+				<ul>
+					<li>feBlend</li>
+					<li>feColorMatrix</li>
+					<li>feComponentTransfer</li>
+					<li>feComposite</li>
+					<li>feConvolveMatrix</li>
+					<li>feDiffuseLighting</li>
+					<li>feDisplacementMap</li>
+					<li>feFlood</li>
+					<li>feGaussianBlur</li>
+					<li>feImage</li>
+					<li>feMerge</li>
+					<li>feMorphology</li>
+					<li>feOffset( dropshadow )</li>
+					<li>feSpecularLighting</li>
+					<li>feTile</li>
+					<li>feTurbulence</li>
+					<li>feDistantLight</li>
+					<li>fePointLight</li>
+					<li>feSpotLight</li>
+				</ul>
+			</li>
+			<li>- in : 입력 ( 입력이 2개가 필요한 경우 in2 추가사용 ) / result : 출력을 의미</li>
+			<li>- in="SourceGraphic"은 효과가 전체 요소에 대해 생성되는 정의</li>
+		</ul>
+		<h2>Filters - GaussianBlur</h2>
+		<svg width="200" height="100" >
+			<defs>
+				<filter id="filter1" x="0" y="0">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="20" />
+				</filter>
+			</defs>
+  			<rect x="0", y="0" width="100" height="100" style="stroke:none; fill:#ff0000;" />
+			<rect x="100", y="0" width="100" height="100" style="stroke:none; fill:#0000ff;" filter="url(#filter1)" />
+		</svg>
+
+		<h2>Filters - Drop Shadows</h2>
+		<svg width="200" height="100" >
+			<defs>
+				<filter id="filter2" x="0" y="0" width="100" height="100">
+					<feOffset result="offOut" in="SourceGraphic" dx="20" dy="20" />
+					<feBlend in="SourceGraphic" in2="offOut" mode="normal" />
+				</filter>
+			</defs>
+			<rect x="0", y="0" width="100" height="100" style="stroke:none; fill:#ff0000;" />
+			<rect x="100", y="0" width="70" height="70" stroke="black" stroke-width="3" style="fill:#0000ff; filter:url(#filter2)" />
+		</svg>
+
+		<h2>Filters - Drop Shadows ( blur )</h2>
+		<svg width="200" height="100" >
+			<defs>
+				<filter id="filter3" x="0" y="0" width="200%" height="200%">
+					<feOffset result="offOut" in="SourceGraphic" dx="20" dy="20" />
+      				<feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
+     				<feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+				</filter>
+			</defs>
+			<rect x="0", y="0" width="100" height="100" style="stroke:none; fill:#ff0000;" />
+			<rect x="100", y="0" width="70" height="70" stroke="black" stroke-width="3" style="fill:#0000ff; filter:url(#filter3)" />
+		</svg>
+	</div>
+</body>
+</html>
