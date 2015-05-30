@@ -1,13 +1,13 @@
 define(['jquery'], function ($){
     var matchs = {
         /**
-         * radians°ªÀ» ±¸ÇÏ´Â ¸Ş¼Òµå
+         * ë„ë¥¼ radians ë³€í™˜í•˜ëŠ” ë©”ì†Œë“œ
          * @param number
-         * @returns radians Å¸ÀÔ¿¡ number°ª ¸®ÅÏ
+         * @returns radians ì„ numberê°’ìœ¼ë¡œ ë¦¬í„´
          */
         radians : function( number ){
             rda =  number * Math.PI/180;
-            return rda;
+            return 10;
         }
     }
     return matchs;
