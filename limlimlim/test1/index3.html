@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="../lib/jquery-1.8.0.min.js"></script>
+    <script src="../lib/jui.chart.min.js"></script>
+    <script>
+        jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Math2) {
+            var origin = [];
+            var dir = 2;
+            var sx = 200;
+            var sy = 200;
+            var radiusx = 0;
+            var radiusy = 0;
+            var change = 0.1;
+            var ang = 0;
+            return {
+                start: function(list) {
+                    console.log("start");
+                    origin = list;
+                },
+                move: function(seq, limit) {
+
+                    var data = [];
+                    var epi = 2*Math.PI;
+                    for(var i = 0, len = origin.length; i < len; i++) {
+                        var seg = i / len + ang;
+                        data[i] = {
+                            cx: sx  + radiusx * Math.cos( epi*seg ),
+                            cy: sy  + radiusy * Math.sin( epi*seg ),
+                            fill: origin[i].fill
+                        };
+                    }
+                    radiusx += dir;
+                    radiusy += dir/5;
+                    ang += change;
+                    return data;
+                },
+                end: function() {
+                    console.log("end");
+                    dir *= -1;
+                    change *= -1;
+                },
+
+                width: 500,     // 차트 넓이
+                height: 500,    // 차트 높이
+                fps: 60,        // 렌더링 시간 (ms)
+                timeout: 5000, // 그리는 시간
+                count: 36,      // 공 개수
+                radius: 3       // 공 반지름
+            }
+        });
+    </script>
+    <script src="template.js"></script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
