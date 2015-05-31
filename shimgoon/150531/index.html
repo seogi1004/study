@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+
+<body>
+<div id="chart"></div>
+<a href="#" id="btn_start">START</a> / 
+<a href="#" id="btn_stop">STOP</a>
+
+<script>
+    Object.prototype.attr = function( attribute, value ){
+        if( ( value === undefined || value === null ) && typeof attribute != "object" ){
+            return this.getAttribute( attribute );
+        }
+        if( typeof attribute == "object" ){
+            for( key in attribute ){
+                this.setAttribute( key, attribute[key] );
+            }
+            return;
+        } 
+        this.setAttribute( attribute, value );
+    };
+
+    var test1 = (function( window, document ){
+        var svg, xmlns = "http://www.w3.org/2000/svg";
+        var circles = [],
+            opts = {
+                width:500, //
+                height:500, // 
+                cx:250, // 
+                cy:250, // 
+                circle:{
+                    num:12,
+                    radius:3
+                }
+            },
+            radius = 0,
+            timer;
+
+        /*!
+         * 과제 1 Initialize 
+         */ 
+        function init(){
+            // create svg
+            svg = document.createElementNS( xmlns, "svg" );
+            svg.attr({
+                'width':opts.width,
+                'height':opts.height,
+                'style':"background-color:#000;",
+                'id':'test1'
+            });
+
+            document.getElementById("chart").appendChild( svg );
+
+            // create circles
+            circles = [];
+            for( var i = 0; i < opts.circle.num; ++i ){
+                var circle = createCircle( opts.cx, opts.cy, opts.circle.radius, i );
+                svg.appendChild( circle );
+                circles.push( circle );
+            }
+        }
+
+        /*!
+         * circle 생성
+         * 
+         * @param  {Number} x       : 생성할 circle 의 x 좌표
+         * @param  {Number} y       : 생성할 circle 의 y 좌표
+         * @param  {Number} radius  : 생성할 circle 반지름
+         * @param  {Number} idx     : 생성할 circle 의 index ( id 생성시 이용 )
+         * 
+         * @return {SVG Element}    
+         */
+        function createCircle( x, y, radius, idx ){
+            var circle = document.createElementNS( xmlns, "circle" );
+            circle.attr({
+                'cx':x,
+                'cy':y,
+                'r':radius,
+                'fill':'#fff',
+                'id':'c' + idx,
+                'opacity':0
+            });
+            return circle;
+        }
+
+        function start(){
+            for( var i = 0; i < opts.circle.num; ++i ){
+                circles[i].attr({
+                    'opacity':1,
+                    'cx':opts.cx,
+                    'cy':opts.cy,
+                });    
+            }
+            radius = 0;
+            stopTimer();
+            move();
+            timer = setInterval( move, 20 );
+        }
+
+        function move(){
+            ++radius;
+            for( var i = 0; i < opts.circle.num; ++i ){
+                var radian = ( ( 360 / opts.circle.num ) * i ) / 180 * Math.PI, // radian = angle_in_dgree / 180 * math.PI 
+                    x = radius * Math.cos( radian ) + opts.cx,
+                    y = radius * Math.sin( radian ) + opts.cy;
+                circles[i].attr({
+                    'cx':x, 
+                    'cy':y
+                });
+            }
+            if( radius >= 150 ){
+                end();
+            }   
+        }
+
+        function end(){
+            stopTimer();
+            for( var i = 0; i < opts.circle.num; ++i ){
+                circles[i].attr('opacity',0);
+            }
+        }
+
+        function stopTimer(){
+            if( timer ){ clearInterval( timer ); }
+        }
+
+        init();
+
+        return {
+            start:start,
+            stop:end
+        };
+    })( window, document );
+
+    document.getElementById("btn_start").onclick = function(){
+        test1.start();
+        return false;
+    }
+    document.getElementById("btn_stop").onclick = function(){
+        test1.stop();
+        return false;
+    }
+</script>
+
+</body>
+</html>
+
