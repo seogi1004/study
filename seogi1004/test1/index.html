@@ -9,8 +9,8 @@ jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Mat
     var origin = [];
 
     return {
-        start: function(list) {
-            console.log("start");
+        start: function(list, round) {
+            console.log("start : " + round);
             origin = list;
         },
         move: function(seq, limit) {
@@ -34,7 +34,8 @@ jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Mat
         width: 500,     // 차트 넓이
         height: 500,    // 차트 높이
         fps: 60,        // 렌더링 시간 (ms)
-        timeout: 5000, // 그리는 시간
+        timeout: 5000,  // 총 렌더링 시간 (ms)
+        wait: 1000,     // 렌더링 이후 대기시간 (ms)
         count: 36,      // 공 개수
         radius: 3       // 공 반지름
     }
