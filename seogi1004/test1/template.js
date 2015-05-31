@@ -1,8 +1,8 @@
 jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler, _) {
     var Template = function(chart) {
         var self = this;
-        var fps, timeout, count, radius, g;
-        var seq = 0, seqLimit = 0, list = [];
+        var fps, timeout, wait, count, radius, g;
+        var seq = 0, seqLimit = 0, round = 0, list = [];
 
         function resetElement(newList) {
             var retList = newList || list;
@@ -19,8 +19,10 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
         function moveElement() {
             var callback = setInterval(function() {
-                if(seq == 0) {
-                    handler.start(list);
+                seq++;
+
+                if(seq == 1) {
+                    handler.start(list, ++round);
                 } else if(seq > seqLimit) {
                     handler.end();
                     seq = 0;
@@ -33,17 +35,15 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
                         circle.attr({ visibility: "hidden" });
                     });
 
-                    setTimeout(moveElement, 1000);
+                    setTimeout(moveElement, wait);
                 } else {
-                    var retList = handler.move(seq, seqLimit);
+                    var retList = handler.move(seq - 1, seqLimit);
 
                     // 리턴 값이 있을 경우
                     if(_.typeCheck("array", retList)) {
                         resetElement(retList);
                     }
                 }
-
-                seq++;
             }, fps);
         }
 
@@ -52,6 +52,7 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
             fps = handler.fps || 60;
             timeout = handler.timeout || 5000;
+            wait = handler.wait || 1000;
             count = handler.count || 36;
             radius = handler.radius || 3;
             seqLimit = timeout / fps;
@@ -88,15 +89,16 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
 jui.ready([ "chart.builder", "handler" ], function(chart, handler) {
     chart("#chart", {
-        width : handler.width || 500,
-        height : handler.height || 500,
-        theme : "dark",
-        axis : {
-            c : {
+        padding: 0,
+        width: handler.width || 500,
+        height: handler.height || 500,
+        theme: "dark",
+        axis: {
+            c: {
                 type : "panel"
             }
         },
-        brush : {
+        brush: {
             type : "template"
         }
     });
