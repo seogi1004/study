@@ -9,8 +9,8 @@
             var data = [], degree = 0;
 
             return {
-                start: function(list) {
-                    console.log("start");
+                start: function(list, round) {
+                    console.log("start : " + round);
 
                     data = list;
                     degree = 360 / data.length;

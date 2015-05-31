@@ -9,8 +9,8 @@ jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Mat
     var origin = [];
 
     return {
-        start: function(list) {
-            console.log("start");
+        start: function(list, round) {
+            console.log("start : " + round);
             origin = list;
         },
         move: function(seq, limit) {
