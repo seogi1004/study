@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="lib/jquery-1.8.0.min.js"></script>
+<script src="lib/jui.chart.min.js"></script>
+<script>
+jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Math2) {
+    var origin = [];
+    return {
+        start: function(list, round) {
+            origin = list;
+            console.log( origin );
+        },
+        move: function(seq, limit) {
+            var data = [];
+            for(var i = 0, len = origin.length; i < len; i++) {
+                var radian = ( ( 360 / this.count ) * i ) / 180 * Math.PI;
+                data[i] = {
+                    cx: origin[i].cx + seq * Math.cos( radian ),
+                    cy: origin[i].cy + seq * Math.sin( radian ),
+                    fill: origin[i].fill
+                };
+            }
+            return data;
+        },
+        end: function() {
+        },
+        width: 500,     
+        height: 500,    
+        fps: 60,        // 렌더링 시간 (ms)
+        timeout: 5000,  // 총 렌더링 시간 (ms)
+        wait: 1000,     // 렌더링 이후 대기시간 (ms)
+        count: 36,      // 공 개수
+        radius: 3       // 공 반지름
+    }
+});
+</script>
+<script src="template.js"></script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
