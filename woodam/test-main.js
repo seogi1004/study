@@ -18,7 +18,8 @@ requirejs.config({
         'text'          : 'resources/components/requirejs/text',
 
 
-        'maths'         : "resources/common/maths"
+        'maths'         : "resources/common/maths",
+        'svg'           : 'resources/common/svg'
     },
     shim: {
         'jquery' : {
