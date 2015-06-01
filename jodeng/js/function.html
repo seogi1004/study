@@ -1,0 +1,108 @@
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Function Description</title>
+		<style>
+		.terminalMode {
+            background-color: lightblue;
+            border: 1px solid black;
+        }
+
+        .strong {
+            font-weight: bold;
+        }
+
+        .red {
+            color: #ff0000;
+        }
+		</style>
+
+		<script type="text/javascript">
+
+		a("I'm 'a'Function.");
+		b("I'm 'b'Function.");
+
+		function a(str){
+			alert(str);
+		}
+
+		var b = function(str){
+			alert(str);
+		}
+
+	
+		</script>
+	</head>
+
+	<body>
+		<h2>함수를 만드는 세가지 방법</h2>
+		<h3>1. 함수 선언부에 함수 이름 지정</h3>
+		<br />
+		<pre class="terminalMode">
+	function a(str){		
+		alert(str);
+	}
+		</pre>
+		<h3>2. 함수를 변수에 할당</h3>
+
+		<pre class="terminalMode">
+	var a = function(str){
+		alert(str);
+	}
+		</pre>
+		<h3>3. new 키워드를 통해 함수 객체 생성</h3>
+		문자열로 함수 body를 작성해야 하기 때문에 불편! -> 잘 안써!!! <br/>
+		<pre class="terminalMode">
+	var a = new Function('str', 'alert(str)');
+		</pre>
+
+		<h2>호출 방법</h2>
+		<pre class="terminalMode">
+	a('Hello!');		
+		</pre>
+
+		<h2>1. 2.의 차이점은?</h2>
+
+		다음 스크립트를 실행해보자.<br />
+
+		<pre class="terminalMode">
+	function a(str){
+		alert(str);
+	}
+
+	var b = function(str){
+		alert(str);
+	}
+
+	a("I'm 'a'Function.");
+	b("I'm 'b'Function.");
+		</pre>
+
+		이제 함수 호출 시점을 다음과 같이 하여 스크립트를 실행해보자.<br />
+
+		<pre class="terminalMode">
+	a("I'm 'a'Function.");
+	b("I'm 'b'Function.");
+
+	function a(str){
+		alert(str);
+	}
+
+	var b = function(str){
+		alert(str);
+	}
+		</pre>
+		개발자 도구 console에서 확인해보면 a function만 정상적으로 작동하고 b는 작동을 안하며 다음과 같은 로그가 찍혀있다.<br/>
+		<div class="red">Uncaught TypeError: b is not a function</div>
+
+		<h2>Why?</h2>
+		자바스크립트는 함수와 변수를 선언하는데 var, function을 사용.<br />
+		이렇게 선언한 함수와 변수를 참조하는 코드가 그 보다 우선해서 나타나도 (선언하는 코드가 아래에 있어도) 마치 코드의 맨 윗부분에 선언한것처럼 동작한다.<br />
+		이것을 <span class="red">호이스팅(hoisting)</span>이라고 한다.<br />
+
+		<h3>그럼 not a defined가 아니라 not a function이라고 나올까?!</h3>
+		변수 b만 위로 끌어 올려져서 변수까지만 접근.<br />
+		그 변수에 할당된 함수리터럴은 할당되지 않은 상태이기 때문에 'not a function' 에러메세지를 띄움.<br />
+	</body>
+</html>
