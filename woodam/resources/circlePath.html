@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        * {padding:0; margin:0;}
+        #circlePath {width:800px; height:800px;}
+    </style>
+</head>
+<body>
+    <svg id="circlePath">
+        <g id="circleTarget">
+            <circle cx="0" cy="0"  x="0" y="0" r="5"  fill="red"/>
+        </g>
+    </svg>
+<script data-main="circlePath" src="components/requirejs/require.js"></script>
+
+<script>
+    requirejs(['circlePath'], function() {
+        require(['jquery', 'svg'], function($,svg) {
+            var par = $("#circleTarget");
+            svg.circlePath({ ele : "circle", par : par  });
+
+
+        });
+    });
+</script>
+</body>
+</html>
