@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="../lib/jquery-1.8.0.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+    #chart {
+        width : 500px;
+        height: 500px;
+    }
+    </style>
+   
+    <script type="text/javascript">
+
+        var count = 0, radius = 0, maxChain = 0;
+
+       $(document).ready(function(){
+
+            $("#btnStart").click(function(){
+                getDrawCirclInfo();
+            });
+       })
+
+       function getDrawCirclInfo(){
+            count = document.getElementById("txiSCount").value;
+            radius = document.getElementById("txiSRadius").value;
+            maxChain = document.getElementById("txiChain").value;
+
+            drawCircles();
+       }
+
+       function drawCircles(){
+            var fps = 60, width = 500, height = 500, bigRadius = 3, circleData = [], circles;
+            var chain = 0, seq = 0, degree = 0, radian = 0;
+            var unit = 360/count;
+
+            var centerX = width/2;
+            var centerY = height/2;
+
+            var svgContainer = d3.select("body").append("svg")
+                                        .attr("width", width)
+                                        .attr("height", height);
+
+   
+
+            var callback = setInterval(function() {
+                if(seq%count == 0){
+                     chain++;
+                     bigRadius += 30;
+                }
+
+                if(chain > maxChain)
+                {
+                    clearInterval(callback);
+                }
+ 
+                degree = unit * (seq%count);
+                radian = degree * Math.PI / 180;
+
+
+                circleData[seq] = {
+                    cx: centerX + bigRadius * Math.cos(radian),
+                    cy: centerY + bigRadius * Math.sin(radian),
+                    radius: radius,
+                    color: '#'+Math.floor(Math.random()*16777215).toString(16)
+                };
+                console.log(seq);
+                seq++;
+
+                console.log("반지름 : " + bigRadius + ", " + seq + " : " + degree + "도 =>" + circleData[seq]);
+
+                var circles = svgContainer.selectAll("circle")
+                                .data(circleData)
+                                .enter()
+                                .append("circle");
+
+                var circleAttributes = circles
+                            .attr("cx", function (d) { return d.cx; })
+                            .attr("cy", function (d) { return d.cy; })
+                            .attr("r", function (d) { return d.radius; })
+                            .style("fill", function(d) { return d.color; });
+
+            }, fps);
+       }
+    </script>
+    
+</head>
+
+<body>
+한 바퀴에 들어갈 작은 Circle 갯수 : <input type="text" id="txiSCount"/><br />
+작은 Circle 반지름 : <input type="text" id="txiSRadius"/><br />
+회전 수 : <input type="text" id="txiChain"><b />
+
+<button id="btnStart">Start</button>
+
+</body>
+</html>
