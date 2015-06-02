@@ -5,7 +5,6 @@ define(['jquery'], function ($){
          * @param object {
          *     sx : x시작점
           *    , sy : y시작점
-          *    , radius : 반지름
           *    , breadth : 폭(넓이)
           *    , cnt : element총갯수
           *    , ele : 반복할element
@@ -18,14 +17,13 @@ define(['jquery'], function ($){
                 sx : 250
                 , sy : 250
                 , radius : 100
-                , angle : 20
                 , cnt : 20
                 , ele : "rect"
                 , par : $("svg")
             }
             var initialSet = set ? $.extend( defaultSet, set ) : defaultSet;
 
-            var cnt = (360 * Math.PI/180) / initialSet.angle; //radians
+            var radian = (360 * Math.PI/180) / initialSet.cnt; //radians
             var angle = 0;
 
 
@@ -38,7 +36,7 @@ define(['jquery'], function ($){
                 var ele = initialSet.par.find( initialSet.ele).eq(i).clone();
                 ele.attr({ cx : dx, cy : dy })
                 ele.appendTo( initialSet.par );
-                angle += cnt;
+                angle += radian;
 
             }
 
