@@ -18,14 +18,14 @@ define(['jquery'], function ($){
                 sx : 250
                 , sy : 250
                 , radius : 100
-                , angle : 10
-                , cnt : 10
+                , angle : 20
+                , cnt : 20
                 , ele : "rect"
                 , par : $("svg")
             }
             var initialSet = set ? $.extend( defaultSet, set ) : defaultSet;
 
-            var cnt = 360/initialSet.angle;
+            var cnt = (360 * Math.PI/180) / initialSet.angle; //radians
             var angle = 0;
 
 
