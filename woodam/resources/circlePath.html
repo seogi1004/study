@@ -10,19 +10,23 @@
 </head>
 <body>
     <svg id="circlePath">
-        <g id="circleTarget">
-            <circle cx="0" cy="0"  x="0" y="0" r="5"  fill="red"/>
-        </g>
+        <g id="target1"></g>
+        <g id="target2"></g>
     </svg>
+
 <script data-main="circlePath" src="components/requirejs/require.js"></script>
 
 <script>
     requirejs(['circlePath'], function() {
         require(['jquery', 'svg'], function($,svg) {
-            var par = $("#circleTarget");
-            svg.circlePath({ ele : "circle", par : par  });
-
-
+            var par = $("#circlePath");
+            svg.circlePath({
+                ele : document.createElementNS('http://www.w3.org/2000/svg','circle')
+                , par : par
+                , radius : 0
+                , par : $("#target2")
+            }).growRadius();
+            svg.circlePath({ par : par , sx : 50, sy : 50, radius : 50, par : $("#target1") });
         });
     });
 </script>
