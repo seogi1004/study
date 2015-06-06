@@ -29,15 +29,18 @@ define(['jquery'], function ($){
             }
             var initialSet = set ? $.extend( defaultSet, set ) : defaultSet;
 
-            var radian = (360 * Math.PI/180) / initialSet.cnt; //radians
+            this.radian = (360 * Math.PI/180) / initialSet.cnt; //radians
             var angle = 0;
             var svgEle = $(initialSet.ele );
             var tagName = svgEle.prop("tagName");
             this.wraper = initialSet.par;
+            this.sx = initialSet.sx;
+            this.sy = initialSet.sy;
+            this.cnt = initialSet.cnt;
 
-            for( var i = 0; i < initialSet.cnt; i++ ){
-                var dx = initialSet.sx + Math.cos( angle ) * initialSet.radius;
-                var dy = initialSet.sy + Math.sin( angle ) * initialSet.radius;
+            for( var i = 0; i < this.cnt; i++ ){
+                var dx = this.sx + Math.cos( angle ) * initialSet.radius;
+                var dy = this.sy  + Math.sin( angle ) * initialSet.radius;
 
                 var ele = svgEle.clone();
 
@@ -48,18 +51,29 @@ define(['jquery'], function ($){
                         break;
                 }
                 ele.appendTo( initialSet.par );
-                angle += radian;
+                angle += this.radian;
             }
             return this;
         }
-        , growRadius : function( radius ){
+       /* , growRadius : function( radius ) {
             var tar = this.wraper.children();
             var rad = radius || 100;
+            var angle = 0;
+            var radian = 0;
 
-            //아 퇴근 12시에해서 매일 10분씩 과제한다고 머빠진다 진짜 ...
-            //낼 반지름 커지는거 작업
+            var set = setInterval(function(){ radian++; animation.call(svg) },50);
 
-        }
+            function animation() {
+                for (var i = 0; i < this.cnt; i++) {
+                    var dx = this.sx + Math.cos(angle) * radian;
+                    var dy = this.sy + Math.sin(angle) * radian;
+
+                    tar.eq(i).attr({cx: dx, cy: dy, r: 10, fill: "red"});
+
+                    angle += this.radian;
+                }
+            }
+        }*/
     }
 
     return svg;
