@@ -9,13 +9,13 @@ jui.define("chart.brush.template", [ "handler", "util.base" ], function(handler,
 
             g.each(function(i, circle) {
                 circle.attr({
-                    r:retList[i].r,
                     cx: retList[i].cx,
                     cy: retList[i].cy,
                     fill: retList[i].fill,
-                    'fill-opacity': retList[i]["fill-opacity"],
                     visibility: "visible"
                 });
+                if( retList[i].r ){ circle.attr({ r:retList[i].r }); }
+                if( retList[i]["fill-opacity"] ){ circle.attr({ 'fill-opacity': retList[i]["fill-opacity"] }); }     
             });
         }
 
