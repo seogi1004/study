@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <script type="text/javascript">
+        var DrawPosCircle = (function(){
+
+            var _public = {}, svg, total, cx, cy, degree, radian;
+
+            function init(obj){
+
+                total = obj.total || 60;
+                cx = obj.cx || 300;
+                cy = obj.cy || 250;
+
+                //cr = 4;
+                //radius = 100;
+
+                makeSVG();
+            }
+
+            function makeSVG(){
+                svg = SVGElements("svg", {
+                    "width": 600,
+                    "height": 500,
+                    "style": "background-color: #000"
+                });
+                document.body.appendChild(svg);
+            }
+
+            function makeSVGCircle(obj){
+                var svgCircle;
+                for(var i = 0; i < total; i++) {
+                    degree = ( 360 / total ) * i;
+                    radian = getRadian(degree);
+
+                    svgCircle = SVGElements("circle", {
+                     "cx": posCircle.getX(radian, obj.radius) + cx,
+                     "cy": posCircle.getY(radian, obj.radius) + cy,
+                     "r": obj.cr,
+                     "style": obj.style
+                     });
+                     svg.appendChild(svgCircle);
+                }
+            }
+
+            function makeSVGLine(obj){
+                var svgLine, lineLen;
+                for(var i = 0; i < total; i++) {
+                    degree = ( 360 / total ) * i;
+                    radian = getRadian(degree);
+                    i % 5 ? lineLen = 5 : i % 10 ? lineLen = 15 : lineLen = 10;
+                    svgLine = SVGElements("line", {
+                        "x1": posCircle.getX(radian, obj.radius) + cx,
+                        "y1": posCircle.getY(radian, obj.radius) + cy,
+                        "x2": posCircle.getX(radian, obj.radius - lineLen) + cx,
+                        "y2": posCircle.getY(radian, obj.radius - lineLen) + cy,
+                        "style": obj.style
+                    });
+                    svg.appendChild(svgLine);
+                }
+            }
+
+            var posCircle = {
+                getX: function(radian, radius){
+                    return Math.cos(radian) * radius;
+                },
+                getY: function(radian, radius){
+                    return Math.sin(radian) * radius;
+                }
+            }
+
+            function getRadian(degree){
+                return degree / 180 * Math.PI;
+            }
+
+            function SVGElements(element, obj){
+                var svgEl, xmlns = "http://www.w3.org/2000/svg";
+                svgEl = document.createElementNS(xmlns, element);
+                for( name in obj){
+                    svgEl.setAttribute(name, obj[name]);
+                }
+                return svgEl;
+            }
+
+            _public.init = init;
+            _public.makeSVGCircle = makeSVGCircle;
+            _public.makeSVGLine = makeSVGLine;
+            return _public;
+
+            /*if(!window.requestAnimationFrame){
+                window.requestAnimationFrame = (function(){
+                    return  window.requestAnimationFrame       ||
+                            window.webkitRequestAnimationFrame ||
+                            window.mozRequestAnimationFrame    ||
+                            window.oRequestAnimationFrame      ||
+                            window.msRequestAnimationFrame     ||
+                            function(callback){
+                                window.setTimeout(callback, 1000 / 60);
+                            };
+                })();
+            }*/
+        })();
+
+        DrawPosCircle.init({total: 60, cx: 300, cy: 250});
+        DrawPosCircle.makeSVGCircle({cr: 2, radius: 100, style: "fill:#fff"});
+        DrawPosCircle.makeSVGLine({cr: 5, radius: 100, style: "stroke:rgb(255,255,255);stroke-width:2"});
+    </script>
+</body>
+</html>
