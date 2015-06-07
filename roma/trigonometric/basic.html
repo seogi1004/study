@@ -14,9 +14,11 @@
             }
 
             function makeSVG(obj){
+                var width = obj.width || 400;
+                var height = obj.height || 300;
                 svg = SVGElements("svg", {
-                    "width": obj.width,
-                    "height": obj.height,
+                    "width": width,
+                    "height": height,
                     "style": obj.style
                 });
                 doc.body.appendChild(svg);
