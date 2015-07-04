@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>How to use text in SVG</title>
+<meta charset="utf-8">
+<script src="../lib/slides.js"></script>
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../lib/jui.chart.min.js"></script>
+<script src="../lib/utility.js"></script>
+<link rel="stylesheet" type="text/css" href="index.css">
+<style>
+    iframe {
+        border-width: 0px !important;
+    }
+</style>
+</head>
+
+<body style="display: none">
+
+<section class='slides layout-regular template-default'>
+    <article>
+        <h1>
+            JavaScript Functions
+        </h1>
+        <p>
+            Alvin Hong
+            <br>
+            July 4, 2015
+        </p>
+    </article>
+
+    <article>
+        <h2>
+            Function Declaration (FD)
+        </h2>
+    </article>
+
+    <article>
+        <h4>Features</h4>
+
+        <ul>
+            <li>함수 이름을 설정해야 함</li>
+            <li>변수 객체(VO)에 영향을 미침</li>
+            <li>컨텍스트 진입시 생성됨</li>
+        </ul>
+<br/>
+
+        <pre>
+function exampleFunc() {
+  ...
+}</pre>
+    </article>
+    <article>
+        <p>컨텍스트 내의 모든 위치에서 실행 가능 (Hoisting)</p>
+        <pre>
+foo();
+
+function foo() {
+    alert('foo');
+}</pre>
+        <br/>
+
+        <p>FD 위치에 따라 컨텍스트가 달라짐</p>
+        <pre>
+// function can be declared:
+// 1) directly in the global context
+function globalFD() {
+  // 2) or inside the body
+  // of another function
+  function innerFD() {}
+}</pre>
+    </article>
+    <article>
+        <h4>QA</h4>
+
+        <p>FD은 컨텍스트 진입시 생성되는 특성이 있음</p>
+        <pre>
+if (true) {
+  function foo() {
+    alert(0);
+  }
+} else {
+  function foo() {
+    alert(1);
+  }
+}
+
+foo(); // 1 or 0 ? test in different implementations</pre>
+    </article>
+
+    <article>
+        <h2>
+            Function Expression (FE)
+        </h2>
+    </article>
+
+    <article>
+        <h4>Features</h4>
+
+        <ul>
+            <li>함수 이름을 설정하지 않아도 됨</li>
+            <li>변수 객체(VO)에 영향을 미치지 않음</li>
+            <li>코드 실행 단계에 생성됨</li>
+        </ul>
+<br/>
+
+        <p>익명 함수(anonymous FE)를 foo 변수에 할당함</p>
+        <pre>
+var foo = function() {
+  ...
+};</pre>
+        <pre>
+var foo = function _foo() {
+  ...
+};</pre>
+    </article>
+
+    <article>
+        <p>FE는 다음과 같이 사용할 수 있음</p>
+        <pre>
+// in parentheses (grouping operator) can be only an expression
+(function foo() {});
+
+// in the array initialiser – also only expressions
+[function bar() {}];
+
+// comma also operates with expressions
+1, function baz() {};</pre>
+<br/>
+        <p>FE는 코드 실행 단계에서 생성되고, VO에 저장되지 않음</p>
+        <pre>
+alert(foo);
+
+(function foo() {});
+
+alert(foo);</pre>
+    </article>
+
+    <article>
+        <h4>Encapsulation</h4>
+
+        <p>캡슐화 된 스코프의 생성은 외부 컨텍스트로부터 데이터를 숨길 수 있다.</p>
+        <pre>
+var foo = {};
+
+(function initialize() {
+  var x = 10;
+
+  foo.bar = function () {
+    alert(x);
+  };
+})();
+
+foo.bar();
+alert(x);</pre>
+    </article>
+
+    <article>
+        <h4>Why use parentheses ()</h4>
+
+        <ul>
+            <li>표준에 따르면 표현식은 중괄호로 시작할 수 없음</li>
+            <li>함수 선언과 구분하기 위함</li>
+        </ul>
+<br/>
+        <p>아래 코드는 모두 에러가 발생함</p>
+        <pre>
+function () {
+  ...
+}();
+
+// or even with a name
+function foo() {
+  ...
+}();</pre>
+    </article>
+
+    <article>
+        <h4>Kind of parenthesis ()</h4>
+
+        <p>괄호는 표현식과 그룹 연산자 두가지 형태가 있기 때문에 이를 구분할 수 있어야 함</p>
+        <pre>
+// "foo" is a function declaration
+// and is created on entering the context
+
+alert(foo); // function
+
+function foo(x) {
+  alert(x);
+}(1); // and this is just a grouping operator
+
+foo(10);</pre>
+    </article>
+
+    <article>
+        <p>괄호는 표현식과 그룹 연산자 두가지 형태로 사용</p>
+        <pre>
+// function declaration
+function foo(x) {
+  alert(x);
+}
+
+// a grouping operator
+// with the expression
+(1);
+
+// another grouping operator with
+// another (function) expression
+(function () {});
+
+// also - the expression inside
+("foo");</pre>
+    </article>
+
+    <article>
+        <h4>Advanced</h4>
+
+        <p>자바스크립트 파서가 함수 표현 위치를 알고 있다면 괄호는 필요 없음</p>
+        <pre>
+var foo = {
+  bar: function (x) {
+    return x % 2 != 0 ? 'yes' : 'no';
+  }(1)
+};
+
+alert(foo.bar);</pre>
+    </article>
+
+    <article>
+        <p>다음과 같은 방법으로 함수를 FE로 변환시킬 수 있음</p>
+        <pre>
+1, function () {
+  alert('anonymous function is called');
+}();
+
+// or this one
+!function () {
+  alert('ECMAScript');
+}();</pre>
+<br/>
+        <p>하지만 괄호를 사용하는 것이 가장 좋은 방법이라고 알려져 있음</p>
+        <pre>
+(function () {})();
+(function () {}());</pre>
+    </article>
+</section>
+
+</body>
+</html>

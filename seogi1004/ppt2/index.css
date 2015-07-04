@@ -1,0 +1,13 @@
+ul > li {
+    font-size : 20px;
+    margin-bottom : 0px;
+}
+
+p {
+    font-size : 20px;
+}
+
+.prettyprint {
+    margin-top : 20px;
+    margin-bottom : 20px;
+}
