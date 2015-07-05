@@ -71,9 +71,9 @@ function globalFD() {
 }</pre>
     </article>
     <article>
-        <h4>QA</h4>
+        <h4>Test</h4>
 
-        <p>FD은 컨텍스트 진입시 생성되는 특성이 있음</p>
+        <p>FD는 컨텍스트 진입시 생성되는 특성이 있음</p>
         <pre>
 if (true) {
   function foo() {
@@ -104,12 +104,13 @@ foo(); // 1 or 0 ? test in different implementations</pre>
         </ul>
 <br/>
 
-        <p>익명 함수(anonymous FE)를 foo 변수에 할당함</p>
         <pre>
+// anonymous FE
 var foo = function() {
   ...
 };</pre>
         <pre>
+// named FE
 var foo = function _foo() {
   ...
 };</pre>
@@ -242,6 +243,66 @@ alert(foo.bar);</pre>
         <pre>
 (function () {})();
 (function () {}());</pre>
+    </article>
+
+    <article>
+        <h2>
+            Execution Context (EC)
+        </h2>
+    </article>
+
+    <article>
+        <h4>EC stack</h4>
+        <p>ECMA 스크립트 코드는 다음으로 나뉘며, 모든 코드는 EC에 의해 검증</p>
+        <ul style="margin-top: 10px;">
+            <li>global code</li>
+            <li>function code</li>
+            <li>eval code</li>
+        </ul>
+        <br/>
+
+        <p>EC는 다른 컨텍스트를 활성화 시킬 수 있으며, 이는 논리적으로 EC stack라는 스택으로 구현됨</p>
+        <img src="img3.png" />
+        <img src="img4.png" align="right" />
+    </article>
+
+    <article>
+        <h4>EC structure</h4>
+        <p>EC는 다음과 같이 추상적인 단순 객체로 표현할 수 있음</p>
+
+        <img src="img1.png"/>
+    </article>
+
+    <article>
+        <h4>Variable object</h4>
+        <ul>
+            <li>EC와 연관된 데이터 컨테이너</li>
+            <li>컨텍스트 내의 변수나 함수 선언을 정의하는 특수한 객체</li>
+            <li>FE는 VO에 포함되지 않음</li>
+        </ul>
+
+        <pre>
+var foo = 10;
+
+function bar() {} // function declaration, FD
+(function baz() {}); // function expression, FE</pre>
+
+        <img src="img5.png" />
+    </article>
+
+    <article>
+        <h4>Activation object</h4>
+        <p>함수가 호출되었을 때 (by the caller), 생성되는 특수한 객체</p>
+
+        <pre>
+function foo(x, y) {
+  var z = 30;
+  function bar() {} // FD
+  (function baz() {}); // FE
+}
+
+foo(10, 20);</pre>
+        <img src="img2.png" />
     </article>
 </section>
 
