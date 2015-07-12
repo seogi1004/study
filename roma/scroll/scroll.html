@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>scroll</title>
+    <style type="text/css">
+        #scrollBox { position:relative; width: 400px; height: 300px; overflow:hidden; background-color:#ccc; }
+        #scrollBtn { position:absolute; right:0; width:20px; height:40px; background-color:#666; cursor:pointer; }
+        #scrollInner { position: absolute; margin:0; width: 360px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="wheelvalue"></div>
+
+    <div id="scrollBox">
+        <div id="scrollBtn"></div>
+        <div id="scrollInner">
+            <p>네이버, 온라인 기부 플랫폼 ‘해피빈’ 10주년 맞아</p>
+            해피빈은 모금이 필요한 공익단체가 사연을 올리면, 기부자가 해당 단체의 사연을 보고 기부를 결정하게 하는 1세대 크라우드 펀딩 서비스다. 보다 많은 사람들이 기부를 경험해 볼 수 있도록 네이버 블로그나 카페 등을 이용하는 사용자에게 백 원의 가치를 가지는 가상 화폐 ‘콩’을 지급해왔다. 사용자가 받는 콩은 실제로 네이버와 기업의 후원금으로 공익단체 모금함에 기부되면 해피빈이 기부금을 단체에 전달한다.
+            <br><br>
+            사용자가 직접 기부금을 결제하는 ‘충전콩’도 있다. 작년 3월에는 모바일 해피빈 서비스를 선보여 모바일을 통해 기부자들이 시급한 모금 사안에 적시에 참여하거나 일상생활 가운데 기부 사연을 접하고 손쉽게 기부를 할 수 있도록 했다. 덕분에 모바일 해피빈의 기부자 중 85%가 충전콩으로 기부했으며 연간 결제 기부자 수도 모바일 서비스 이전에 비해 두 배 이상 증가했다.
+            <br><br>
+            지난 10년 간 다양한 서비스를 통해 기부 경험을 확대시켜온 해피빈은 보다 많은 공익 단체의 이야기를 소개하고 후원자의 참여를 더욱 이끌어 낼 수 있는 ‘공익 콘텐츠 참여 플랫폼’으로 서비스를 키워나갈 계획이다.
+            <br><br>
+            이 일환으로 지난 4월에는 모바일 해피빈 페이지를 개편하고 공익 콘텐츠의 유통을 강화했다. 공익 단체가 해피빈에 올리는 모금 소식뿐 아니라 전문가나 사회적 기업 등이 만드는 공익 콘텐츠를 해피빈이 직접 발굴해 사용자에게 소개하는 식이다.
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        (function(window) {
+            var sc = document.getElementById("scrollBox");
+            var si = document.getElementById("scrollInner");
+            var sb = document.getElementById("scrollBtn");
+            var scrollH = sc.offsetHeight - si.offsetHeight;
+
+            var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel"; //FF doesn't recognize mousewheel as of FF3.x
+
+            if (document.attachEvent) //if IE (and Opera depending on user setting)
+                sc.attachEvent("on"+mousewheelevt, mouseWheelEvent);
+            else if (document.addEventListener) //WC3 browsers
+                sc.addEventListener(mousewheelevt, mouseWheelEvent, false);
+
+
+            function mouseWheelEvent(e){
+                var evt=window.event || e; //equalize event object
+                var delta = evt.detail? evt.detail*(-120)/2 : evt.wheelDelta/60; //check for detail first so Opera uses that instead of wheelDelta
+
+                var currPos=document.getElementById('scrollInner').offsetTop;
+                currPos = parseInt(currPos)+(delta*10);
+
+                if(currPos <= 0){
+                    if(currPos >= scrollH){
+                        si.style.top = currPos+"px";
+                        sb.style.top = currPos*-1+"px";
+                    }
+                }
+
+
+            }
+
+
+
+
+
+        })(window);
+
+    </script>
+</body>
+</html>
