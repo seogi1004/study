@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		.container{
+			width: 800px;
+			height: 500px;
+			overflow: hidden;
+			position: relative;
+		}	
+
+		.container .contents{
+			position: absolute;
+		}
+		
+		.container .scrollbar{
+			background-color: #EEE;
+		}
+
+
+		.scrollbar .handle{
+			position: absolute;
+			background-color: #AAA;
+		}
+
+		.container .blank{
+			background-color: #CCC;
+		}
+	</style>
+</head>
+<body>
+	
+	<div class="container">
+		<div class="contents">
+			<img src="img1.jpg">
+		</div>
+
+		<!-- <div class="v-scrollbar">
+			<div class="handle"></div>
+		</div> -->
+	</div>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="jquery.scroller.js"></script>
+	<script type="text/javascript">
+		$( '.container' ).scroller();
+	</script>
+</body>
+</html>
