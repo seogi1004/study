@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        #wrapper {
+            position: relative;
+            margin: 100px auto;
+        ;
+            width: 700px;
+            background-color: red;
+            overflow: hidden;
+        }
+
+        #content {
+            width: 2000px;
+            height: 300px;
+            background: linear-gradient(to right, rgba(180,221,180,1) 0%,rgba(0,36,0,1) 100%);
+        }
+    </style>
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="content"> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 </div>
+</div>
+
+<script type="text/javascript">
+    (function (_w, _d, _math) {
+
+        var utils = (function () {
+
+            var _u = {
+                extend: function (target, obj) {
+                    for (var i in obj) {
+                        target[i] = obj[i];
+                    }
+                },
+                addEvent: function (el, type, fn, capture) {
+                    el.addEventListener(type, fn, !!capture);
+                },
+                removeEvent: function (el, type, fn, capture) {
+                    el.removeEventListener(type, fn, !!capture);
+                },
+                hasClass: function (e, c) {
+                    var re = new RegExp("/(^|\\s)" + c + "(\\s|$)/");
+                    return re.test(e.className);
+                },
+                addClass: function (e, c) {
+                    if (_u.hasClass(e, c)) {
+                        return;
+                    }
+                    var arrClass = e.className.split(' ');
+                    arrClass.push(c);
+                    e.className = arrClass.join(' ');
+                },
+                removeClass: function () {
+                    if (!_u.hasClass(e, c)) {
+                        return;
+                    }
+                    var re = new RegExp("(^|\\s)" + c + "(\\s|$)", 'g');
+                    e.className = e.className.replace(re, ' ');
+                }
+            };
+
+            return _u;
+
+        })();
+
+        function Scroll(el, opts) {
+
+            var cl = arguments.callee;
+            if (!(this instanceof cl)) {
+                return new cl(el, opts);
+            }
+
+            this.wrapper = typeof el === "string" ? _d.querySelector(el) : el;
+            this.scroller = this.wrapper.children[0];
+            this.scrollerStyle = this.scroller.style;
+
+            this.options = {
+                mouseWheelSpeed: 20,
+                mouseWheel: true,
+                scrollbars: true,
+                startX: 0,
+                startY: 0,
+                scrollX: true,
+                scrollY: false
+            };
+
+            this.x = 0;
+            this.y = 0;
+
+            this._init();
+        }
+
+        Scroll.prototype = {
+            _init: function () {
+                this.scrollerStyle['transform'] = "translate(0px, 0px) translateZ(0px)";
+
+                this.wrapperWidth = this.wrapper.clientWidth;
+                this.scrollerWidth = this.scroller.offsetWidth;
+                this.maxScrollX = this.wrapperWidth - this.scrollerWidth;
+                this.hasHorizontalScroll = this.options.scrollX && this.maxScrollX < 0;
+
+                this._initEvents();
+
+                this._initIndicators();
+
+                if (this.options.mouseWheel) {
+                    this._initWheel();
+                }
+            },
+            _initIndicators: function () {
+                var indicator;
+
+                this.indicators = [];
+
+                if (this.options.scrollbars) {
+                    if (this.options.scrollX) {
+                        indicator = {
+                            el: createScrollbar('h', this.options.scrollbars)
+                        };
+                        this.wrapper.appendChild(indicator.el);
+                    }
+
+                    this.indicators.push(new Indicator(this, indicator));
+                }
+            },
+            _initEvents: function () {
+                var eventType = utils.addEvent, // remove?
+                        target = this.wrapper; // window?
+
+                eventType(this.wrapper, 'click', this, true);
+
+                eventType(this.wrapper, 'mousedown', this);
+                eventType(target, 'mousemove', this);
+                eventType(target, 'mousecancel', this);
+                eventType(target, 'mouseup', this);
+
+            },
+            _initWheel: function () {
+                utils.addEvent(this.wrapper, 'wheel', this);
+            },
+            _wheel: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var wheelDeltaX, wheelDeltaY, newX, newY;
+
+                if ('deltaX' in e) {
+                    wheelDeltaX = -e.deltaX;
+                    wheelDeltaY = -e.deltaY;
+                }
+
+                if (!this.hasVerticalScroll) {
+                    wheelDeltaX = wheelDeltaY;
+                    wheelDeltaY = 0;
+                }
+
+                newX = this.x + Math.round(wheelDeltaX);
+                newY = 0;
+
+
+                if (newX > 0) {
+                    newX = 0;
+                } else if (newX < this.maxScrollX) {
+                    newX = this.maxScrollX;
+                }
+
+                this.scrollTo(newX, newY);
+            },
+            _start: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+
+            scrollTo: function (x, y) {
+                this._translate(x, y);
+            },
+
+            _translate: function (x, y) {
+                this.scrollerStyle['transform'] = 'translate(' + x + 'px,' + y + 'px) translateZ(0)';
+
+                this.x = x;
+                this.y = y;
+
+                if (this.indicators) {
+                    for (var i = this.indicators.length; i--;) {
+                        this.indicators[i].updatePosition();
+                    }
+                }
+            },
+
+            handleEvent: function (e) {
+                switch (e.type) {
+                    case 'wheel':
+                        this._wheel(e);
+                        break;
+                }
+            }
+        };
+
+        function Indicator(scroller, opts) {
+            this.wrapper = typeof opts.el == 'string' ? document.querySelector(opts.el) : opts.el;
+            this.wrapperStyle = this.wrapper.style;
+            this.indicator = this.wrapper.children[0];
+            this.indicatorStyle = this.indicator.style;
+            this.scroller = scroller;
+
+            this.options = {
+            };
+
+            for (var i in opts) {
+                this.options[i] = opts[i];
+            }
+
+            this.ratioX = 1;
+
+            this._init();
+        }
+
+        Indicator.prototype = {
+            _init: function () {
+                this.wrapperWidth = this.wrapper.clientWidth;
+                this.scrollerWidth = this.scroller.offsetWidth;
+
+                this.indicatorWidth = Math.max(Math.round(this.wrapperWidth * this.wrapperWidth / (this.scroller.scrollerWidth || this.wrapperWidth || 1)), 8);
+                this.indicatorStyle.width = this.indicatorWidth + 'px';
+
+                this.maxPosX = this.wrapperWidth - this.indicatorWidth;
+                this.ratioX = this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX);
+
+                utils.addEvent(this.indicator, 'mousedown', this);
+                utils.addEvent(window, 'mouseup', this);
+                //utils.addEvent(window, 'mousemove', this);
+                this.updatePosition();
+            },
+
+            updatePosition: function () {
+
+                var x = Math.round(this.ratioX * this.scroller.x) || 0;
+                this.indicatorStyle['transform'] = 'translate(' + x + 'px, 0px) translateZ(0)';
+                this.x = x;
+            },
+            _start: function (e) {
+                console.log('start');
+                var point =  e;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                this.initiated = true;
+                this.moved = false;
+                this.lastPointX = point.pageX;
+                this.lastPointY = point.pageY;
+
+                utils.addEvent(window, 'mousemove', this);
+            },
+            _move: function (e) {
+                console.log('move');
+                var point = e, deltaX, newX;
+
+                this.moved = true;
+
+                deltaX = point.pageX - this.lastPointX;
+                this.lastPointX = point.pageX;
+
+                newX = this.x + deltaX;
+
+                this._pos(newX);
+
+                e.preventDefault();
+                e.stopPropagation();
+            },
+            _end: function (e) {
+                console.log('end');
+                e.preventDefault();
+                e.stopPropagation();
+
+                utils.removeEvent(window, 'mousemove', this);
+            },
+            _pos: function (x, y) {
+                if (x < 0) {
+                    x = 0;
+                } else if (x > this.maxPosX) {
+                    x = this.maxPosX;
+                }
+
+                x = _math.round(x / this.ratioX);
+                this.scroller.scrollTo(x, 0);
+            },
+            handleEvent: function (e) {
+                switch (e.type) {
+                    case 'mousedown':
+                        this._start(e);
+                        break;
+                    case 'mousemove':
+                        this._move(e);
+                        break;
+                    case 'mouseup':
+                        this._end(e);
+                        break;
+                }
+            }
+        };
+
+
+        function createScrollbar(direction, type) {
+            var scrollbar = _d.createElement('div'), indicator = _d.createElement('div');
+
+            if (type === true) {
+                scrollbar.style.cssText = 'position:absolute;z-index:9999';
+                indicator.style.cssText = 'box-sizing:border-box;position:absolute;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.9);border-radius:3px';
+            }
+
+            indicator.className = "scrollIndicator";
+
+            if (direction == 'h') {
+                if (type === true) {
+                    scrollbar.style.cssText += ';height:20px;left:2px;right:2px;bottom:0';
+                    indicator.style.height = '100%';
+                }
+                scrollbar.className = 'HScrollbar';
+            } else {
+                if (type === true) {
+                    scrollbar.style.cssText += ';width:20px;bottom:2px;top:2px;right:1px';
+                    indicator.style.width = '100%';
+                }
+                scrollbar.className = 'VScrollBar';
+            }
+
+            scrollbar.style.cssText += ';overflow:hidden';
+            scrollbar.appendChild(indicator);
+
+            return scrollbar;
+        }
+
+        _w.Scroll = Scroll;
+        _w.Scroll.util = utils;
+
+    })(window, document, Math);
+
+    testScroll = new Scroll('#wrapper');
+</script>
+</body>
+</html>
