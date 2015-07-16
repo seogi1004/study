@@ -1,71 +1,163 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>scroll</title>
-    <style type="text/css">
-        #scrollBox { position:relative; width: 400px; height: 300px; overflow:hidden; background-color:#ccc; }
-        #scrollBtn { position:absolute; right:0; width:20px; height:40px; background-color:#666; cursor:pointer; }
-        #scrollInner { position: absolute; margin:0; width: 360px; padding: 10px; }
-    </style>
-</head>
-<body>
+    <head>
+        <title>scroll</title>
+        <style type="text/css">
+            .bounds {
+                position: relative;
+                height: 400px;
+                /*border: 1px solid #999;*/
+                background-color: #ccc;
+                overflow: hidden;
+            }
+            .track {
+                position: absolute;
+                width: 20px;
+                height: 100%;
+                background-color: #eaeaea;
+            }
+            .handle {
+                position: absolute;
+                width: 20px;
+                background-color: #666;
+                border-radius: 10px;
+                cursor: default;
+            }
+            #content {
+                position: absolute;
+                width: 100%;
+                line-height: 0;
+            }
+        </style>
+    </head>
+    <body>
 
-    <div id="wheelvalue"></div>
+        <div style="width: 800px; border: 1px solid #ff0000;">
+            <div class="bounds">
+                <div id="content">
+                    <img src="http://img.s.nx.com/notice/20150703/board/rookie_gm_01.jpg" height="800" border="0">
 
-    <div id="scrollBox">
-        <div id="scrollBtn"></div>
-        <div id="scrollInner">
-            <p>네이버, 온라인 기부 플랫폼 ‘해피빈’ 10주년 맞아</p>
-            해피빈은 모금이 필요한 공익단체가 사연을 올리면, 기부자가 해당 단체의 사연을 보고 기부를 결정하게 하는 1세대 크라우드 펀딩 서비스다. 보다 많은 사람들이 기부를 경험해 볼 수 있도록 네이버 블로그나 카페 등을 이용하는 사용자에게 백 원의 가치를 가지는 가상 화폐 ‘콩’을 지급해왔다. 사용자가 받는 콩은 실제로 네이버와 기업의 후원금으로 공익단체 모금함에 기부되면 해피빈이 기부금을 단체에 전달한다.
-            <br><br>
-            사용자가 직접 기부금을 결제하는 ‘충전콩’도 있다. 작년 3월에는 모바일 해피빈 서비스를 선보여 모바일을 통해 기부자들이 시급한 모금 사안에 적시에 참여하거나 일상생활 가운데 기부 사연을 접하고 손쉽게 기부를 할 수 있도록 했다. 덕분에 모바일 해피빈의 기부자 중 85%가 충전콩으로 기부했으며 연간 결제 기부자 수도 모바일 서비스 이전에 비해 두 배 이상 증가했다.
-            <br><br>
-            지난 10년 간 다양한 서비스를 통해 기부 경험을 확대시켜온 해피빈은 보다 많은 공익 단체의 이야기를 소개하고 후원자의 참여를 더욱 이끌어 낼 수 있는 ‘공익 콘텐츠 참여 플랫폼’으로 서비스를 키워나갈 계획이다.
-            <br><br>
-            이 일환으로 지난 4월에는 모바일 해피빈 페이지를 개편하고 공익 콘텐츠의 유통을 강화했다. 공익 단체가 해피빈에 올리는 모금 소식뿐 아니라 전문가나 사회적 기업 등이 만드는 공익 콘텐츠를 해피빈이 직접 발굴해 사용자에게 소개하는 식이다.
+                    <!--
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>마직막입니다..</p>
+                    -->
+                </div>
+                <div style="position: absolute; top: 0; right: 0; width: 20px; height: 100%;">
+                    <div class="track"><div class="handle"></div></div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <script type="text/javascript">
+        <script type="text/javascript">
 
-        (function(window) {
-            var sc = document.getElementById("scrollBox");
-            var si = document.getElementById("scrollInner");
-            var sb = document.getElementById("scrollBtn");
-            var scrollH = sc.offsetHeight - si.offsetHeight;
+            (function(window){
+                var _window = window, handle, track, bounds, content, dragObj, delta;
+                var boundsHeight, contentHeight, trackHeight, percent, hadleHeight;
+                function init(){
+                    defaultLayout();
+                    setLayOut();
+                    addEvent();
+                }
 
-            var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel"; //FF doesn't recognize mousewheel as of FF3.x
+                function defaultLayout(){
+                    handle = document.getElementsByClassName("handle")[0];
+                    track = document.getElementsByClassName("track")[0];
+                    bounds = document.getElementsByClassName("bounds")[0];
+                    content = document.getElementById("content");
+                }
 
-            if (document.attachEvent) //if IE (and Opera depending on user setting)
-                sc.attachEvent("on"+mousewheelevt, mouseWheelEvent);
-            else if (document.addEventListener) //WC3 browsers
-                sc.addEventListener(mousewheelevt, mouseWheelEvent, false);
+                function setLayOut(){
+                    boundsHeight =  bounds.offsetHeight;
+                    contentHeight = content.offsetHeight;
+                    trackHeight = track.offsetHeight;
+                    percent = (contentHeight - boundsHeight) / contentHeight;
+                    hadleHeight = Math.ceil(trackHeight - (trackHeight * percent));
+                    //percent = contentHeight / boundsHeight;
+                    //hadleHeight = Math.ceil(1 / percent * trackHeight);
+
+                    handle.style.height = hadleHeight + "px";
+                }
+
+                function addEvent(){
+                    var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
+                    if (document.attachEvent) //if IE (and Opera depending on user setting)
+                        content.attachEvent("on"+mousewheelevt, mouseWheelEvent);
+                    else if (document.addEventListener) //WC3 browsers
+                        content.addEventListener(mousewheelevt, mouseWheelEvent, false);
+
+                    _window.addEventListener("mousedown", handleDown, false);
+                }
+
+                function mouseWheelEvent(event){
+                    var evt = window.event || event //equalize event object
+                    var delta = evt.detail ? evt.detail * (-120) / 2 : evt.wheelDelta; // / 60;
+                    var limit = boundsHeight - contentHeight;
+                    var contentPosY = content.offsetTop + delta;
+                    content.style.top = Math.min(0, Math.max(contentPosY, limit)) + "px";
 
 
-            function mouseWheelEvent(e){
-                var evt=window.event || e; //equalize event object
-                var delta = evt.detail? evt.detail*(-120)/2 : evt.wheelDelta/60; //check for detail first so Opera uses that instead of wheelDelta
+                    var percent = content.offsetTop / (boundsHeight - contentHeight);
+                    var limit = trackHeight - hadleHeight;
+                    handle.style.top = Math.max(0, Math.min(limit*percent, trackHeight)) + "px";
 
-                var currPos=document.getElementById('scrollInner').offsetTop;
-                currPos = parseInt(currPos)+(delta*10);
+                    //movement();
+                }
 
-                if(currPos <= 0){
-                    if(currPos >= scrollH){
-                        si.style.top = currPos+"px";
-                        sb.style.top = currPos*-1+"px";
+                function handleDown(event) {
+                    if (~event.target.className.search(/handle/)) {
+                        dragObj = handleObj(event);
+                        _window.addEventListener("mousemove", handleDrag, false);
                     }
                 }
 
+                function handleDrag(event) {
+                    if ( typeof (dragObj.el.mouseup) == "undefined")
+                        _window.addEventListener("mouseup", handleUp, false);
 
-            }
+                    //console.log("Math.min("+ (event.clientY - dragObj.posY) +", " + dragObj.height+")");
+                    //console.log("Math.max("+dragObj.y +", Math.min("+ Math.min(event.clientY - dragObj.posY, dragObj.height)+"))");
+                    dragObj.el.style.top = Math.max(dragObj.y, Math.min(event.clientY - dragObj.posY, dragObj.height)) + "px";
 
 
+                    var limit = boundsHeight - contentHeight;
+                    var percent = handle.offsetTop / (trackHeight - hadleHeight);
+                    content.style.top = Math.min(0, Math.max(limit * percent, limit)) + "px";
 
+                    //movement();
+                }
 
+                function handleUp(event) {
+                    _window.removeEventListener("mousemove", handleDrag, false);
+                    _window.removeEventListener("mouseup", handleUp, false);
+                }
 
-        })(window);
+                function handleObj(event) {
+                    var obj = new Object(), target = event.target;
+                    obj.el = target;
+                    obj.y = target.parentNode.offsetTop;
+                    obj.height = obj.y + target.parentNode.offsetHeight - target.offsetHeight;
+                    obj.posY = event.clientY - target.offsetTop;
+                    return obj;
+                }
 
-    </script>
-</body>
+                function movement(){
+
+                }
+
+                _window.onload = init;
+
+            })(window);
+
+        </script>
+    </body>
 </html>
