@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>scroll</title>
+        <style type="text/css">
+            .bounds {
+                position: relative;
+                height: 400px;
+                /*border: 1px solid #999;*/
+                background-color: #ccc;
+                overflow: hidden;
+            }
+            .track {
+                position: absolute;
+                width: 20px;
+                height: 100%;
+                background-color: #eaeaea;
+            }
+            .handle {
+                position: absolute;
+                width: 20px;
+                background-color: #666;
+                border-radius: 10px;
+                cursor: default;
+            }
+            #content {
+                position: absolute;
+                width: 100%;
+                line-height: 0;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div style="width: 800px; border: 1px solid #ff0000;">
+            <div class="bounds">
+                <div id="content">
+                    <img src="http://img.s.nx.com/notice/20150703/board/rookie_gm_01.jpg" height="800" border="0">
+
+                    <!--
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>반갑습니다.</p>
+                    <p>마직막입니다..</p>
+                    -->
+                </div>
+                <div style="position: absolute; top: 0; right: 0; width: 20px; height: 100%;">
+                    <div class="track"><div class="handle"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            (function(window){
+                var _window = window, handle, track, bounds, content, dragObj, delta;
+                var boundsHeight, contentHeight, trackHeight, percent, hadleHeight;
+                function init(){
+                    defaultLayout();
+                    setLayOut();
+                    addEvent();
+                }
+
+                function defaultLayout(){
+                    handle = document.getElementsByClassName("handle")[0];
+                    track = document.getElementsByClassName("track")[0];
+                    bounds = document.getElementsByClassName("bounds")[0];
+                    content = document.getElementById("content");
+                }
+
+                function setLayOut(){
+                    boundsHeight =  bounds.offsetHeight;
+                    contentHeight = content.offsetHeight;
+                    trackHeight = track.offsetHeight;
+                    percent = (contentHeight - boundsHeight) / contentHeight;
+                    hadleHeight = Math.ceil(trackHeight - (trackHeight * percent));
+                    //percent = contentHeight / boundsHeight;
+                    //hadleHeight = Math.ceil(1 / percent * trackHeight);
+
+                    handle.style.height = hadleHeight + "px";
+                }
+
+                function addEvent(){
+                    var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
+                    if (document.attachEvent) //if IE (and Opera depending on user setting)
+                        content.attachEvent("on"+mousewheelevt, mouseWheelEvent);
+                    else if (document.addEventListener) //WC3 browsers
+                        content.addEventListener(mousewheelevt, mouseWheelEvent, false);
+
+                    _window.addEventListener("mousedown", handleDown, false);
+                }
+
+                function mouseWheelEvent(event){
+                    var evt = window.event || event //equalize event object
+                    var delta = evt.detail ? evt.detail * (-120) / 2 : evt.wheelDelta; // / 60;
+                    var limit = boundsHeight - contentHeight;
+                    var contentPosY = content.offsetTop + delta;
+                    content.style.top = Math.min(0, Math.max(contentPosY, limit)) + "px";
+
+
+                    var percent = content.offsetTop / (boundsHeight - contentHeight);
+                    var limit = trackHeight - hadleHeight;
+                    handle.style.top = Math.max(0, Math.min(limit*percent, trackHeight)) + "px";
+
+                    //movement();
+                }
+
+                function handleDown(event) {
+                    if (~event.target.className.search(/handle/)) {
+                        dragObj = handleObj(event);
+                        _window.addEventListener("mousemove", handleDrag, false);
+                    }
+                }
+
+                function handleDrag(event) {
+                    if ( typeof (dragObj.el.mouseup) == "undefined")
+                        _window.addEventListener("mouseup", handleUp, false);
+
+                    //console.log("Math.min("+ (event.clientY - dragObj.posY) +", " + dragObj.height+")");
+                    //console.log("Math.max("+dragObj.y +", Math.min("+ Math.min(event.clientY - dragObj.posY, dragObj.height)+"))");
+                    dragObj.el.style.top = Math.max(dragObj.y, Math.min(event.clientY - dragObj.posY, dragObj.height)) + "px";
+
+
+                    var limit = boundsHeight - contentHeight;
+                    var percent = handle.offsetTop / (trackHeight - hadleHeight);
+                    content.style.top = Math.min(0, Math.max(limit * percent, limit)) + "px";
+
+                    //movement();
+                }
+
+                function handleUp(event) {
+                    _window.removeEventListener("mousemove", handleDrag, false);
+                    _window.removeEventListener("mouseup", handleUp, false);
+                }
+
+                function handleObj(event) {
+                    var obj = new Object(), target = event.target;
+                    obj.el = target;
+                    obj.y = target.parentNode.offsetTop;
+                    obj.height = obj.y + target.parentNode.offsetHeight - target.offsetHeight;
+                    obj.posY = event.clientY - target.offsetTop;
+                    return obj;
+                }
+
+                function movement(){
+
+                }
+
+                _window.onload = init;
+
+            })(window);
+
+        </script>
+    </body>
+</html>
