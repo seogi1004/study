@@ -20,6 +20,7 @@ if (typeof jQuery === 'undefined') {
 
         this.init();
 
+        this.$element.on('mousewheel', $.proxy(this.wheelScollbar, this));
         this.$element.on('mousedown.scroll', '.thumb', $.proxy(this.dragSCrollbar, this));
         this.$element.on('mousedown', '.track', $.proxy(this.trackScrollbar, this));
         this.$element.on('mousedown', '.arrow', $.proxy(this.arrowScrollbar, this));
@@ -56,7 +57,7 @@ if (typeof jQuery === 'undefined') {
         this.$element.find('.thumb').css('height', thumbHeight);
     };
 
-    //화살표 클릭시
+    //화살표
     Scroll.prototype.arrowScrollbar = function(e){
 
         var $self = $(e.target);
@@ -70,13 +71,28 @@ if (typeof jQuery === 'undefined') {
         this.arrowCount++;
     };
 
-    //트랙 클릭시
+    //트랙
     Scroll.prototype.trackScrollbar = function(e){
         if(!$(e.target).hasClass('thumb')){
             var offsetY = e.offsetY;
             this.doScroll(offsetY, 'track');
         }
     };
+
+    //마우스
+    Scroll.prototype.wheelScollbar = function(e){
+
+        var $thumb = this.$element.find('.thumb');
+        var thumbY = parseFloat($thumb.css('top'));
+        var updateY = null;
+        var delta = (e.deltaY==1) ? -1 : 1;
+
+        updateY = thumbY + (this.options.wstep * delta);
+
+        $thumb.css('top', updateY);
+        this.doScroll(0, 'drag');
+
+    }
 
     //드래그시
     Scroll.prototype.dragSCrollbar = function(e){
@@ -92,8 +108,8 @@ if (typeof jQuery === 'undefined') {
 
         this.$document.on('mousemove.scroll', function(e){
 
-            var updatePos = thumbY + e.pageY - pageY;
-            $self.css('top', updatePos);
+            var updateY = thumbY + e.pageY - pageY;
+            $self.css('top', updateY);
 
             that.doScroll(0, 'drag');
 
@@ -116,6 +132,8 @@ if (typeof jQuery === 'undefined') {
         var limit = $track.height() - $thumb.height();
 
         if(type=='drag'){
+
+            console.log(delta);
 
             delta = parseInt($thumb.css('top')) + value * parseInt(this.options.wstep) / 100 * $thumb.outerHeight();
             delta = Math.min(Math.max(delta, 0), limit);
@@ -162,5 +180,6 @@ if (typeof jQuery === 'undefined') {
 }(jQuery);
 
 $(function(){
-    $('#example1').scroll()
+    $('#example1').scroll();
+    $('#example2').scroll()
 });
