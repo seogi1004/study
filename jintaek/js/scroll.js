@@ -36,10 +36,8 @@ if (typeof jQuery === 'undefined') {
     };
 
     Scroll.prototype.init = function(){
-
         this.setContainerStyle();
         this.setScrollStyle();
-
     };
 
     //컨테이너
@@ -53,8 +51,10 @@ if (typeof jQuery === 'undefined') {
     //스크롤바
     Scroll.prototype.setScrollStyle = function(){
         var $container = this.$element.find('.scroll_container');
-        var thumbHeight = Math.max(($container.outerHeight() / $container[0].scrollHeight) * $container.outerHeight(), this.options.barHeight);
+        var thumbHeight = Math.max(($container.outerHeight() / $container[0].scrollHeight) * $container.outerHeight(), this.options.barHeight)
         this.$element.find('.thumb').css('height', thumbHeight);
+
+        //console.log($container);
     };
 
     //화살표
@@ -127,13 +127,10 @@ if (typeof jQuery === 'undefined') {
         var $track = this.$element.find('.track')
         var $thumb = this.$element.find('.thumb');
 
-
         var delta = value;
         var limit = $track.height() - $thumb.height();
 
         if(type=='drag'){
-
-            console.log(delta);
 
             delta = parseInt($thumb.css('top')) + value * parseInt(this.options.wstep) / 100 * $thumb.outerHeight();
             delta = Math.min(Math.max(delta, 0), limit);
@@ -153,19 +150,26 @@ if (typeof jQuery === 'undefined') {
         if(type=='arrow'){
             delta = value;
             $thumb.animate({'top' : delta}, 300);
-            alert('고민중......');
+            //alert('고민중......');
         }
 
         this.moveRatio = (type == 'track') ? delta / limit : parseInt($thumb.css('top')) / limit; //비율
         delta = this.moveRatio * (this.$element.outerHeight() - this.$contents.outerHeight()) //비율 * 실제컨텐츠크기 - 컨테이너크기
 
-        this.$contents.css('top', delta);
+        if(type == 'track'){
+            this.$contents.animate({
+                'top' : delta
+            },300)
+        }else{
+            this.$contents.css('top', delta);
+        }
+
 
     };
 
-
     function Plugin(option) {
         return this.each(function () {
+
             var $this = $(this);
             var data = $this.data('scroll');
             var options = $.extend({}, Scroll.DEFAULTS, $this.data(), typeof option === 'object' && option);
@@ -180,6 +184,22 @@ if (typeof jQuery === 'undefined') {
 }(jQuery);
 
 $(function(){
-    $('#example1').scroll();
-    $('#example2').scroll()
+
+    //$('.customscroll').scroll({
+    //    width:600,
+    //    height:200,
+    //    wstep:10
+    //});
+
+    $('#example1').scroll({
+        width:600,
+        height:200,
+        wstep:10
+    });
+
+    $('#example2').scroll({
+        width:800,
+        height:100,
+        wstep:20
+    });
 });
