@@ -63,7 +63,7 @@ function blockContentSelect( disabled ){
 				if( _this.$content.length < 1 ){ throw Error( "[ERROR] Plugin 을 사용하기 위한 DOM의 구조를 확인해주세요." ); return; }
 
 				this.data = $.data( this );
-				// 기본 data
+				
 				$.data( this, "containerSize", {
 					'w':( this.opts.width === null ) ? $element.width() : this.opts.width,
 					'h':( this.opts.height === null ) ? $element.height() : this.opts.height
@@ -73,7 +73,6 @@ function blockContentSelect( disabled ){
 					'h':_this.$content.height()
 				});
 
-				/* scroll 적용을 위한 기본 css 적용 */
 				$element.css({
 					'position':"relative",
 					'width':this.data.containerSize.w,
@@ -97,9 +96,9 @@ function blockContentSelect( disabled ){
 				} else if( _this.opts.axis === "x" ){
 					
 				}
-				_this.renderScrollBar();
+				_this.addScrollBar();
 			},
-			renderScrollBar:function(){
+			addScrollBar:function(){
 				var $element = $(this.element),
 					_this = this;
 				var scrollbar = "";
@@ -133,7 +132,7 @@ function blockContentSelect( disabled ){
 						'postion':"relative",
 						'display':"block"
 					}).bind( "mousedown.scrollbar", function(e){
-						_this.startScrollbar( e, true );
+						_this.startHn( e, true );
 					});
 
 					_this.$thumb.css({
@@ -146,7 +145,7 @@ function blockContentSelect( disabled ){
 						'display':"block"
 					}).bind( "mousedown.scrollbar", function(e){
 						e.stopPropagation();
-						_this.startScrollbar( e );
+						_this.startHn( e );
 					});
 					
 				});
@@ -159,28 +158,28 @@ function blockContentSelect( disabled ){
 					'top':pos + "px"
 				});
 			},
-			startScrollbar:function( e, useTrack ){
+			startHn:function( e, useTrack ){
 				var _this = this;
 				blockContentSelect(true);
 				
 				_this.mousePos = ( useTrack ) ? _this.$thumb.offset().top : e.pageY;
 
 				$(document).bind( "mousemove.scrollbar", function(e){
-					_this.dragScrollbar(e); 
+					_this.dragHn(e); 
 				});
                 $(document).bind( "mouseup.scrollbar",  function(e){
-                	_this.endScrollbar(e); 
+                	_this.endHn(e); 
                 });
                 _this.$thumb.bind( "mouseup.scrollbar",  function(e){
-                	_this.endScrollbar(e);
+                	_this.endHn(e);
                 });
                 _this.$track.bind( "mouseup.scrollbar",  function(e){
-                	_this.endScrollbar(e);
+                	_this.endHn(e);
                 });
 
-                _this.dragScrollbar( e );
+                _this.dragHn( e );
 			},
-			dragScrollbar:function( e ){
+			dragHn:function( e ){
 				var _this = this;
 				
 				var currentMousePos = e.pageY,
@@ -193,7 +192,7 @@ function blockContentSelect( disabled ){
 				});
 				_this.contentScroll();
 			},
-			endScrollbar:function( e ){
+			endHn:function( e ){
 				var _this = this;
 				blockContentSelect(false);
 				
