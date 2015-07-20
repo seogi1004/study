@@ -7,30 +7,28 @@
         #wrapper {
             position: relative;
             margin: 100px auto;
-        ;
-            width: 700px;
+            width: 700px;height:300px;
             background-color: red;
             overflow: hidden;
         }
 
         #content {
             width: 2000px;
-            height: 300px;
-            background: linear-gradient(to right, rgba(180,221,180,1) 0%,rgba(0,36,0,1) 100%);
+            height: 800px;
+            background: linear-gradient(135deg, #d0e4f7 0%,#73b1e7 24%,#0a77d5 50%,#539fe1 79%,#87bcea 100%);
         }
     </style>
 </head>
 <body>
 
 <div id="wrapper">
-    <div id="content"> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 </div>
+    <div id="content"> 1 <br />2 <br />3 <br />4 <br />5 <br />6 <br />7 <br />8 <br />9 <br />10</div>
 </div>
 
 <script type="text/javascript">
     (function (_w, _d, _math) {
 
         var utils = (function () {
-
             var _u = {
                 extend: function (target, obj) {
                     for (var i in obj) {
@@ -63,9 +61,7 @@
                     e.className = e.className.replace(re, ' ');
                 }
             };
-
             return _u;
-
         })();
 
         function Scroll(el, opts) {
@@ -86,59 +82,66 @@
                 startX: 0,
                 startY: 0,
                 scrollX: true,
-                scrollY: false
+                scrollY: true
             };
 
             this.x = 0;
             this.y = 0;
-
             this._init();
         }
 
         Scroll.prototype = {
+
             _init: function () {
                 this.scrollerStyle['transform'] = "translate(0px, 0px) translateZ(0px)";
-
                 this.wrapperWidth = this.wrapper.clientWidth;
+                this.wrapperHeight = this.wrapper.clientHeight;
                 this.scrollerWidth = this.scroller.offsetWidth;
+                this.scrollerHeight = this.scroller.offsetHeight;
                 this.maxScrollX = this.wrapperWidth - this.scrollerWidth;
+                this.maxScrollY = this.wrapperHeight - this.scrollerHeight;
                 this.hasHorizontalScroll = this.options.scrollX && this.maxScrollX < 0;
-
+                this.hasVerticalScroll = this.options.scrollY && this.maxScrollY < 0;
                 this._initEvents();
-
                 this._initIndicators();
-
                 if (this.options.mouseWheel) {
                     this._initWheel();
                 }
             },
             _initIndicators: function () {
-                var indicator;
-
+                var indicator, indicators = [];
                 this.indicators = [];
-
                 if (this.options.scrollbars) {
+                    // horizontal scroll
                     if (this.options.scrollX) {
                         indicator = {
                             el: createScrollbar('h', this.options.scrollbars)
                         };
                         this.wrapper.appendChild(indicator.el);
+                        indicators.push(indicator);
                     }
 
-                    this.indicators.push(new Indicator(this, indicator));
+                    // vertical scroll
+                    if (this.options.scrollY) {
+                        indicator = {
+                            el: createScrollbar('v', this.options.scrollbars)
+                        };
+                        this.wrapper.appendChild(indicator.el);
+                        indicators.push(indicator);
+                    }
+                }
+                for (var i = indicators.length; i--;) {
+                    this.indicators.push(new Indicator(this, indicators[i]));
                 }
             },
             _initEvents: function () {
                 var eventType = utils.addEvent, // remove?
                         target = this.wrapper; // window?
-
                 eventType(this.wrapper, 'click', this, true);
-
                 eventType(this.wrapper, 'mousedown', this);
                 eventType(target, 'mousemove', this);
                 eventType(target, 'mousecancel', this);
                 eventType(target, 'mouseup', this);
-
             },
             _initWheel: function () {
                 utils.addEvent(this.wrapper, 'wheel', this);
@@ -146,53 +149,46 @@
             _wheel: function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
                 var wheelDeltaX, wheelDeltaY, newX, newY;
-
                 if ('deltaX' in e) {
                     wheelDeltaX = -e.deltaX;
                     wheelDeltaY = -e.deltaY;
                 }
-
                 if (!this.hasVerticalScroll) {
                     wheelDeltaX = wheelDeltaY;
                     wheelDeltaY = 0;
                 }
-
                 newX = this.x + Math.round(wheelDeltaX);
-                newY = 0;
-
-
+                newY = this.y + Math.round(wheelDeltaY);
                 if (newX > 0) {
                     newX = 0;
                 } else if (newX < this.maxScrollX) {
                     newX = this.maxScrollX;
                 }
-
+                if (newY > 0) {
+                    newY = 0;
+                } else if (newY < this.maxScrollY) {
+                    newY = this.maxScrollY;
+                }
                 this.scrollTo(newX, newY);
             },
             _start: function (e) {
                 e.preventDefault();
                 e.stopPropagation();
             },
-
             scrollTo: function (x, y) {
                 this._translate(x, y);
             },
-
             _translate: function (x, y) {
                 this.scrollerStyle['transform'] = 'translate(' + x + 'px,' + y + 'px) translateZ(0)';
-
                 this.x = x;
                 this.y = y;
-
                 if (this.indicators) {
                     for (var i = this.indicators.length; i--;) {
                         this.indicators[i].updatePosition();
                     }
                 }
             },
-
             handleEvent: function (e) {
                 switch (e.type) {
                     case 'wheel':
@@ -201,76 +197,79 @@
                 }
             }
         };
-
         function Indicator(scroller, opts) {
             this.wrapper = typeof opts.el == 'string' ? document.querySelector(opts.el) : opts.el;
             this.wrapperStyle = this.wrapper.style;
             this.indicator = this.wrapper.children[0];
             this.indicatorStyle = this.indicator.style;
             this.scroller = scroller;
-
             this.options = {
             };
-
             for (var i in opts) {
                 this.options[i] = opts[i];
             }
-
             this.ratioX = 1;
+            this.ratioY = 1;
+            this.maxPosX = 0;
+            this.maxPosY = 0;
 
             this._init();
         }
-
         Indicator.prototype = {
             _init: function () {
                 this.wrapperWidth = this.wrapper.clientWidth;
-                this.scrollerWidth = this.scroller.offsetWidth;
+                this.wrapperHeight = this.wrapper.clientHeight;
 
-                this.indicatorWidth = Math.max(Math.round(this.wrapperWidth * this.wrapperWidth / (this.scroller.scrollerWidth || this.wrapperWidth || 1)), 8);
+                this.indicatorWidth = _math.max(_math.round(this.wrapperWidth * this.wrapperWidth / (this.scroller.scrollerWidth || this.wrapperWidth || 1)), 20);
                 this.indicatorStyle.width = this.indicatorWidth + 'px';
-
                 this.maxPosX = this.wrapperWidth - this.indicatorWidth;
                 this.ratioX = this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX);
+
+                // bar 의 크기. 스크롤영역과 전체 컨텐츠 영역의 비율에 스크롤 영역의 크기만큼.
+                this.indicatorHeight = _math.max(_math.round(this.wrapperHeight * this.wrapperHeight / (this.scroller.scrollerHeight || this.wrapperHeight || 1)), 20);
+                this.indicatorStyle.height = this.indicatorHeight + 'px';
+                this.maxPosY = this.wrapperHeight - this.indicatorHeight;
+                this.ratioY = this.scroller.maxScrollY && (this.maxPosY / this.scroller.maxScrollY);
 
                 utils.addEvent(this.indicator, 'mousedown', this);
                 utils.addEvent(window, 'mouseup', this);
                 //utils.addEvent(window, 'mousemove', this);
                 this.updatePosition();
             },
-
             updatePosition: function () {
+                var x, y;
 
-                var x = Math.round(this.ratioX * this.scroller.x) || 0;
-                this.indicatorStyle['transform'] = 'translate(' + x + 'px, 0px) translateZ(0)';
+                // y = ax + b 꼴의 1차 함수. 임의의 좌표 x에 대한 y값은 x에 기울기(여기서는 스크롤의 비율)을 곱함으로서 얻을 수 있다.
+                x = Math.round(this.ratioX * this.scroller.x) || 0;
+                y = Math.round(this.ratioY * this.scroller.y) || 0;
+
+                this.indicatorStyle['transform'] = 'translate(' + x + 'px, ' + y + 'px) translateZ(0)';
+
                 this.x = x;
+                this.y = y;
             },
             _start: function (e) {
                 console.log('start');
-                var point =  e;
-
+                var point = e;
                 e.preventDefault();
                 e.stopPropagation();
-
                 this.initiated = true;
                 this.moved = false;
                 this.lastPointX = point.pageX;
                 this.lastPointY = point.pageY;
-
                 utils.addEvent(window, 'mousemove', this);
             },
             _move: function (e) {
                 console.log('move');
-                var point = e, deltaX, newX;
-
+                var point = e, deltaX, deltaY, newX, newY;
                 this.moved = true;
-
                 deltaX = point.pageX - this.lastPointX;
+                deltaY = point.pageY - this.lastPointY;
                 this.lastPointX = point.pageX;
-
+                this.lastPointY = point.pageY;
                 newX = this.x + deltaX;
-
-                this._pos(newX);
-
+                newY = this.y + deltaY;
+                this._pos(newX, newY);
                 e.preventDefault();
                 e.stopPropagation();
             },
@@ -278,7 +277,6 @@
                 console.log('end');
                 e.preventDefault();
                 e.stopPropagation();
-
                 utils.removeEvent(window, 'mousemove', this);
             },
             _pos: function (x, y) {
@@ -287,9 +285,16 @@
                 } else if (x > this.maxPosX) {
                     x = this.maxPosX;
                 }
+                if (y < 0) {
+                    y = 0;
+                } else if (y > this.maxPosY) {
+                    y = this.maxPosY;
+                }
 
-                x = _math.round(x / this.ratioX);
-                this.scroller.scrollTo(x, 0);
+                x = _math.round(x / this.ratioX) || this.scroller.x;
+                y = _math.round(y / this.ratioY) || this.scroller.y;
+
+                this.scroller.scrollTo(x, y);
             },
             handleEvent: function (e) {
                 switch (e.type) {
@@ -306,34 +311,28 @@
             }
         };
 
-
         function createScrollbar(direction, type) {
             var scrollbar = _d.createElement('div'), indicator = _d.createElement('div');
-
             if (type === true) {
-                scrollbar.style.cssText = 'position:absolute;z-index:9999';
+                scrollbar.style.cssText = 'position:absolute;z-index:9999;';
                 indicator.style.cssText = 'box-sizing:border-box;position:absolute;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.9);border-radius:3px';
             }
-
             indicator.className = "scrollIndicator";
-
             if (direction == 'h') {
                 if (type === true) {
-                    scrollbar.style.cssText += ';height:20px;left:2px;right:2px;bottom:0';
+                    scrollbar.style.cssText += 'height:20px;left:2px;right:2px;bottom:0';
                     indicator.style.height = '100%';
                 }
                 scrollbar.className = 'HScrollbar';
             } else {
                 if (type === true) {
-                    scrollbar.style.cssText += ';width:20px;bottom:2px;top:2px;right:1px';
+                    scrollbar.style.cssText += 'width:20px;bottom:2px;top:2px;right:1px';
                     indicator.style.width = '100%';
                 }
                 scrollbar.className = 'VScrollBar';
             }
-
             scrollbar.style.cssText += ';overflow:hidden';
             scrollbar.appendChild(indicator);
-
             return scrollbar;
         }
 
