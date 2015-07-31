@@ -83,16 +83,3 @@
 
     window.Rect = Rect;
 }());
-
-
-
-
-var rect = {
-
-    points:[ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ],
-    setSize:function( w, h ){
-        this.points[ 1 ].x = this.points[ 0 ].x + width;
-        this.points[ 1 ].x = this.points[ 0 ].x + width;
-    }
-
-}
