@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../xy_tpl/jui.chart.min.js"></script>
+<script src="../xy_tpl/coordinate.js"></script>
+<style>
+    div {
+        display: inline;
+        margin-right: 10px;
+    }
+</style>
+<script>
+jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                g.append(this.chart.svg.circle({
+                    fill: this.color(i),
+                    r: 3,
+                    cx: this.axis.x(data.x),
+                    cy: this.axis.y(data.y)
+                }));
+            });
+
+            return g;
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+// 일차변환과 도형, https://www.youtube.com/watch?v=fNT-Q2CP0f4
+jui.ready([ "chartx.coordinate" ], function(builder) {
+    var data1 = [],
+        data2 = [];
+
+    for(var x = -5; x < 5; x++) {
+        // 일차함수: y = x + 1의 직선
+        data1.push(getFunc1(x, 1, 1));
+    }
+
+    for(var x = -5; x < 5; x++) {
+        data2.push(getFunc2(x, 1, 1));
+    }
+
+    builder("#chart1", {
+        width: 500,
+        height: 500,
+        domain: [ -15, 15 ],
+        brush: "template",
+        data: data1
+    });
+
+    builder("#chart2", {
+        width: 500,
+        height: 500,
+        domain: [ -15, 15 ],
+        brush: "template",
+        data: data2
+    });
+});
+
+// 일차함수 (직선의 방정식)
+function getFunc1(x, a, b) {
+    return {
+        x: x,
+        y: a * x + b
+    }
+}
+
+function getFunc2(x, a, b) {
+    // 역행렬 구하기
+    var ma = 2,
+        mb = 5,
+        mc = 1,
+        md = 3;
+
+    var t = ma * md - mb * mc,
+        tmp = ma;
+
+    ma = t * md;
+    mb = t * -mb;
+    mc = t * -mc;
+    md = t * tmp;
+
+    console.log(ma, mb, mc, md);
+    console.log(x, a, b);
+
+    return getFunc1(x, 4/7, 1/7);
+}
+</script>
+</head>
+
+<body>
+<div id="chart1"></div>
+<div id="chart2"></div>
+</body>
+</html>
