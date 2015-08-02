@@ -55,7 +55,7 @@ define(['jquery'], function ($){
             }
             return this;
         }
-       /* , growRadius : function( radius ) {
+       , growRadius : function( radius ) {
             var tar = this.wraper.children();
             var rad = radius || 100;
             var angle = 0;
@@ -73,7 +73,7 @@ define(['jquery'], function ($){
                     angle += this.radian;
                 }
             }
-        }*/
+        }
     }
 
     return svg;
