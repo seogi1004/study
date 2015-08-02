@@ -50,11 +50,11 @@
         rotateZ:function( a ){
             a = a/180*Math.PI;
             /*
-             | a, b, c || cosA, -sinA, 0 |
-             | d, e, f || sinA, cosA,  0 |
-             | g, h, i ||    0,    0,  1 |
-             */
-            var cosA = Math.cos( a );
+                 | a, b, c || cosA, -sinA, 0 |
+                 | d, e, f || sinA, cosA,  0 |
+                 | g, h, i ||    0,    0,  1 |
+                 */
+                var cosA = Math.cos( a );
             var sinA = Math.sin( a );
             return this.getPoints( {
                 a : cosA,

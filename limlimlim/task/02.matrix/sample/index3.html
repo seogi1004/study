@@ -16,6 +16,22 @@ jui.define("chart.brush.template", [ "util.base", "util.math" ], function(_, mat
         this.draw = function() {
             var g = this.chart.svg.group();
 
+            var path = this.chart.svg.path({
+                fill: this.color(0),
+                "fill-opacity": 0.1,
+                stroke: this.color(1),
+                "stroke-width": 1
+            });
+
+            path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+            path.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+            path.LineTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+            path.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+            path.LineTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+
+            g.append(path);
+
+            /*/
             this.eachData(function(i, data) {
                 g.append(this.chart.svg.circle({
                     fill: this.color(i),
@@ -24,6 +40,7 @@ jui.define("chart.brush.template", [ "util.base", "util.math" ], function(_, mat
                     cy: this.axis.y(data.y)
                 }));
             });
+            /**/
 
             return g;
         }

@@ -16,6 +16,8 @@ jui.define("chart.brush.template", [ "util.base", "util.math" ], function(_, mat
         this.draw = function() {
             var g = this.chart.svg.group();
 
+
+
             this.eachData(function(i, data) {
                 g.append(this.chart.svg.circle({
                     fill: this.color(i),
