@@ -1,11 +1,16 @@
 
 ( function(){
+
+    var distance = 15;
+
     function Rect( w, h ){
+        var w2 = w/2;
+        var h2 = h/2;
         this.points = [
-            { x:0, y:0, z:0 },
-            { x:w, y:0, z:0 },
-            { x:w, y:h, z:0 },
-            { x:0, y:h, z:0 }
+            { x:-w2, y:h2, z:0 },
+            { x:w2, y:h2, z:0 },
+            { x:w2, y:-h2, z:0 },
+            { x:-w2, y:-h2, z:0 }
         ];
         this.width = w;
         this.height = h;
@@ -14,27 +19,32 @@
     Rect.prototype = {
         getPoints : function( m ){
             /*
-             |a, b, c| |x|
-             |d, e, f| |y|
-             |g, h, i| |z|
+            |a, b, c| |x|
+            |d, e, f| |y|
+            |g, h, i| |z|
              */
             var points = this.points;
             var point;
             var x, y, z, scale = 0;
             var result = null;
-
             for( var i= 0, count=points.length ; i<count ; i+=1 ){
                 point = points[ i ];
                 z = point.z;
                 x = point.x;
                 y = point.y;
                 result = {};
-                result.z = m.g * x + m.h * y + m.i * z;
                 result.x = m.a * x + m.b * y + m.c * z;
                 result.y = m.d * x + m.e * y + m.f * z;
+                result.z = m.g * x  + m.h * y + m.i * z;
                 points[ i ] = result;
             }
-            return this.points;
+
+            var scalePoints = [];
+            for( i= 0, count=points.length ; i<count ; i+=1 ){
+                scale = distance / ( distance+points[i].z);
+                scalePoints[ i ] = { x:points[ i].x * scale, y:points[ i].y * scale };
+            }
+            return scalePoints;
         },
 
         rotateZ:function( a ){
