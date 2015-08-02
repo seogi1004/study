@@ -77,22 +77,50 @@ jui.ready([ "chartx.coordinate" ], function(builder) {
 //        c.update(rect);
 //    }, 1000)
 
-    setInterval(function() {
+//    setInterval(function() {
+//        var x = 0, y = 0,
+//            xf = 8, yf = 8, // 기준점
+//            radin = -15/180*Math.PI,
+//            cosa  = Math.cos(radin), sina = Math.sin(radin);
+//
+//        //r = [[cosa, -sina, 0], [sina, cosa, 0], [0, 0, 1]]; 원점기준
+//        r = [[cosa, -sina, xf*(1-cosa)+yf*sina], [sina, cosa, yf*(1-cosa)-xf*sina], [0, 0, 1]]; // 기준점기준
+//
+//        for(var i = 0, lenR = rect.length; i < lenR; i++) {
+//            x = rect[i].x, y = rect[i].y;
+//            rect[i].x = (r[0][0] * x) + (r[0][1] * y) + (r[0][2] * h);
+//            rect[i].y = (r[1][0] * x) + (r[1][1] * y) + (r[1][2] * h);
+//        }
+//        c.update(rect);
+//    },1000);
+
+    var count = 0;
+    setInterval(function () {
+        /*
+         |sx 0 0| |cos -sin 0|   |sx*cos sx*-sin 0|
+         |0 sy 0| |sin  cos 0| = |sy*sin sy*cos  0|
+         |0  0 1| | 0    0  1|   |   0      0    1|
+         */
+
         var x = 0, y = 0,
-            xf = 8, yf = 8, // 기준점
-            radin = -15/180*Math.PI,
-            cosa  = Math.cos(radin), sina = Math.sin(radin);
+            sx = [2, 0.5], sy = [2, 0.5],
+            radian = 45/180 * Math.PI,
+            cosa = Math.cos(radian), sina = Math.sin(radian),
+            tmp = count % 2,
+            rs = [[sx[tmp] * cosa, sx[tmp] * -sina, 0],
+                 [sy[tmp] * sina, sy[tmp] * cosa, 0],
+                 [0, 0, 1]];
+        count += 1;
+        for (var i = 0, lenR = rect.length; i < lenR; i++) {
+            var tmp = i % 2;
 
-        //r = [[cosa, -sina, 0], [sina, cosa, 0], [0, 0, 1]]; 원점기준
-        r = [[cosa, -sina, xf*(1-cosa)+yf*sina], [sina, cosa, yf*(1-cosa)-xf*sina], [0, 0, 1]]; // 기준점기준
-
-        for(var i = 0, lenR = rect.length; i < lenR; i++) {
             x = rect[i].x, y = rect[i].y;
-            rect[i].x = (r[0][0] * x) + (r[0][1] * y) + (r[0][2] * h);
-            rect[i].y = (r[1][0] * x) + (r[1][1] * y) + (r[1][2] * h);
+            rect[i].x = (rs[0][0] * x) + (rs[0][1] * y) + (rs[0][2] * 1);
+            rect[i].y = (rs[1][0] * x) + (rs[1][1] * y) + (rs[1][2] * 1);
         }
         c.update(rect);
-    },1000);
+
+    }, 500);
 
 });
 </script>
