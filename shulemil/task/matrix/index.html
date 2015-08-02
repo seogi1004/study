@@ -101,7 +101,6 @@ jui.ready([ "chartx.coordinate" ], function(builder) {
          |0 sy 0| |sin  cos 0| = |sy*sin sy*cos  0|
          |0  0 1| | 0    0  1|   |   0      0    1|
          */
-
         var x = 0, y = 0,
             sx = [2, 0.5], sy = [2, 0.5],
             radian = 45/180 * Math.PI,
@@ -110,16 +109,15 @@ jui.ready([ "chartx.coordinate" ], function(builder) {
             rs = [[sx[tmp] * cosa, sx[tmp] * -sina, 0],
                  [sy[tmp] * sina, sy[tmp] * cosa, 0],
                  [0, 0, 1]];
-        count += 1;
-        for (var i = 0, lenR = rect.length; i < lenR; i++) {
-            var tmp = i % 2;
 
+        count += 1;
+
+        for (var i = 0, lenR = rect.length; i < lenR; i++) {
             x = rect[i].x, y = rect[i].y;
             rect[i].x = (rs[0][0] * x) + (rs[0][1] * y) + (rs[0][2] * 1);
             rect[i].y = (rs[1][0] * x) + (rs[1][1] * y) + (rs[1][2] * 1);
         }
         c.update(rect);
-
     }, 500);
 
 });
