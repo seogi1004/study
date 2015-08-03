@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="../../../lib/jquery-1.11.0.min.js"></script>
+    <script src="../../../lib/jui.chart.min.js"></script>
+    <script src="coordinate.js"></script>
+    <script>
+        jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+            var Template = function() {
+                this.draw = function() {
+
+                    var g = this.chart.svg.group();
+                    var data = this.listData();
+                    var value = null;
+
+                    for(var key in data){
+                        if(key==0){
+                            value = 'M' + this.axis.x(data[key].x) + ' ' + this.axis.y(data[key].y) + ' '
+                        }else{
+                            value += 'L' + this.axis.x(data[key].x) + ' ' + this.axis.y(data[key].y) + ' '
+                        }
+                    }
+                    g.append(this.chart.svg.path({
+                        fill: '#ff7a00',
+                        "fill-opacity": 0.5,
+                        stroke :"#ff7a00",
+                        "stroke-width" : 1,
+                        d : value + ' Z'
+                    }))
+
+                    return g;
+                }
+            }
+
+            Template.setup = function() {
+                return {
+                    size: 5
+                }
+            }
+
+            return Template;
+        }, "chart.brush.core");
+
+        jui.ready([ "chartx.coordinate" ], function(builder) {
+
+            var data = [
+                { x: -2, y: -2 },
+                { x: -2, y: 2 }, // 원점 기준, 대칭 이동
+                { x: 2, y: 2 }, // Y축 기준, 대칭 이동
+                { x: 2, y: -2 }, // X축 기준, 대칭 이동
+            ]
+
+            window.c = builder("#chart", {
+                domain: [ -10, 10 ],
+                brush: "template",
+                data: data
+            });
+
+            window.reset = function(){
+
+                data = [
+                    { x: -2, y: -2 },
+                    { x: -2, y: 2 }, // 원점 기준, 대칭 이동
+                    { x: 2, y: 2 }, // Y축 기준, 대칭 이동
+                    { x: 2, y: -2 }, // X축 기준, 대칭 이동
+                ]
+
+                window.c.update(data);
+            };
+
+            //닮음변환
+            window.scale = function(option){
+
+                var step = 0;
+
+                switch( option ){
+                    case 'up': step = 1.1; break;
+                    case 'down': step = 0.9;; break;
+                }
+
+                for(var key in data){
+                    x = data[key].x;
+                    y = data[key].y;
+                    data[key].x = (x * step) + (y * 0);
+                    data[key].y = (x * 0) + (y * step);
+                }
+
+                window.c.update(data);
+            };
+
+            //대칭변환
+            window.move = function(x, y){
+
+                var moveX = x, moveY = y;
+
+                for(var key in data){
+                    x = data[key].x;
+                    y = data[key].y;
+                    data[key].x = (1 * x) + (0 * y) + (moveX * 1);
+                    data[key].y = (0 * x) + (1 * y) + (moveY * 1);
+                }
+
+                window.c.update(data);
+            };
+
+            //회전변환
+            window.rotate = function(degree){
+
+                var radian = (degree/180)*Math.PI;
+                var cos = Math.cos(radian);
+                var sin = Math.sin(radian);
+
+                for(var key in data){
+                    x = data[key].x;
+                    y = data[key].y;
+                    data[key].x = (cos * x) + (-sin * y);
+                    data[key].y = (sin * x) + (cos * y);
+                }
+
+                window.c.update(data);
+            };
+
+
+        });
+    </script>
+</head>
+
+<body>
+
+<div>
+    <button type="button" onclick="window.reset()">RESET</button>
+    <hr/>
+    <button type="button" onclick="window.scale('up')">scale+</button>
+    <button type="button" onclick="window.scale('down')">scale-</button>
+    <hr/>
+    <button type="button" onclick="window.move(1,0)">x move+</button>
+    <button type="button" onclick="window.move(-1,0)">x move-</button>
+    <button type="button" onclick="window.move(0,1)">y move+</button>
+    <button type="button" onclick="window.move(0,-1)">y move-</button>
+    <hr/>
+    <button type="button" onclick="window.rotate(30)">rotate 30</button>
+    <button type="button" onclick="window.rotate(-30)">rotate -30</button>
+    <hr/>
+</div>
+
+
+<div id="chart"></div>
+
+</body>
+</html>
