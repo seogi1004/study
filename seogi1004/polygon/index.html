@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../dist/jui.min.css" rel="stylesheet" />
+<link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../dist/jui.min.js"></script>
+<script src="index.js"></script>
+<script src="samples.js"></script>
+<style>
+    .input {
+        margin-right: 30px !important;
+    }
+    .group {
+        margin-right: 10px !important;
+    }
+    .head {
+        height: 35px !important;
+    }
+</style>
+<script>
+var timer = null;
+
+jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D) {
+    for(var i = 0; i < samples.length; i++) {
+        var p = samples[i],
+            n = p.split("resources/").join("");
+
+        $("#select_json").append("<option value='" + p + "'>" + n.split(".json").join("") + "</option>");
+    }
+
+    $("#select_json").on("change", function(e) {
+        $("#result").html("");
+        loadJSON($(this).val());
+    });
+
+    function loadJSON(url) {
+        $.ajax({
+            method: "GET",
+            url: url,
+            success: function(json) {
+                createChart(json);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        })
+    }
+
+    function createChart(json) {
+        var transform = new Transform3D(json.points),
+            dx = json.x.max * 2,
+            dy = json.y.max * 2;
+
+        var chart = builder("#result", {
+            width: 800,
+            height: 600,
+            axis: [{
+                x: {
+                    type: "range",
+                    domain: [ -dx, dx ],
+                    step: 5,
+                    line: "solid"
+                },
+                y: {
+                    type: "range",
+                    domain: [ -dy, dy ],
+                    step: 5,
+                    line: "solid"
+                },
+                data: transform.rotateX(0)
+            }],
+            brush: [{
+                type: "point3d"
+            }],
+            style: {
+                gridXAxisBorderWidth: 1,
+                gridYAxisBorderWidth: 1,
+                gridTickBorderSize: 0,
+                gridXFontSize: 9,
+                gridYFontSize: 9
+            }
+        });
+
+        setEvents(transform, chart);
+    }
+
+    function setEvents(transform, chart) {
+        $(".rotate-x").off("click").on("click", function() {
+            var type = "rotateX";
+            var value = null;
+
+            switch($(this).val()) {
+                case "cw": value = -5; break;
+                case "ccw": value = 5; break;
+            }
+
+            update(type, value);
+        });
+
+
+        $(".rotate-y").off("click").on("click", function(){
+            var type = "rotateY";
+            var value = null;
+
+            switch($(this).val()) {
+                case "cw": value = -5; break;
+                case "ccw": value = 5; break;
+            }
+
+            update(type, value);
+        });
+
+        $(".rotate-z").off("click").on("click", function() {
+            var type = "rotateZ";
+            var value = null;
+
+            switch($(this).val()){
+                case "cw": value = -5; break;
+                case "ccw": value = 5; break;
+            }
+
+            update(type, value);
+        });
+
+        function update(type, value){
+            if(timer) { clearInterval(timer); }
+
+            timer = setInterval(function() {
+                chart.axis(0).update(transform[type](value));
+            }, 15);
+        }
+    }
+
+    loadJSON("resources/airplane.json");
+});
+</script>
+</head>
+
+<body class="jui">
+
+<div class="panel">
+    <div class="head">
+        Sample:
+        <select id="select_json" class="input small"></select>
+
+        X:
+        <div class="group">
+            <button class="btn small rotate-x" value="cw">&lt;</button>
+            <button class="btn small rotate-x" value="ccw">&gt;</button>
+        </div>
+
+        Y:
+        <div class="group">
+            <button class="btn small rotate-y" value="cw">&lt;</button>
+            <button class="btn small rotate-y" value="ccw">&gt;</button>
+        </div>
+
+        Z:
+        <div class="group">
+            <button class="btn small rotate-z" value="cw">&lt;</button>
+            <button class="btn small rotate-z" value="ccw">&gt;</button>
+        </div>
+    </div>
+    <div class="body fit">
+        <div id="result"></div>
+    </div>
+</div>
+
+</body>
+</html>
