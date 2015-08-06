@@ -32,6 +32,7 @@ fs.readdir(path, function (err, files) {
 function createJSONFile(name, str) {
     var list = str.split("\n"),
         data = [],
+        data2 = [],
         isPolygon = false,
         minX = 9999999,
         maxX = 0,
@@ -42,13 +43,23 @@ function createJSONFile(name, str) {
         if(isPolygon) {
             var points = list[i].split(" ");
 
-            if(points && points.length == 4) {
-                if(points[0] > maxX) maxX = points[0];
-                if(points[1] > maxY) maxY = points[1];
-                if(points[0] < minX) minX = points[0];
-                if(points[1] < minY) minY = points[1];
+            if(points) {
+                if(points.length > 4) {
+                    var face = [];
 
-                data.push({ x: points[0], y: points[1], z: points[2] });
+                    for(var j = 1; j < points.length - 1; j++) {
+                        face.push(points[j]);
+                    }
+
+                    data2.push(face);
+                } else if(points.length == 4) {
+                    if(points[0] > maxX) maxX = points[0];
+                    if(points[1] > maxY) maxY = points[1];
+                    if(points[0] < minX) minX = points[0];
+                    if(points[1] < minY) minY = points[1];
+
+                    data.push({ x: points[0], y: points[1], z: points[2] });
+                }
             }
         }
 
@@ -61,12 +72,21 @@ function createJSONFile(name, str) {
     buffer.push("{");
     buffer.push("\t\"x\": { \"min\":" + minX + ", \"max\":" + maxX + " },");
     buffer.push("\t\"y\": { \"min\":" + minY + ", \"max\":" + maxY + " },");
+
     buffer.push("\t\"points\": [");
     for(var i = 0; i < data.length; i++) {
         var d = "\t\t{ \"x\":" + data[i].x + ", \"y\":" + data[i].y + ", \"z\":" + data[i].z + " }";
         buffer.push(d + ((i < data.length - 1) ? "," : ""));
     }
+    buffer.push("\t],");
+
+    buffer.push("\t\"faces\": [");
+    for(var i = 0; i < data2.length; i++) {
+        var d = "\t\t[ " + data2[i].join(", ") + " ]";
+        buffer.push(d + ((i < data2.length - 1) ? "," : ""));
+    }
     buffer.push("\t]");
+
     buffer.push("}");
 
     fs.writeFile(name, buffer.join("\n"), function(err) {
