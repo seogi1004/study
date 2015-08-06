@@ -10,10 +10,10 @@
 <script src="samples.js"></script>
 <style>
     .input {
-        margin-right: 30px !important;
+        margin-right: 20px !important;
     }
     .group {
-        margin-right: 10px !important;
+        margin-right: 5px !important;
     }
     .head {
         height: 35px !important;
@@ -50,8 +50,8 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
 
     function createChart(json) {
         var transform = new Transform3D(json.points),
-            dx = json.x.max * 2,
-            dy = json.y.max * 2;
+            mx = json.x.max * 1.5,
+            my = json.y.max * 1.5;
 
         var chart = builder("#result", {
             width: 800,
@@ -59,15 +59,15 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
             axis: [{
                 x: {
                     type: "range",
-                    domain: [ -dx, dx ],
+                    domain: [ -mx, mx ],
                     step: 5,
-                    line: "solid"
+                    line: false
                 },
                 y: {
                     type: "range",
-                    domain: [ -dy, dy ],
+                    domain: [ -my, my ],
                     step: 5,
-                    line: "solid"
+                    line: false
                 },
                 data: transform.rotateX(0)
             }],
@@ -76,14 +76,19 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
                 faces: json.faces
             }],
             style: {
-                gridAxisBorderWidth: 0
+                gridActiveBorderWidth: 0,
+                gridXAxisBorderWidth: 1,
+                gridYAxisBorderWidth: 1
             }
         });
 
-        setEvents(transform, chart);
+        setEvents(transform, chart, mx, my);
     }
 
-    function setEvents(transform, chart) {
+    function setEvents(transform, chart, maxX, maxY) {
+        var scaleX = maxX * 0.1,
+            scaleY = maxY * 0.1;
+
         $(".rotate-x").off("click").on("click", function() {
             var type = "rotateX";
             var value = null;
@@ -121,6 +126,28 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
             update(type, value);
         });
 
+        $(".scale-x").off("click").on("click", function() {
+            switch($(this).val()){
+                case "cw": maxX -= scaleX; break;
+                case "ccw": maxX += scaleX; break;
+            }
+
+            chart.axis(0).updateGrid("x", {
+                domain: [ -maxX, maxX ]
+            });
+        });
+
+        $(".scale-y").off("click").on("click", function() {
+            switch($(this).val()){
+                case "cw": maxY -= scaleY; break;
+                case "ccw": maxY += scaleY; break;
+            }
+
+            chart.axis(0).updateGrid("y", {
+                domain: [ -maxY, maxY ]
+            });
+        });
+
         function update(type, value){
             if(timer) { clearInterval(timer); }
 
@@ -142,22 +169,34 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
         Sample:
         <select id="select_json" class="input small"></select>
 
-        X:
+        Rotate-X:
         <div class="group">
             <button class="btn small rotate-x" value="cw">&lt;</button>
             <button class="btn small rotate-x" value="ccw">&gt;</button>
         </div>
 
-        Y:
+        Rotate-Y:
         <div class="group">
             <button class="btn small rotate-y" value="cw">&lt;</button>
             <button class="btn small rotate-y" value="ccw">&gt;</button>
         </div>
 
-        Z:
+        Rotate-Z:
         <div class="group">
             <button class="btn small rotate-z" value="cw">&lt;</button>
             <button class="btn small rotate-z" value="ccw">&gt;</button>
+        </div>
+
+        Scale-X:
+        <div class="group">
+            <button class="btn small scale-x" value="cw">+</button>
+            <button class="btn small scale-x" value="ccw">-</button>
+        </div>
+
+        Scale-Y:
+        <div class="group">
+            <button class="btn small scale-y" value="cw">+</button>
+            <button class="btn small scale-y" value="ccw">-</button>
         </div>
     </div>
     <div class="body fit">

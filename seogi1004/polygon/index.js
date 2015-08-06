@@ -128,17 +128,14 @@ jui.define("chart.brush.polygon3d", [], function() {
 		this.draw = function() {
 			var g = this.chart.svg.group(),
 				path = this.chart.svg.path({
-					fill: this.color(0),
-					stroke: this.color(1),
-					"fill-opacity": 0.1,
+					stroke: this.color(0),
 					"stroke-width": 0.5
 				}),
 				points = this.axis.data,
 				faces = this.brush.faces;
 
 			for(var i = 0; i < faces.length; i++) {
-				var face = faces[i],
-					draw = [];
+				var face = faces[i]
 
 				for (var j = 0; j < face.length; j++) {
 					var targetPoint = points[face[j]];
@@ -147,17 +144,19 @@ jui.define("chart.brush.polygon3d", [], function() {
 						var x = this.axis.x(targetPoint.x),
 							y = this.axis.y(targetPoint.y);
 
-						draw.push({ x: x, y: y });
-					}
-				}
+						if (j == 0) {
+							path.MoveTo(x, y);
+						} else {
+							if(j == face.length - 1) {
+								var firstPoint = points[face[0]],
+									x = this.axis.x(firstPoint.x),
+									y = this.axis.y(firstPoint.y);
 
-				draw.push(draw[0]);
-
-				for(var k = 0; k < draw.length; k++) {
-					if (k == 0) {
-						path.MoveTo(draw[k].x, draw[k].y);
-					} else {
-						path.LineTo(draw[k].x, draw[k].y);
+								path.LineTo(x, y);
+							} else {
+								path.LineTo(x, y);
+							}
+						}
 					}
 				}
 			}
