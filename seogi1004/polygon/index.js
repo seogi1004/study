@@ -119,5 +119,60 @@ jui.define("chart.brush.point3d", [], function() {
 		}
 	}
 
+
 	return Point3dBrush;
+}, "chart.brush.core");
+
+jui.define("chart.brush.polygon3d", [], function() {
+	var Polygon3dBrush = function() {
+		this.draw = function() {
+			var g = this.chart.svg.group(),
+				path = this.chart.svg.path({
+					fill: this.color(0),
+					stroke: this.color(1),
+					"fill-opacity": 0.1,
+					"stroke-width": 0.5
+				}),
+				points = this.axis.data,
+				faces = this.brush.faces;
+
+			for(var i = 0; i < faces.length; i++) {
+				var face = faces[i],
+					draw = [];
+
+				for (var j = 0; j < face.length; j++) {
+					var targetPoint = points[face[j]];
+
+					if (targetPoint) {
+						var x = this.axis.x(targetPoint.x),
+							y = this.axis.y(targetPoint.y);
+
+						draw.push({ x: x, y: y });
+					}
+				}
+
+				draw.push(draw[0]);
+
+				for(var k = 0; k < draw.length; k++) {
+					if (k == 0) {
+						path.MoveTo(draw[k].x, draw[k].y);
+					} else {
+						path.LineTo(draw[k].x, draw[k].y);
+					}
+				}
+			}
+
+			g.append(path);
+
+			return g;
+		}
+	}
+
+	Polygon3dBrush.setup = function() {
+		return {
+			faces: []
+		}
+	}
+
+	return Polygon3dBrush;
 }, "chart.brush.core");

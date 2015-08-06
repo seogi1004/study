@@ -72,14 +72,11 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
                 data: transform.rotateX(0)
             }],
             brush: [{
-                type: "point3d"
+                type: "polygon3d",
+                faces: json.faces
             }],
             style: {
-                gridXAxisBorderWidth: 1,
-                gridYAxisBorderWidth: 1,
-                gridTickBorderSize: 0,
-                gridXFontSize: 9,
-                gridYFontSize: 9
+                gridAxisBorderWidth: 0
             }
         });
 
