@@ -73,7 +73,8 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
             }],
             brush: [{
                 type: "polygon3d",
-                faces: json.faces
+                faces: json.faces,
+                clip: false
             }],
             style: {
                 gridActiveBorderWidth: 0,
