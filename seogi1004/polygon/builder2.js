@@ -96,4 +96,13 @@ function createJSONFile(name, str) {
 
         console.log("'" + name + "' created!!!");
     });
+
+    var newName = name.split("resources/").join("").split(".json").join("");
+    fs.writeFile("json/" + newName + ".js", "var " + newName + " = " + buffer.join("\n"), function(err) {
+        if(err) {
+            return console.log(err);
+        }
+
+        console.log("'json/" + newName + ".js' created!!!");
+    });
 }
