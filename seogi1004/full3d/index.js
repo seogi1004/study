@@ -200,6 +200,24 @@ jui.define("chart.brush.full3dcolumn", [ "util.transform3d" ], function(Transfor
 			return points;
 		}
 
+		this.getMaxValue = function() {
+			var data = this.axis.data,
+				target = this.brush.target,
+				max = 0;
+
+			for (var i = 0; i < data.length; i++) {
+				for (var j = 0; j < target.length; j++) {
+					var value = data[i][target[j]];
+
+					if (value > max) {
+						max = value;
+					}
+				}
+			}
+
+			return max;
+		}
+
 		this.drawFloors = function(g) {
 			var padding = this.chart.get("padding"),
 				area = this.axis.area(),
@@ -228,7 +246,8 @@ jui.define("chart.brush.full3dcolumn", [ "util.transform3d" ], function(Transfor
 				data = this.axis.data,
 				target = this.brush.target,
 				w = this.brush.width,
-				h = this.brush.height;
+				h = this.brush.height,
+				maxValue = this.getMaxValue();
 
 			// 배경 그리기
 			this.drawFloors(g);
@@ -237,8 +256,10 @@ jui.define("chart.brush.full3dcolumn", [ "util.transform3d" ], function(Transfor
 				var x = this.axis.x(i);
 
 				for(var j = 0; j < target.length; j++) {
-					var y = this.axis.y(j),
-						points = this.getPoints(w, h, x, y, data[i][target[j]]),
+					var value = data[i][target[j]],
+						y = this.axis.y(j),
+						height = this.getScaleValue(value, 0, maxValue, 0, this.brush.max),
+						points = this.getPoints(w, h, x, y, height),
 						color = this.color(i, j);
 
 					for(var k = 0; k < points.length; k++) {

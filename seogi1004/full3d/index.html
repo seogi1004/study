@@ -7,11 +7,7 @@
 <script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="../dist/jui.min.js"></script>
 <script src="index.js"></script>
-<script src="samples.js"></script>
 <style>
-    .input {
-        margin-right: 20px !important;
-    }
     .group {
         margin-right: 5px !important;
     }
@@ -20,8 +16,6 @@
     }
 </style>
 <script>
-var timer = null;
-
 jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D) {
 
     var chart = builder("#result", {
@@ -51,7 +45,10 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
         }],
         brush : [{
             type : "full3dcolumn",
-            max : 200,
+            max : 150,
+            rx : 30,
+            ry : 30,
+            rz : 20,
             clip : false
         }],
         style: {
@@ -61,50 +58,51 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
         }
     });
 
-    setEvents(chart);
-
-    function setEvents(chart) {
-        var rx = 0,
-            ry = 0,
-            rz = 0;
-
-        $(".rotate-x").off("click").on("click", function() {
-            switch($(this).val()) {
-                case "cw": rx += -10; break;
-                case "ccw": rx += 10; break;
-            }
-
-            update();
-        });
-
-
-        $(".rotate-y").off("click").on("click", function(){
-            switch($(this).val()) {
-                case "cw": ry += -10; break;
-                case "ccw": ry += 10; break;
-            }
-
-            update();
-        });
-
-        $(".rotate-z").off("click").on("click", function() {
-            switch($(this).val()) {
-                case "cw": rz += -10; break;
-                case "ccw": rz += 10; break;
-            }
-
-            update();
-        });
-
-        function update() {
-            chart.updateBrush(0, {
-                rx: rx,
-                ry: ry,
-                rz: rz
-            });
-        }
-    }
+    initEvents(chart);
 });
+
+function initEvents(chart) {
+    var brush = chart.get("brush", 0),
+        rx = brush.rx,
+        ry = brush.ry,
+        rz = brush.rz;
+
+    $(".rotate-x").off("click").on("click", function() {
+        switch($(this).val()) {
+            case "cw": rx += -10; break;
+            case "ccw": rx += 10; break;
+        }
+
+        update();
+    });
+
+
+    $(".rotate-y").off("click").on("click", function(){
+        switch($(this).val()) {
+            case "cw": ry += -10; break;
+            case "ccw": ry += 10; break;
+        }
+
+        update();
+    });
+
+    $(".rotate-z").off("click").on("click", function() {
+        switch($(this).val()) {
+            case "cw": rz += -10; break;
+            case "ccw": rz += 10; break;
+        }
+
+        update();
+    });
+
+    function update() {
+        chart.updateBrush(0, {
+            rx: rx,
+            ry: ry,
+            rz: rz
+        });
+    }
+}
 </script>
 </head>
 
