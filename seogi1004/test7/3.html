@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../xy_tpl/jui.chart.min.js"></script>
+<script src="../xy_tpl/coordinate.js"></script>
+<script>
+var chart, Transform;
+
+jui.define("util.matrix", [], function() {
+    return function(a, b) {
+        var matrix = [];
+
+        for(var i = 0; i < a.length; i++) {
+            var sum = 0;
+
+            for(var j = 0; j < a[i].length; j++) {
+                sum += a[i][j] * b[j];
+            }
+
+            matrix.push(sum);
+        }
+
+        return matrix;
+    }
+});
+
+jui.define("util.transform", [ "util.matrix", "util.math" ], function(matrix, math) {
+    var Transform = function(points) {
+
+        this.getPoints = function(m) {
+            for(var i = 0, count = points.length; i < count; i++) {
+                points[i] = matrix(m, points[i]);
+            }
+
+            return points;
+        },
+
+        this.scale = function(sx, sy) {
+            return this.getPoints([
+                [ sx, 0, 0 ],
+                [ 0, sy, 0 ],
+                [ 0, 0, 1 ]
+            ]);
+        }
+
+        this.scale3d = function(sx, sy, sz) {
+            return this.getPoints([
+                [ sx, 0, 0, 0 ],
+                [ 0, sy, 0, 0 ],
+                [ 0, 0, sz, 0 ],
+                [ 0, 0, 0, 1 ]
+            ]);
+        }
+
+        this.rotate = function(angle) {
+            var a = math.radian(angle);
+
+            return this.getPoints([
+                [ Math.cos(a), -Math.sin(a), 0 ],
+                [ Math.sin(a), Math.cos(a), 0 ],
+                [ 0, 0, 1 ]
+            ]);
+        }
+
+        // Z축 중심 3차원 회전 - 롤(ROLL)
+        this.rotate3d_roll = function(angle) {
+            var a = math.radian(angle);
+
+            return this.getPoints([
+                [ Math.cos(a), -Math.sin(a), 0, 0 ],
+                [ Math.sin(a), Math.cos(a), 0, 0 ],
+                [ 0, 0, 1, 0 ],
+                [ 0, 0, 0, 1 ]
+            ]);
+        }
+
+        // X축 중심 3차원 회전 - 롤(PITCH)
+        this.rotate3d_pitch = function(angle) {
+            var a = math.radian(angle);
+
+            return this.getPoints([
+                [ 1, 0, 0, 0 ],
+                [ 0, Math.cos(a), -Math.sin(a), 0 ],
+                [ 0, Math.sin(a), Math.cos(a), 0 ],
+                [ 0, 0, 0, 1 ]
+            ]);
+        }
+
+        // Y축 중심 3차원 회전 - 요(YAW)
+        this.rotate3d_yaw = function(angle) {
+            var a = math.radian(angle);
+
+            return this.getPoints([
+                [ Math.cos(a), 0, Math.sin(a), 0 ],
+                [ 0, 1, 0, 0 ],
+                [ -Math.sin(a), 0, Math.cos(a), 0 ],
+                [ 0, 0, 0, 1 ]
+            ]);
+        }
+    }
+
+    return Transform;
+});
+
+jui.define("chart.brush.test", [], function() {
+    var TestBrush = function() {
+        this.draw = function() {
+            var data = this.axis.data;
+            var opts = {
+                fill: this.color(0),
+                "fill-opacity": 0.1,
+                stroke: this.color(1),
+                "stroke-width": 1
+            },
+            g = this.chart.svg.group(),
+            p = this.chart.svg.polygon(opts);
+
+            for(var i = 0; i < data.length; i++) {
+                p.point(this.axis.x(data[i][0]), this.axis.y(data[i][1]));
+            }
+
+            g.append(p);
+
+            return g;
+        }
+    }
+
+    return TestBrush;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder", "util.transform" ], function(builder, TransUtil) {
+    Transform = TransUtil;
+
+    chart = builder("#result", {
+        theme: "dark",
+        width: 1000,
+        height: 500,
+        axis: [{
+            x: {
+                type: "range",
+                step: 10,
+                line: "dashed"
+            },
+            y: {
+                type: "range",
+                step: 10,
+                line: "dashed",
+                orient : "left"
+            },
+            area : {
+                width : "45%"
+            }
+        }, {
+            extend : 0,
+            area : {
+                width : "45%",
+                x : "55%"
+            }
+        }],
+        brush: [{
+            type: "test",
+            axis: 0
+        }, {
+            type: "test",
+            axis: 1
+        }],
+        widget: [{
+            type: "title",
+            align: "start",
+            dy: 10,
+            text: "Before"
+        }, {
+            type: "title",
+            align: "center",
+            dx: 60,
+            dy: 10,
+            text: "After"
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0,
+            gridXFontSize: 9,
+            gridYFontSize: 9
+        }
+    });
+
+    window.index = 0;
+    setInterval(function() {
+        build("rotate3d_yaw");
+        window.index++;
+    }, 100)
+});
+
+function scale1() {
+    return {
+        domain: [ 0, 1000 ],
+        points: [
+            [ 20, 0, 1 ],
+            [ 50, 0, 1 ],
+            [ 50, 100, 1 ],
+            [ 20, 100, 1 ]
+        ],
+        transform: function(t) {
+            return t.scale(1.5, 0.1);
+        }
+    }
+}
+
+function scale2() {
+    return {
+        domain: [ 0, 1000 ],
+        points: [
+            [ 50, 0, -10, 1 ],
+            [ 0, 20, -100, 1 ],
+            [ 200, 150, -50, 1 ]
+        ],
+        transform: function(t) {
+            return t.scale(5, 5, 5);
+        }
+    }
+}
+
+// 회전 1
+function rotate1() {
+    return {
+        domain: [ -500, 500 ],
+        points: [
+            [ 50, 40, 1 ],
+            [ 100, 40, 1 ],
+            [ 75, 200, 1 ]
+        ],
+        transform: function(t) {
+            return t.rotate(90);
+        }
+    }
+}
+
+function rotate3d_yaw() {
+    return {
+        domain: [ -200, 200 ],
+        points: [
+            [ 0, 30, -100, 1 ],
+            [ -50, 100, -20, 1 ],
+            [ -20, 0, -300, 1 ]
+        ],
+        transform: function(t) {
+            return t.rotate3d_yaw(index);
+        }
+    }
+}
+
+function build(key) {
+    var template = eval(key + "()");
+
+    var opts = {
+        domain : template.domain
+    };
+
+    chart.axis(0).updateGrid("x", opts);
+    chart.axis(0).updateGrid("y", opts);
+    chart.axis(1).updateGrid("x", opts);
+    chart.axis(1).updateGrid("y", opts);
+
+    // 원본
+    chart.axis(0).update(template.points);
+
+    // 변환
+    var t = new Transform(template.points);
+    chart.axis(1).update(template.transform(t));
+}
+</script>
+</head>
+
+<body>
+<div id="result"></div>
+</body>
+</html>
