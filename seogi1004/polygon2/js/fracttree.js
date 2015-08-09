@@ -9620,13 +9620,13 @@ jui.define("chart.polygon.fracttree", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -2.6389, -5.0259, -3.3954
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             2.3842, 4.3726, 2.7939
-        ];
+        ]);
     }
 
     return Polygon;

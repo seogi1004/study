@@ -3441,13 +3441,13 @@ jui.define("chart.polygon.teapot", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -3, -2, 0
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             3.42963, 2, 3.15
-        ];
+        ]);
     }
 
     return Polygon;

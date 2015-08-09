@@ -12389,13 +12389,13 @@ jui.define("chart.polygon.tommygun", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -1.71551, -0.66781, -0.45361
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             2.94195, 0.394638, 0.45361
-        ];
+        ]);
     }
 
     return Polygon;

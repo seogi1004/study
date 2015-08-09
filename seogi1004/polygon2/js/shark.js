@@ -1210,13 +1210,13 @@ jui.define("chart.polygon.shark", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -1.35711, -0.747847, -3.22377
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             0.502694, 1.52005, 1.15842
-        ];
+        ]);
     }
 
     return Polygon;

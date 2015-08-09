@@ -10,13 +10,13 @@ ${faces}
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             ${minX}, ${minY}, ${minZ}
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             ${maxX}, ${maxY}, ${maxZ}
-        ];
+        ]);
     }
 
     return Polygon;

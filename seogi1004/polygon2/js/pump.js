@@ -3412,13 +3412,13 @@ jui.define("chart.polygon.pump", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -0.124001, -0.0711125, -0.037264
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             0.125999, 0.0703162, 0.037264
-        ];
+        ]);
     }
 
     return Polygon;

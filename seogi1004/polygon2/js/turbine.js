@@ -9935,13 +9935,13 @@ jui.define("chart.polygon.turbine", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             0.088476, 0.08848, 0.484723
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             1.91152, 1.91152, 0.985166
-        ];
+        ]);
     }
 
     return Polygon;

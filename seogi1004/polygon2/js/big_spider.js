@@ -13964,13 +13964,13 @@ jui.define("chart.polygon.big_spider", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             0.25, 0.25, 0.5
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             6.0153, 6.0137, 2.5128
-        ];
+        ]);
     }
 
     return Polygon;

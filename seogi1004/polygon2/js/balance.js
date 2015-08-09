@@ -3472,13 +3472,13 @@ jui.define("chart.polygon.balance", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -80.4901, -6, -4.2052
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             105.49, 56, 114
-        ];
+        ]);
     }
 
     return Polygon;

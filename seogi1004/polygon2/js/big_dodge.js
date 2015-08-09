@@ -25131,13 +25131,13 @@ jui.define("chart.polygon.big_dodge", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -7.08571, -3.22544, -3.02346
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             7.79538, 2.3383, 3.02352
-        ];
+        ]);
     }
 
     return Polygon;

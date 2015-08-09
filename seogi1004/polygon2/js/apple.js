@@ -2579,13 +2579,13 @@ jui.define("chart.polygon.apple", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -0.05208, -0.0012, -0.05208
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             0.05208, 0.0792, 0.05208
-        ];
+        ]);
     }
 
     return Polygon;

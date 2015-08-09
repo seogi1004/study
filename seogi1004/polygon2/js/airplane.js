@@ -3795,13 +3795,13 @@ jui.define("chart.polygon.airplane", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             139.061, 32.0943, -17.7412
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             1654.93, 1319.95, 282.13
-        ];
+        ]);
     }
 
     return Polygon;

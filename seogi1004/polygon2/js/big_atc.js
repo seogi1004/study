@@ -20508,13 +20508,13 @@ jui.define("chart.polygon.big_atc", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -3.21184, -1.42853, -1.76105
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             2.86531, 2.26573, 1.76234
-        ];
+        ]);
     }
 
     return Polygon;

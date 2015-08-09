@@ -13168,13 +13168,13 @@ jui.define("chart.polygon.stratocaster", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -162.692, -42.6931, -16.0727
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             342.112, 97.0885, 12.7594
-        ];
+        ]);
     }
 
     return Polygon;

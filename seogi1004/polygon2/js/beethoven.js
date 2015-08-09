@@ -7559,13 +7559,13 @@ jui.define("chart.polygon.beethoven", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -4.64855, -6.03088, -3.31909
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             4.64855, 5.54417, 3.34742
-        ];
+        ]);
     }
 
     return Polygon;

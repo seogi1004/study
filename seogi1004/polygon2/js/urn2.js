@@ -916,13 +916,13 @@ jui.define("chart.polygon.urn2", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -1.19127, -1, -1.20855
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             1.13948, 1, 1.23279
-        ];
+        ]);
     }
 
     return Polygon;

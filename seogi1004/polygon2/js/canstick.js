@@ -6259,13 +6259,13 @@ jui.define("chart.polygon.canstick", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -0.0425214, -0.1, -0.0424374
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             0.0425214, 0.1, 0.0424374
-        ];
+        ]);
     }
 
     return Polygon;

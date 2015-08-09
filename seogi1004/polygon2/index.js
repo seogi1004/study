@@ -202,7 +202,7 @@ jui.define("chart.brush.polygon3d", [], function() {
 
             for(var i = 0, len = this.vertices.length; i < len; i++) {
                 var vertex = this.vertices[i];
-                cache.push([ this.axis.x(vertex[0]), this.axis.y(vertex[1]) ]);
+                cache.push(new Float32Array([ this.axis.x(vertex[0]), this.axis.y(vertex[1]) ]));
             }
 
             for(var i = 0, len = this.faces.length; i < len; i++) {

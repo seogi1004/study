@@ -1406,13 +1406,13 @@ jui.define("chart.polygon.ant", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -16.01, -9.385, -16.78
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             16.01, 9.385, 16.78
-        ];
+        ]);
     }
 
     return Polygon;

@@ -966,13 +966,13 @@ jui.define("chart.polygon.scissors", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -0.000002, -0.105499, -1.00008
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             8.05039, 0.357727, 1.5
-        ];
+        ]);
     }
 
     return Polygon;

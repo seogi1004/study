@@ -15729,13 +15729,13 @@ jui.define("chart.polygon.big_porsche", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -7.01831, -2.18334, -2.9087
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             7.01192, 2.22084, 2.9087
-        ];
+        ]);
     }
 
     return Polygon;

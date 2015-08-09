@@ -5483,13 +5483,13 @@ jui.define("chart.polygon.tennis_shoe", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -5.40563, -2.47314, -1.95774
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             5.34217, 2.73828, 1.84661
-        ];
+        ]);
     }
 
     return Polygon;

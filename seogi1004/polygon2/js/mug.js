@@ -5183,13 +5183,13 @@ jui.define("chart.polygon.mug", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -0.0526316, -0.0125313, -0.0523432
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             0.0808143, 0.0874782, 0.0523432
-        ];
+        ]);
     }
 
     return Polygon;

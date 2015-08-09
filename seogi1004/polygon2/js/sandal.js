@@ -7596,13 +7596,13 @@ jui.define("chart.polygon.sandal", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -5.85702, -2.62956, -1.72872
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             5.85702, 2.62956, 1.72872
-        ];
+        ]);
     }
 
     return Polygon;

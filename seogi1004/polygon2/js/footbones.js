@@ -6366,13 +6366,13 @@ jui.define("chart.polygon.footbones", [], function() {
 
         this.edges = [];
 
-        this.min = [
+        this.min = new Float32Array([
             -5.63324, -1.86044, -2.12503
-        ];
+        ]);
 
-        this.max = [
+        this.max = new Float32Array([
             5.63321, 1.86044, 2.12566
-        ];
+        ]);
     }
 
     return Polygon;
