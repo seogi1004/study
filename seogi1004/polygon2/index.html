@@ -148,8 +148,8 @@ jui.ready([ "chart.builder", "util.transform", "chart.polygon" ], function(build
 
         $(".scale-x").off("click").on("click", function() {
             switch($(this).val()){
-                case "cw": maxX -= scaleX; break;
-                case "ccw": maxX += scaleX; break;
+                case "cw": maxX -= sx; break;
+                case "ccw": maxX += sx; break;
             }
 
             chart.axis(0).updateGrid("x", {
@@ -159,8 +159,8 @@ jui.ready([ "chart.builder", "util.transform", "chart.polygon" ], function(build
 
         $(".scale-y").off("click").on("click", function() {
             switch($(this).val()){
-                case "cw": maxY -= scaleY; break;
-                case "ccw": maxY += scaleY; break;
+                case "cw": maxY -= sy; break;
+                case "ccw": maxY += sy; break;
             }
 
             chart.axis(0).updateGrid("y", {
