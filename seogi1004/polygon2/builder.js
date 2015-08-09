@@ -70,7 +70,7 @@ function createJSONFile(name, str) {
         for(var i = 0; i < vertices.length; i++) {
             //var d = "\t\t\t{ \"x\":" + vertices[i].x + ", \"y\":" + vertices[i].y + ", \"z\":" + vertices[i].z + " }";
 
-            var d = "\t\t\t[ " + vertices[i].x + ", " + vertices[i].y + ", " + vertices[i].z + ", 1 ]";
+            var d = "\t\t\tnew Float32Array([ " + vertices[i].x + ", " + vertices[i].y + ", " + vertices[i].z + ", 1 ])";
             buffer.push(d + ((i < vertices.length - 1) ? "," : ""));
         }
         text = text.replace("${vertices}", buffer.join("\n"));
@@ -78,7 +78,7 @@ function createJSONFile(name, str) {
 
         // 3. Face º¯°æ
         for(var i = 0; i < faces.length; i++) {
-            var d = "\t\t\t[ " + faces[i].join(", ") + " ]";
+            var d = "\t\t\tnew Float32Array([ " + faces[i].join(", ") + " ])";
             buffer.push(d + ((i < faces.length - 1) ? "," : ""));
         }
         text = text.replace("${faces}", buffer.join("\n"));

@@ -197,25 +197,31 @@ jui.define("chart.brush.polygon3d", [], function() {
                 path = this.chart.svg.path({
                     stroke: this.color(0),
                     "stroke-width": 0.5
-                });
+                }),
+                cache = [];
+
+            for(var i = 0, len = this.vertices.length; i < len; i++) {
+                var vertex = this.vertices[i];
+                cache.push([ this.axis.x(vertex[0]), this.axis.y(vertex[1]) ]);
+            }
 
             for(var i = 0, len = this.faces.length; i < len; i++) {
                 var face = this.faces[i]
 
                 for (var j = 0, len2 = face.length; j < len2; j++) {
-                    var targetPoint = this.vertices[face[j]];
+                    var targetPoint = cache[face[j]];
 
                     if (targetPoint) {
-                        var x = this.axis.x(targetPoint[0]),
-                            y = this.axis.y(targetPoint[1]);
+                        var x = targetPoint[0],
+                            y = targetPoint[1];
 
                         if (j == 0) {
                             path.MoveTo(x, y);
                         } else {
                             if(j == face.length - 1) {
-                                var firstPoint = this.vertices[face[0]],
-                                    x = this.axis.x(firstPoint[0]),
-                                    y = this.axis.y(firstPoint[1]);
+                                var firstPoint = cache[face[0]],
+                                    x = firstPoint[0],
+                                    y = firstPoint[1];
 
                                 path.LineTo(x, y);
                             } else {
