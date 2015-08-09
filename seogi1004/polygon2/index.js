@@ -3,10 +3,10 @@ jui.define("util.matrix", [ "util.base" ], function(_) {
     function matrix(a, b) {
         var m = [];
 
-        for(var i = 0; i < a.length; i++) {
+        for(var i = 0, len = a.length; i < len; i++) {
             var sum = 0;
 
-            for(var j = 0; j < a[i].length; j++) {
+            for(var j = 0, len2 = a[i].length; j < len2; j++) {
                 sum += a[i][j] * b[j];
             }
 
@@ -21,21 +21,21 @@ jui.define("util.matrix", [ "util.base" ], function(_) {
     function deepMatrix(a, b) {
         var m = [], nm = [];
 
-        for(var i = 0; i < b.length; i++) {
+        for(var i = 0, len = b.length; i < len; i++) {
             m[i] = [];
             nm[i] = [];
         }
 
-        for(var i = 0; i < b.length; i++) {
-            for(var j = 0; j < b[i].length; j++) {
+        for(var i = 0, len = b.length; i < len; i++) {
+            for(var j = 0, len2 = b[i].length; j < len2; j++) {
                 m[j].push(b[i][j]);
             }
         }
 
-        for(var i = 0; i < m.length; i++) {
+        for(var i = 0, len = m.length; i < len; i++) {
             var mm = matrix(a, m[i]);
 
-            for(var j = 0; j < mm.length; j++) {
+            for(var j = 0, len2 = mm.length; j < len2; j++) {
                 nm[j].push(mm[j]);
             }
         }
@@ -185,32 +185,37 @@ jui.define("util.transform", [ "util.matrix", "util.math" ], function(matrix, ma
 
 jui.define("chart.brush.polygon3d", [], function() {
     var Polygon3dBrush = function() {
+        this.drawBefore = function() {
+            var model = this.axis.data;
+
+            this.vertices = model.vertices;
+            this.faces = model.faces;
+        }
+
         this.draw = function() {
             var g = this.chart.svg.group(),
                 path = this.chart.svg.path({
                     stroke: this.color(0),
                     "stroke-width": 0.5
-                }),
-                points = this.axis.data,
-                faces = this.brush.faces;
+                });
 
-            for(var i = 0; i < faces.length; i++) {
-                var face = faces[i]
+            for(var i = 0, len = this.faces.length; i < len; i++) {
+                var face = this.faces[i]
 
-                for (var j = 0; j < face.length; j++) {
-                    var targetPoint = points[face[j]];
+                for (var j = 0, len2 = face.length; j < len2; j++) {
+                    var targetPoint = this.vertices[face[j]];
 
                     if (targetPoint) {
-                        var x = this.axis.x(targetPoint.x),
-                            y = this.axis.y(targetPoint.y);
+                        var x = this.axis.x(targetPoint[0]),
+                            y = this.axis.y(targetPoint[1]);
 
                         if (j == 0) {
                             path.MoveTo(x, y);
                         } else {
                             if(j == face.length - 1) {
-                                var firstPoint = points[face[0]],
-                                    x = this.axis.x(firstPoint.x),
-                                    y = this.axis.y(firstPoint.y);
+                                var firstPoint = this.vertices[face[0]],
+                                    x = this.axis.x(firstPoint[0]),
+                                    y = this.axis.y(firstPoint[1]);
 
                                 path.LineTo(x, y);
                             } else {
@@ -224,12 +229,6 @@ jui.define("chart.brush.polygon3d", [], function() {
             g.append(path);
 
             return g;
-        }
-    }
-
-    Polygon3dBrush.setup = function() {
-        return {
-            faces: []
         }
     }
 

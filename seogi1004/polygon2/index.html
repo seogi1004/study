@@ -6,8 +6,34 @@
 <link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
 <script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="../dist/jui.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/airplane.js"></script>
+<script src="js/ant.js"></script>
+<script src="js/apple.js"></script>
+<script src="js/balance.js"></script>
+<script src="js/beethoven.js"></script>
+<script src="js/big_atc.js"></script>
+<script src="js/big_dodge.js"></script>
+<script src="js/big_porsche.js"></script>
+<script src="js/big_spider.js"></script>
+<script src="js/canstick.js"></script>
+<script src="js/f16.js"></script>
+<script src="js/footbones.js"></script>
+<script src="js/fracttree.js"></script>
+<script src="js/hind.js"></script>
+<script src="js/mug.js"></script>
+<script src="js/pump.js"></script>
+<script src="js/sandal.js"></script>
+<script src="js/scissors.js"></script>
+<script src="js/shark.js"></script>
+<script src="js/stratocaster.js"></script>
+<script src="js/teapot.js"></script>
+<script src="js/tennis_shoe.js"></script>
+<script src="js/tommygun.js"></script>
+<script src="js/turbine.js"></script>
+<script src="js/urn2.js"></script>
 <script src="index.js"></script>
-<script src="samples.js"></script>
+
 <style>
     .input {
         margin-right: 20px !important;
@@ -22,36 +48,27 @@
 <script>
 var timer = null;
 
-jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D) {
-    for(var i = 0; i < samples.length; i++) {
-        var p = samples[i],
-            n = p.split("resources/").join("");
+jui.ready([ "chart.builder", "util.transform", "chart.polygon" ], function(builder, Transform, Polygons) {
+    init();
 
-        $("#select_json").append("<option value='" + p + "'>" + n.split(".json").join("") + "</option>");
+    function init() {
+        for(var key in Polygons) {
+            if(key == "core") continue;
+            $("#select_json").append("<option value='" + key + "'>" + key + "</option>");
+        }
+
+        $("#select_json").on("change", function(e) {
+            $("#result").html("");
+            createChart($(this).val());
+        });
+
+        createChart("airplane");
     }
 
-    $("#select_json").on("change", function(e) {
-        $("#result").html("");
-        loadJSON($(this).val());
-    });
-
-    function loadJSON(url) {
-        $.ajax({
-            method: "GET",
-            url: url,
-            success: function(json) {
-                createChart(json);
-            },
-            error: function(e) {
-                console.log(e);
-            }
-        })
-    }
-
-    function createChart(json) {
-        var transform = new Transform3D(json.points),
-            mx = json.x.max * 1.5,
-            my = json.y.max * 1.5;
+    function createChart(key) {
+        var model = new Polygons[key],
+            mx = model.max[0] * 1.5,
+            my = model.max[1] * 1.5;
 
         var chart = builder("#result", {
             width: 800,
@@ -69,11 +86,10 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
                     step: 10,
                     line: false
                 },
-                data: transform.rotateX(0)
+                data: model
             }],
             brush: [{
                 type: "polygon3d",
-                faces: json.faces,
                 clip: false
             }],
             style: {
@@ -83,48 +99,51 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
             }
         });
 
-        setEvents(transform, chart, mx, my);
+        setEvents(chart, mx, my);
     }
 
-    function setEvents(transform, chart, maxX, maxY) {
-        var scaleX = maxX * 0.1,
-            scaleY = maxY * 0.1;
+    function setEvents(chart, maxX, maxY) {
+        var ctrl = new Transform(chart.axis(0).data.vertices);
+            sx = maxX * 0.1,
+            sy = maxY * 0.1,
+            rx = 5,
+            ry = 5,
+            rz = 5;
 
         $(".rotate-x").off("click").on("click", function() {
-            var type = "rotateX";
-            var value = null;
+            var val;
 
             switch($(this).val()) {
-                case "cw": value = -5; break;
-                case "ccw": value = 5; break;
+                case "cw": val = -rx; break;
+                case "ccw": val = rx; break;
             }
 
-            update(type, value);
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dx", val);
         });
 
-
-        $(".rotate-y").off("click").on("click", function(){
-            var type = "rotateY";
-            var value = null;
+        $(".rotate-y").off("click").on("click", function() {
+            var val;
 
             switch($(this).val()) {
-                case "cw": value = -5; break;
-                case "ccw": value = 5; break;
+                case "cw": val = -ry; break;
+                case "ccw": val = ry; break;
             }
 
-            update(type, value);
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dy", val);
         });
 
         $(".rotate-z").off("click").on("click", function() {
-            var type = "rotateZ";
-            var value = null;
+            var val;
 
             switch($(this).val()){
-                case "cw": value = -5; break;
-                case "ccw": value = 5; break;
+                case "cw": val = -rz; break;
+                case "ccw": val = rz; break;
             }
 
-            update(type, value);
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dz", val);
         });
 
         $(".scale-x").off("click").on("click", function() {
@@ -149,16 +168,17 @@ jui.ready([ "chart.builder", "util.transform3d" ], function(builder, Transform3D
             });
         });
 
-        function update(type, value){
-            if(timer) { clearInterval(timer); }
+        function update(type, value) {
+            var newData = chart.axis(0).data;
 
-            timer = setInterval(function() {
-                chart.axis(0).update(transform[type](value));
-            }, 15);
+            return setInterval(function() {
+                newData.vertices = ctrl[type](value);
+
+                chart.axis(0).update(newData);
+                chart.render();
+            }, 100);
         }
     }
-
-    loadJSON("resources/airplane.json");
 });
 </script>
 </head>

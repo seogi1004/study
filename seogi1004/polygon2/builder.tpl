@@ -7,6 +7,16 @@ ${vertices}
         this.faces = [
 ${faces}
         ];
+
+        this.edges = [];
+
+        this.min = [
+            ${minX}, ${minY}, ${minZ}
+        ];
+
+        this.max = [
+            ${maxX}, ${maxY}, ${maxZ}
+        ];
     }
 
     return Polygon;

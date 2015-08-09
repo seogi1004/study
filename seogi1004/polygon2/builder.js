@@ -20,6 +20,8 @@ function createJSONFile(name, str) {
     var list = str.split("\n"),
         vertices = [],
         faces = [],
+        max = { x: 0, y: 0, z: 0 },
+        min = { x: 9999999, y: 9999999, z: 9999999 },
         isPolygon = false;
 
     for(var i = 0; i < list.length; i++) {
@@ -36,6 +38,13 @@ function createJSONFile(name, str) {
 
                     faces.push(face);
                 } else if(points.length == 4) {
+                    min.x = Math.min(min.x, points[0]);
+                    min.y = Math.min(min.y, points[1]);
+                    min.z = Math.min(min.z, points[2]);
+                    max.x = Math.max(max.x, points[0]);
+                    max.y = Math.max(max.y, points[1]);
+                    max.z = Math.max(max.z, points[2]);
+
                     vertices.push({ x: points[0], y: points[1], z: points[2] });
                 }
             }
@@ -59,7 +68,9 @@ function createJSONFile(name, str) {
 
         // 2. Vertex 변경
         for(var i = 0; i < vertices.length; i++) {
-            var d = "\t\t\t{ \"x\":" + vertices[i].x + ", \"y\":" + vertices[i].y + ", \"z\":" + vertices[i].z + " }";
+            //var d = "\t\t\t{ \"x\":" + vertices[i].x + ", \"y\":" + vertices[i].y + ", \"z\":" + vertices[i].z + " }";
+
+            var d = "\t\t\t[ " + vertices[i].x + ", " + vertices[i].y + ", " + vertices[i].z + ", 1 ]";
             buffer.push(d + ((i < vertices.length - 1) ? "," : ""));
         }
         text = text.replace("${vertices}", buffer.join("\n"));
@@ -72,7 +83,15 @@ function createJSONFile(name, str) {
         }
         text = text.replace("${faces}", buffer.join("\n"));
 
-        // 4. 파일 저장
+        // 4. Min & Max 변경
+        text = text.replace("${minX}", min.x);
+        text = text.replace("${minY}", min.y);
+        text = text.replace("${minZ}", min.z);
+        text = text.replace("${maxX}", max.x);
+        text = text.replace("${maxY}", max.y);
+        text = text.replace("${maxZ}", max.z);
+
+        // 5. 파일 저장
         fs.writeFile("js/" + newName + ".js", text, function(err) {
             if(err) {
                 return console.log(err);
