@@ -13,7 +13,7 @@
     <button id="rightBtn">오른쪽</button>
     <button id="bottomBtn">아래로</button>
     <svg>
-        <path d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
+        <path id="pathType1" d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
     </svg>
 
 
@@ -25,7 +25,9 @@
  *
  *
  * **/
-    var matrix = function(type, point, distance){
+    var matrix = function( element, type, point, distance){
+        var pointArr = [];
+        var pathAttrText = "";
         return {
             move : [
                 [ 1, 0, distance[0] ],
@@ -37,12 +39,12 @@
                 [ 0, distance[1], 0 ],
                 [ 0, 0, 1 ]
             ],
-            reckoning : function(){
+            reckoning : function( data ){
                 var sum = [];
                 for( var i = 0; i < this[type].length; i++ ){
                     var number = 0;
-                    for( var z = 0; z < pathPoin.length; z++ ){
-                        number += this[type][i][z] * pathPoin[z];
+                    for( var z = 0; z < data.length; z++ ){
+                        number += this[type][i][z] * data[z];
                     }
                     sum.push( number );
                 }
@@ -50,11 +52,25 @@
                 return sum;
             },
             initialize : function(){
-                console.log(111)
+                for( var i = 0; i < point.length; i++ ){
+                    pointArr = point[i];
+                    var result = this.reckoning( pointArr).join(" ");
+                    if( i === 0 ){
+                        pathAttrText += "M " + result;
+                    }else if( i === 1 ){
+                        pathAttrText += " L " + result;
+                    }else if( i === point.length-1 ){
+                        pathAttrText += " " + result + " z";
+                    }else{
+                        pathAttrText += " " + result;
+                    }
+                }
+                $(element).attr({"d" : pathAttrText });
             }
         }
     }
 matrix(
+        "#pathType1",
         "move",
         [
             [50,10,1],
@@ -63,7 +79,7 @@ matrix(
             [50,50,1]
         ]
         ,[ 10,10 ]
-).initialize()
+).initialize();
 
 
 
