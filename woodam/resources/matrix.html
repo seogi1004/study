@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Document</title>
+    <style>
+        * {padding:0; margin:0;}
+        svg {width:100%; height:800px;}
+    </style>
+</head>
+<body>
+    <button id="rightBtn">오른쪽</button>
+    <button id="bottomBtn">아래로</button>
+    <svg>
+        <path d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
+    </svg>
+
+
+<script src="components/jquery/jquery-1.11.0.js"></script>
+<script>
+/**
+ *
+ *
+ *
+ *
+ * **/
+    var matrix = function(type, point, distance){
+        return {
+            move : [
+                [ 1, 0, distance[0] ],
+                [ 0, 1, distance[1] ],
+                [ 0, 0, 1 ]
+            ],
+            scale : [
+                [ distance[0], 0, 0 ],
+                [ 0, distance[1], 0 ],
+                [ 0, 0, 1 ]
+            ],
+            reckoning : function(){
+                var sum = [];
+                for( var i = 0; i < this[type].length; i++ ){
+                    var number = 0;
+                    for( var z = 0; z < pathPoin.length; z++ ){
+                        number += this[type][i][z] * pathPoin[z];
+                    }
+                    sum.push( number );
+                }
+                sum.pop();
+                return sum;
+            },
+            initialize : function(){
+                console.log(111)
+            }
+        }
+    }
+matrix(
+        "move",
+        [
+            [50,10,1],
+            [100,10,1],
+            [100,50,1],
+            [50,50,1]
+        ]
+        ,[ 10,10 ]
+).initialize()
+
+
+
+
+//    var pathElement = $("path");
+//    var distance = [ 0,0 ];
+//    var  move = [
+//        [ 1, 0, distance[0] ],
+//        [ 0, 1, distance[1] ],
+//        [ 0, 0, 1 ]
+//    ];
+//
+//    $("#rightBtn").on("click",function(){
+//        distance[0] += 10;
+//        move[0][2] = distance[0];
+//        var attrTxt = "";
+//        attrTxt +="M " + arrySum([50,10,1]).join(" ");
+//        attrTxt += "L " + arrySum([100,10,1]).join(" ");
+//        attrTxt += " " +arrySum([100,50,1]).join(" ");
+//        attrTxt += " " +arrySum([50,50,1]).join(" ")+ " z";
+//        pathElement.attr("d",attrTxt);
+//    });
+//
+//    $("#bottomBtn").on("click",function(){
+//        distance[1] += 10;
+//        move[1][2] = distance[1];
+//        var attrTxt = "";
+//        attrTxt +="M " + arrySum([50,10,1]).join(" ");
+//        attrTxt += "L " + arrySum([100,10,1]).join(" ");
+//        attrTxt += " " +arrySum([100,50,1]).join(" ");
+//        attrTxt += " " +arrySum([50,50,1]).join(" ")+ " z";
+//        pathElement.attr("d",attrTxt);
+//    });
+//
+//    function arrySum(pathPoin){
+//        var sum = [];
+//        for( var i = 0; i < move.length; i++ ){
+//            var number = 0;
+//            for( var z = 0; z < pathPoin.length; z++ ){
+//                number += move[i][z] * pathPoin[z];
+//            }
+//            sum.push( number );
+//        }
+//        sum.pop();
+//        return sum;
+//    }
+
+
+
+</script>
+</body>
+</html>
