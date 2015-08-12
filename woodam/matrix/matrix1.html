@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{padding:0; margin:0;}
+    </style>
+</head>
+<body>
+<button id="leftBtn">왼쪽으로 아래로 이동</button>
+    <svg style="display:block; width:500px; height:500px; margin:100px auto;">
+        <rect x="0" y="0" width="100" height="100" style="fill:blue; stroke-width:3;stroke:rgb(0,0,0)" id="target" />
+    </svg>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.min.js"></script>
+    <script>
+        /**
+         *  [          [
+         *  x1          x             [  40 20  ]
+         *  y1    =     y      +
+         *  ]          ]
+         *
+         * */
+
+
+        (function( $ ){
+            var matrixTest = function( option ){
+                var martrixOption = option.x ? [ option.x, option.y ] : null;
+                var leftButton = option.leftBtn ? option.leftBtn : null;
+                var target = option.target;
+                var targetMartrixOption = [ Number(target.attr("x")), Number(target.attr("y")) ];
+
+                return{
+                    initialize : function(){
+                        if( leftButton ) leftButton.off("click", $.proxy(this.leftMove, this)).on("click", $.proxy(this.leftMove, this));
+                    },
+                    leftMove : function( e ){
+                        e.preventDefault();
+                        var distanceX =  martrixOption[0] + targetMartrixOption[0];
+                        var distanceY =  martrixOption[1] + targetMartrixOption[1];
+                        target.attr({ x : distanceX, y : distanceY });
+                    }
+
+                }
+            }
+
+
+            matrixTest({
+                x : 40
+                , y : 20
+                , leftBtn : $("#leftBtn")
+                , target : $("#target")
+
+            }).initialize();
+
+
+
+        })(jQuery)
+
+
+
+    </script>
+</body>
+</html>

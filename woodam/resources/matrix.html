@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Document</title>
+    <style>
+        * {padding:0; margin:0;}
+        svg {width:100%; height:800px;}
+    </style>
+</head>
+<body>
+    <button id="rightBtn">오른쪽</button>
+    <button id="bottomBtn">아래로</button>
+    <svg>
+        <path id="pathType1" d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
+    </svg>
+
+
+<script src="components/jquery/jquery-1.11.0.js"></script>
+<script>
+/**
+ *
+ *
+ *
+ *
+ * **/
+
+
+var svg = {};
+
+svg.matrix = function( element, point ){
+    var pathAttrText ="",
+    pointArr;
+    this.type = "move";
+    this.element = $(element);
+    this.point = point;
+    this.distance = [0,0];
+
+    this.move = [
+        [ 1, 0, this.distance[0] ],
+        [ 0, 1, this.distance[1] ],
+        [ 0, 0, 1 ]
+    ];
+
+    this.scale = [
+        [ this.distance[0], 0, 0 ],
+        [ 0, this.distance[1], 0 ],
+        [ 0, 0, 1 ]
+    ];
+
+    this.reckoning = function( data ){
+        var sum = [];
+        for( var i = 0; i < this[this.type].length; i++ ){
+            var number = 0;
+            for( var z = 0; z < data.length; z++ ){
+                number += this[this.type][i][z] * data[z];
+            }
+            sum.push( number );
+        }
+        sum.pop();
+        return sum;
+    };
+
+    this.path = function(){
+        var result;
+        for( var i = 0; i < this.point.length; i++ ){
+            pointArr = this.point[i];
+            result = this.reckoning( pointArr).join(" ");
+            if( i === 0 ){
+                pathAttrText += "M " + result;
+            }else if( i === 1 ){
+                pathAttrText += " L " + result;
+            }else if( i === this.point.length-1 ){
+                pathAttrText += " " + result + " z";
+            }else{
+                pathAttrText += " " + result;
+            }
+        }
+        this.element.attr({"d" : pathAttrText });
+        pathAttrText = "";
+    };
+    this.path();
+
+    return {
+
+    }
+
+};
+
+svg.matrix(
+        "#pathType1",
+        [
+            [50,10,1],
+            [100,10,1],
+            [100,50,1],
+            [50,50,1]
+        ]
+);
+
+
+
+</script>
+</body>
+</html>
