@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <script type="text/javascript">
+        var DrawPosCircle = (function(){
+            var _public = {}, doc = document, svg;
+
+            function init(obj){
+                makeSVG(obj);
+            }
+
+            function makeSVG(obj){
+                var width = obj.width || 400;
+                var height = obj.height || 300;
+                svg = SVGElements("svg", {
+                    "width": width,
+                    "height": height,
+                    "style": obj.style
+                });
+                doc.body.appendChild(svg);
+            }
+
+            function makeSVGCircle(obj){
+                var svgCircle, svgG, degree, radian;
+                svgG = SVGElements("g", {"style": obj.style});
+                for(var i = 0, total = obj.total; i < total; i++) {
+                    degree = ( 360 / total ) * i;
+                    radian = getRadian(degree);
+                    svgCircle = SVGElements("circle", {
+                     "cx": posCircle.getX(radian, obj.radiusX) + obj.cx,
+                     "cy": posCircle.getY(radian, obj.radiusY) + obj.cy,
+                     "r": obj.cr,
+                     });
+                    svgG.appendChild(svgCircle);
+                }
+                svg.appendChild(svgG);
+            }
+
+            function makeSVGClock(obj){
+                var svgLine, svgG, degree, radian, lineLen;
+                svgG = SVGElements("g", {"style": obj.style, transform: "rotate(-90, "+obj.cx+", "+obj.cy+")"});
+                for(var i = 0, total = obj.total; i < total; i++) {
+                    degree = ( 360 / total ) * i;
+                    radian = getRadian(degree);
+                    i % 5 ? lineLen = 0.95 : i % 10 ? lineLen = 0.9 : lineLen = 0.85;
+                    svgLine = SVGElements("line", {
+                        "x1": posCircle.getX(radian, obj.radiusX) + obj.cx,
+                        "y1": posCircle.getY(radian, obj.radiusY) + obj.cy,
+                        "x2": posCircle.getX(radian, obj.radiusX * lineLen) + obj.cx,
+                        "y2": posCircle.getY(radian, obj.radiusY * lineLen) + obj.cy
+                    });
+                    svgG.appendChild(svgLine);
+                }
+
+                var hand = [
+                    {id: "hour", color: "blue", width: "10", length: "0.5"},
+                    {id: "minute", color: "red", width: "5", length: "0.6"},
+                    {id: "second", color: "yellow", width: "2", length: "0.7"}
+                ];
+
+                for(var j = 0, handTotal = hand.length; j < handTotal; j++){
+                    var handEl = SVGElements("line", {
+                        "x1": obj.cx,
+                        "y1": obj.cy,
+                        "x2": posCircle.getX(radian, obj.radiusX * hand[j].length) + obj.cx,
+                        "y2": posCircle.getY(radian, obj.radiusY * hand[j].length) + obj.cy,
+                        "style": "stroke:"+hand[j].color+";stroke-linecap:round;stroke-width:"+hand[j].width,
+                        "id": hand[j].id
+                    });
+                    svgG.appendChild(handEl);
+                }
+                svg.appendChild(svgG);
+
+                var h = doc.getElementById("hour"), m = doc.getElementById("minute"), s = doc.getElementById("second");
+
+                function setTime(){
+                    var now = new Date();
+                    var hour = now.getHours() % 12,  minute = now.getMinutes(), second = now.getSeconds();
+                    hour = (hour * Math.PI/6) + (minute * Math.PI/(6*60)) + (second * Math.PI/(360*60));
+                    minute = (minute * Math.PI/30) + (second * Math.PI/(30*60));
+                    second = (second * Math.PI/30);
+                    h.setAttribute("x2", posCircle.getX(hour, obj.radiusX * hand[0].length) + obj.cx);
+                    h.setAttribute("y2", posCircle.getY(hour, obj.radiusY * hand[0].length) + obj.cy);
+                    m.setAttribute("x2", posCircle.getX(minute, obj.radiusX * hand[1].length) + obj.cx);
+                    m.setAttribute("y2", posCircle.getY(minute, obj.radiusY * hand[1].length) + obj.cy);
+                    s.setAttribute("x2", posCircle.getX(second, obj.radiusX * hand[2].length) + obj.cx);
+                    s.setAttribute("y2", posCircle.getY(second, obj.radiusY * hand[2].length) + obj.cy);
+                    //console.log("hour: " + hour + ", minute: " + minute + ", second: " + second);
+                }
+
+                setInterval(setTime, 1000);
+            }
+
+            var posCircle = {
+                getX: function(radian, radius){
+                    return Math.cos(radian) * radius;
+                },
+                getY: function(radian, radius){
+                    return Math.sin(radian) * radius;
+                }
+            }
+
+            function getRadian(degree){
+                return degree / 180 * Math.PI;
+            }
+
+            function SVGElements(element, obj){
+                var svgEl, xmlns = "http://www.w3.org/2000/svg";
+                svgEl = doc.createElementNS(xmlns, element);
+                for( name in obj){
+                    svgEl.setAttribute(name, obj[name]);
+                }
+                return svgEl;
+            }
+
+            _public.init = init;
+            _public.makeSVGCircle = makeSVGCircle;
+            _public.makeSVGClock = makeSVGClock;
+
+            return _public;
+        })();
+
+
+        DrawPosCircle.init({
+            width: 600,
+            height: 1000,
+            style: "background-color: #000"
+        });
+
+        DrawPosCircle.makeSVGCircle({
+            total: 24,
+            cx: 450,
+            cy: 200,
+            cr: 5,
+            radiusX: 100,
+            radiusY: 100,
+            style: "fill:#fff"
+        });
+
+        DrawPosCircle.makeSVGClock({
+            total: 60,
+            cx: 150,
+            cy: 200,
+            radiusX: 100,
+            radiusY: 100,
+            style: "stroke: gray; stroke-width: 2;"
+        });
+        /*
+        DrawPosCircle.makeSVGCircle({
+            total: 24,
+            cx: 450,
+            cy: 500,
+            cr: 5,
+            radiusX: 100,
+            radiusY: 50,
+            style: "fill:#fff"
+        });
+
+        DrawPosCircle.makeSVGClock({
+            total: 60,
+            cx: 150,
+            cy: 500,
+            radiusX: 100,
+            radiusY: 50,
+            style: "stroke: gray; stroke-width: 2;"
+        });
+
+        DrawPosCircle.makeSVGCircle({
+            total: 24,
+            cx: 450,
+            cy: 750,
+            cr: 5,
+            radiusX: 50,
+            radiusY: 100,
+            style: "fill:#fff"
+        });
+
+        DrawPosCircle.makeSVGClock({
+            total: 60,
+            cx: 150,
+            cy: 750,
+            radiusX: 50,
+            radiusY: 100,
+            style: "stroke: gray; stroke-width: 2;"
+        });
+        */
+    </script>
+</body>
+</html>
