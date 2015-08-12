@@ -25,61 +25,137 @@
  *
  *
  * **/
-    var matrix = function( element, type, point, distance){
-        var pointArr = [];
-        var pathAttrText = "";
-        return {
-            move : [
-                [ 1, 0, distance[0] ],
-                [ 0, 1, distance[1] ],
-                [ 0, 0, 1 ]
-            ],
-            scale : [
-                [ distance[0], 0, 0 ],
-                [ 0, distance[1], 0 ],
-                [ 0, 0, 1 ]
-            ],
-            reckoning : function( data ){
-                var sum = [];
-                for( var i = 0; i < this[type].length; i++ ){
-                    var number = 0;
-                    for( var z = 0; z < data.length; z++ ){
-                        number += this[type][i][z] * data[z];
-                    }
-                    sum.push( number );
-                }
-                sum.pop();
-                return sum;
-            },
-            initialize : function(){
-                for( var i = 0; i < point.length; i++ ){
-                    pointArr = point[i];
-                    var result = this.reckoning( pointArr).join(" ");
-                    if( i === 0 ){
-                        pathAttrText += "M " + result;
-                    }else if( i === 1 ){
-                        pathAttrText += " L " + result;
-                    }else if( i === point.length-1 ){
-                        pathAttrText += " " + result + " z";
-                    }else{
-                        pathAttrText += " " + result;
-                    }
-                }
-                $(element).attr({"d" : pathAttrText });
+
+
+var svg = {};
+
+svg.matrix = function( element, point ){
+    var pathAttrText ="",
+    pointArr;
+    this.type = "move";
+    this.element = $(element);
+    this.point = point;
+    this.distance = [0,0];
+
+    this.move = [
+        [ 1, 0, this.distance[0] ],
+        [ 0, 1, this.distance[1] ],
+        [ 0, 0, 1 ]
+    ];
+
+    this.scale = [
+        [ this.distance[0], 0, 0 ],
+        [ 0, this.distance[1], 0 ],
+        [ 0, 0, 1 ]
+    ];
+
+    this.reckoning = function( data ){
+        var sum = [];
+        for( var i = 0; i < this[this.type].length; i++ ){
+            var number = 0;
+            for( var z = 0; z < data.length; z++ ){
+                number += this[this.type][i][z] * data[z];
+            }
+            sum.push( number );
+        }
+        sum.pop();
+        return sum;
+    };
+
+    this.path = function(){
+        var result;
+        for( var i = 0; i < this.point.length; i++ ){
+            pointArr = this.point[i];
+            result = this.reckoning( pointArr).join(" ");
+            if( i === 0 ){
+                pathAttrText += "M " + result;
+            }else if( i === 1 ){
+                pathAttrText += " L " + result;
+            }else if( i === this.point.length-1 ){
+                pathAttrText += " " + result + " z";
+            }else{
+                pathAttrText += " " + result;
             }
         }
+        this.element.attr({"d" : pathAttrText });
+        pathAttrText = "";
+    };
+    this.path();
+
+    return {
+
     }
-matrix(
+
+};
+
+svg.matrix(
         "#pathType1",
-        "move",
         [
             [50,10,1],
             [100,10,1],
             [100,50,1],
             [50,50,1]
         ]
-        ,[ 10,10 ]
-).initialize();
+)
+
+
+
+
+//    var matrix = function( element, type, point, distance){
+//        var pointArr = [];
+//        var pathAttrText = "";
+//        return {
+//            move : [
+//                [ 1, 0, distance[0] ],
+//                [ 0, 1, distance[1] ],
+//                [ 0, 0, 1 ]
+//            ],
+//            scale : [
+//                [ distance[0], 0, 0 ],
+//                [ 0, distance[1], 0 ],
+//                [ 0, 0, 1 ]
+//            ],
+//            reckoning : function( data ){
+//                var sum = [];
+//                for( var i = 0; i < this[type].length; i++ ){
+//                    var number = 0;
+//                    for( var z = 0; z < data.length; z++ ){
+//                        number += this[type][i][z] * data[z];
+//                    }
+//                    sum.push( number );
+//                }
+//                sum.pop();
+//                return sum;
+//            },
+//            initialize : function(){
+//                for( var i = 0; i < point.length; i++ ){
+//                    pointArr = point[i];
+//                    var result = this.reckoning( pointArr).join(" ");
+//                    if( i === 0 ){
+//                        pathAttrText += "M " + result;
+//                    }else if( i === 1 ){
+//                        pathAttrText += " L " + result;
+//                    }else if( i === point.length-1 ){
+//                        pathAttrText += " " + result + " z";
+//                    }else{
+//                        pathAttrText += " " + result;
+//                    }
+//                }
+//                $(element).attr({"d" : pathAttrText });
+//            }
+//        }
+//    }
+//matrix(
+//        "#pathType1",
+//        "move",
+//        [
+//            [50,10,1],
+//            [100,10,1],
+//            [100,50,1],
+//            [50,50,1]
+//        ]
+//        ,[ 10,10 ]
+//).initialize();
 
 
 
