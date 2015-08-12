@@ -15,7 +15,7 @@
     <svg>
         <path id="pathType1" d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
     </svg>
-                      sdsdsd
+
 
 <script src="components/jquery/jquery-1.11.0.js"></script>
 <script>
@@ -62,6 +62,8 @@ svg.matrix = function( element, point ){
         return sum;
     };
 
+
+
     this.path = function(){
         var result;
         for( var i = 0; i < this.point.length; i++ ){
@@ -83,7 +85,19 @@ svg.matrix = function( element, point ){
     this.path();
 
     return {
+        auto : function(){
 
+        },
+        typeChenge : function(){
+
+        },
+        plus : function(){
+            this.distance[0] += 1;
+            this.distance[1] += 1;
+        },
+        minus : function(){
+            this.distance[0] -= 1;
+        }   this.distance[1] -= 1;
     }
 
 };
