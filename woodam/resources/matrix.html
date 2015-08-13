@@ -13,7 +13,7 @@
     <button id="rightBtn">오른쪽</button>
     <button id="bottomBtn">아래로</button>
     <svg>
-        <path id="pathType1" d="M 50 10 L 100 10 100 50 50 50 z" fill="yellow" stroke="blue" stroke-width="1" />
+        <path id="pathType1" fill="yellow" stroke="blue" stroke-width="1" />
     </svg>
 
 
@@ -22,94 +22,116 @@
 /**
  *
  *
- *
- *
- *
  * **/
 
-var svg = {};
-svg.matrix = function( element, point ){
-    var pathAttrText ="",
-    pointArr;
-    this.type = "move";
-    this.element = $(element);
-    this.point = point;
-    this.distance = [0,0];
-
-    this.move = [
-        [ 1, 0, this.distance[0] ],
-        [ 0, 1, this.distance[1] ],
-        [ 0, 0, 1 ]
-    ];
-
-    this.scale = [
-        [ this.distance[0], 0, 0 ],
-        [ 0, this.distance[1], 0 ],
-        [ 0, 0, 1 ]
-    ];
-
-    this.reckoning = function( data ){
+var svg = {
+    reckoning : function( data ){
         var sum = [];
+        var pointArr = [];
         for( var i = 0; i < this[this.type].length; i++ ){
             var number = 0;
             for( var z = 0; z < data.length; z++ ){
                 number += this[this.type][i][z] * data[z];
             }
             sum.push( number );
+            pointArr.push( number );
         }
         sum.pop();
+        this.pointClone.push(pointArr);
         return sum;
-    };
 
+    },
 
-
-    this.path = function(){
-        var result;
+    path : function(){
+        var result = "";
+        var arr = [];
+        this.pathAttrText = "";
+        this.pointArr = "";
         for( var i = 0; i < this.point.length; i++ ){
-            pointArr = this.point[i];
-            result = this.reckoning( pointArr).join(" ");
+            this.pointArr = this.point[i];
+            var point = this.reckoning( this.pointArr );
+            result = point.join(" ");//path
+            point.push(1);
+            this.point[0] = point;//기존에 포인트 값에다가 변경된 포인트값 할당
             if( i === 0 ){
-                pathAttrText += "M " + result;
+               this.pathAttrText += "M " + result;
             }else if( i === 1 ){
-                pathAttrText += " L " + result;
+                this.pathAttrText += " L " + result;
             }else if( i === this.point.length-1 ){
-                pathAttrText += " " + result + " z";
+                this.pathAttrText += " " + result + " z";
             }else{
-                pathAttrText += " " + result;
+                this.pathAttrText += " " + result;
             }
-        }
-        this.element.attr({"d" : pathAttrText });
-        pathAttrText = "";
-    };
-    this.path();
+        };
+        this.element.attr({"d" : this.pathAttrText });
+        this.point = this.pointClone;
+        this.pointClone = [];
+        return this;
+    },
 
-    return {
-        auto : function(){
 
-        },
-        typeChenge : function(){
+    auto : function(){
 
-        },
-        plus : function(){
-            this.distance[0] += 1;
-            this.distance[1] += 1;
-        },
-        minus : function(){
-            this.distance[0] -= 1;
-        }   this.distance[1] -= 1;
+    },
+    typeChenge : function(){
+
+    },
+    plus : function(){
+        this.distance[0] += 10;
+        this.distance[1] += 10;
+        this.path();
+        return this;
+    },
+    minus : function(){
+        this.distance[0] -= 10;
+        this.distance[1] -= 10;
+        this.path();
+        return this;
+    },
+    rotation : function( ra ){
+        this.radian = ra || this.radian;
+        this.type = "rotate";
+        this.path();
+        return this;
     }
 
 };
 
-svg.matrix(
-        "#pathType1",
-        [
-            [50,10,1],
-            [100,10,1],
-            [100,50,1],
-            [50,50,1]
-        ]
-);
+svg.matrix = function( element, type, point  ){
+    this.distance = [10,10];
+    this.pointClone =[];
+    this.radian = this.radian || 0.3;
+    this.move = [
+        [ 1, 0, this.distance[0] ],
+        [ 0, 1, this.distance[1] ],
+        [ 0, 0, 1 ]
+    ];
+    this.scale = [
+        [ this.distance[0], 0, 0 ],
+        [ 0, this.distance[1], 0 ],
+        [ 0, 0, 1 ]
+    ];
+    this.rotate = [
+        [ Math.cos(this.radian), -Math.sin(this.radian), 0 ],
+        [ Math.sin(this.radian), Math.cos(this.radian), 0 ],
+        [ 0, 0, 1 ]
+    ];
+
+    this.type = "move";
+    this.element = $(element);
+    this.point = point || [
+        [50,10,1],
+        [100,10,1],
+        [100,50,1],
+        [50,50,1]
+    ];
+    return this;
+};
+
+svg.matrix("#pathType1").path().rotation(0.8);
+
+
+
 
 
 
