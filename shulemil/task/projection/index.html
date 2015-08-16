@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="jquery.min.js"></script>
+    <script src="jui.chart.min.js"></script>
+    <script src="coordinate.js"></script>
+    <script>
+        jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+            var Template = function() {
+//                this.draw = function() {
+//                    var g = this.chart.svg.group();
+//
+//                    this.eachData(function(i, data) {
+//                        g.append(this.chart.svg.circle({
+//                            fill: this.color(i),
+//                            r: this.brush.size,
+//                            cx: this.axis.x(data.x),
+//                            cy: this.axis.y(data.y),
+//                            cz: this.axis.y(data.z)
+//                        }));
+//                    });
+//
+//                    return g;
+//                }
+                this.draw = function() {
+                    var opts = {
+                                fill: this.color(0),
+                                "fill-opacity": 0.1,
+                                stroke: this.color(1),
+                                "stroke-width": 1
+                            },
+                            g = this.chart.svg.group();
+
+                    var path = this.chart.svg.path(opts);
+                    path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                    path.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                    path.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                    path.LineTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                    path.LineTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+
+                    var path2 = this.chart.svg.path(opts);
+                    path2.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                    path2.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                    path2.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+
+                    var path3 = this.chart.svg.path(opts);
+                    path3.MoveTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                    path3.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                    path3.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+
+                    var path4 = this.chart.svg.path(opts);
+                    path4.MoveTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                    path4.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                    path4.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+
+                    var path5 = this.chart.svg.path(opts);
+                    path5.MoveTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                    path5.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                    path5.LineTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+
+                    g.append(path);
+                    g.append(path2);
+                    g.append(path3);
+                    g.append(path4);
+                    g.append(path5);
+
+                    this.eachData(function(i, data) {
+                        g.append(this.chart.svg.circle({
+                            fill: this.color(i),
+                            r: this.brush.size,
+                            cx: this.axis.x(data.x),
+                            cy: this.axis.y(data.y),
+                            cz: this.axis.y(data.z)
+                        }));
+                    });
+
+                    return g;
+                }
+            };
+
+            Template.setup = function() {
+                return {
+                    size: 5
+                }
+            };
+
+            return Template;
+        }, "chart.brush.core");
+
+        jui.ready([ "chartx.coordinate" ], function(builder) {
+//            window.c = builder("#chart", {
+//                domain: [ -50, 50 ],
+//                brush: "template",
+//                 data: [
+//                    { x: 6, y: 6, z: 20},
+//                    { x: -6, y: -6, z: 20},
+//                    { x: 6, y: -6, z: 20},
+//                    { x: -6, y: 6, z: 20},
+//                     { x: 6, y: 6, z: 10},
+//                     { x: -6, y: -6, z: 10},
+//                     { x: 6, y: -6, z: 10},
+//                     { x: -6, y: 6, z: 10}
+//                ]
+//            });
+            window.c = builder("#chart", {
+                domain: [ -30, 30 ],
+                brush: "template",
+                // 모델 좌표계.
+                data: [
+                    { x : -10,  y: -5,  z: 10 },
+                    { x : 10,   y: -5,  z: 10 },
+                    { x : 10,   y: -5, z: -10 },
+                    { x : -10,  y: -5, z: -10 },
+                    { x : 0,    y: 5,   z: 5 }
+                ]
+            });
+
+
+            // 세계 좌표,
+//            setTimeout(function () {
+//                var data = c.options.data, x = 0, y = 0, z = 0, mx = 5, my = 3, mz = -10,
+//                        m = [
+//                            [1, 0, 0, mx],
+//                            [0, 1, 0, my],
+//                            [0, 0, 1, mz],
+//                            [0, 0, 0,  1]
+//                        ];
+//
+//                for (var i = 0, len = data.length; i < len; i++) {
+//                    x = data[i].x, y = data[i].y, z = data[i].z;=
+//                    data[i].x = (m[0][0] * data[i].x) + (m[0][1] * data[i].y) + (m[0][2] * data[i].z) + (m[0][3] * 1);
+//                    data[i].y = (m[1][0] * data[i].x) + (m[1][1] * data[i].y) + (m[1][2] * data[i].z) + (m[1][3] * 1);
+//                    data[i].z = (m[2][0] * data[i].x) + (m[2][1] * data[i].y) + (m[2][2] * data[i].z) + (m[2][3] * 1);
+//                }
+//
+//                c.update(data);
+//                console.table(data);
+//            }, 1000);
+//
+//            // 뷰잉 좌표
+//            setTimeout(function () {
+//                /*
+//                 Tvt = |1 0 0 -x0|     Rvt = |ux uy uz 0|
+//                 |0 1 0 -y0|           |vx vy vz 0|
+//                 |0 0 1 -z0|           |nx ny nz 0|
+//                 |0 0 0  1 |           |0  0  0  1|
+//
+//                 Mvt = Rvt * Tvt
+//                 = |ux uy uz -(x0ux + y0uy + z0uz)|
+//                 |vx vy vz -(x0vx + y0vy + z0vz)|
+//                 |nx ny nz -(x0nx + y0ny + z0nz)|
+//                 | 0  0  0              1       |
+//                 */
+//
+//            }, 1000);
+
+
+            // 3d 투영 (원근 투영)
+            setTimeout(function () {
+
+                var data = c.options.data, x = 0, y = 0, z = 0, zvp = 10,
+                xprp = 0, yprp = 0, zprp = 5;
+
+
+                for (var i = 0, lenR = data.length; i < lenR; i++) {
+                    x = data[i].x, y = data[i].y, z = data[i].z;
+
+                    data[i].x = x * ((zprp-zvp)/(zprp-z)) + xprp * ((zvp-z)/(zprp-z));
+                    data[i].y = y * ((zprp-zvp)/(zprp-z)) + yprp * ((zvp-z)/(zprp-z));
+                    data[i].z = zvp;
+
+                    // if xprp = 0, yprp = 0, zprp = 0 ...
+                    // data[i].x = x * (zvp/z);
+                    // data[i].y = y * (zvp/z);
+                    // data[i].z = zvp;
+                }
+                c.update(data);
+                console.table(data);
+            }, 1000);
+
+        });
+    </script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
