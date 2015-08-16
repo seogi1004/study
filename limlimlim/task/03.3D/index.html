@@ -6,7 +6,7 @@
     <style>
 
         #container{
-            width: 1200px;
+            width: 800px;
         }
         #container > canvas{
             background-color: #222;
@@ -16,12 +16,59 @@
 <body>
 
 <div id="container">
-    <canvas width="550" height="350"></canvas>
-    <canvas width="550" height="350"></canvas>
-    <canvas width="550" height="350"></canvas>
-    <canvas width="550" height="350"></canvas>
+    <canvas id="canvas" width="650" height="450"></canvas>
 </div>
 
-<script src="data/teapot.js" />
+<script src="data/teapot.js"></script>
+<script src="src/world.js" ></script>
+<script src="src/model.js" ></script>
+<script src="src/polygon.js" ></script>
+<script src="src/vertex.js" ></script>
+<script src="src/matrix.js" ></script>
+<script>
+    var canvas = document.getElementById( 'canvas');
+    var world = new window.World( canvas );
+    world.append( 'teapot1',teapot );
+    world.append( 'teapot2',teapot );
+    world.append( 'teapot3',teapot );
+    world.append( 'teapot4',teapot );
+    world.append( 'teapot5',teapot );
+
+    var centerX = canvas.width/2;
+    var centerY = canvas.height/2;
+    var teapot1 = world.getModel( 'teapot1');
+    var teapot2 = world.getModel( 'teapot2');
+    var teapot3 = world.getModel( 'teapot3');
+    var teapot4 = world.getModel( 'teapot4');
+    var teapot5 = world.getModel( 'teapot5');
+
+    teapot1.scale( 0.6, 0.6, 0.6 ).translate( 400, 180, 0);
+    teapot2.scale( 0.4, 0.4, 0.4 ).translate( 100, 80, 0);
+    teapot3.scale( 0.3, 0.3, 0.3 ).translate( 500, 380, 0);
+    teapot4.scale( 0.5, 0.5, 0.5 ).translate( 150, 280, 0);
+    teapot5.scale( 0.2, 0.2, 0.2 ).translate( 500, 50, 0);
+
+    world.render();
+    var angle = 0;
+    var timer;
+
+    function start(){
+        timer = setInterval( function(){
+            teapot1.translate( -400, -180, 0).rotateY( 0.1 ).rotateX( 0.1 ).rotateZ( 0.1 ).translate( 400, 180, 0);
+            teapot2.translate( -100, -80, 0).rotateY( -0.2 ).rotateX( -0.1 ).rotateZ( -0.1 ).translate( 100, 80, 0);
+            teapot3.translate( -500, -380, 0).rotateY( 0.1 ).rotateX( -0.1 ).rotateZ( -0.1 ).translate( 500, 380, 0);
+            teapot4.translate( -150, -280, 0).rotateY( 0.05 ).rotateX( -0.05 ).rotateZ( 0.05 ).translate( 150, 280, 0);
+            teapot5.translate( -500, -50, 0).rotateY( -0.3 ).rotateX( 0.1 ).rotateZ( 0.3 ).translate( 500, 50, 0);
+            world.render();
+        }, 10 )
+    }
+
+    function stop(){
+       clearInterval( timer );
+    }
+
+    start();
+
+</script>
 </body>
 </html>
