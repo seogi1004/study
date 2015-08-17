@@ -172,7 +172,15 @@ jui.ready([ "chart.builder", "util.transform", "chart.polygon" ], function(build
             var newData = chart.axis(0).data;
 
             return setInterval(function() {
-                newData.vertices = ctrl[type](value);
+                var cx = (newData.min[0] + newData.max[0]) / 2,
+                    cy = (newData.min[1] + newData.max[1]) / 2,
+                    cz = (newData.min[2] + newData.max[2]) / 2;
+
+                newData.vertices = ctrl.merge(
+                    [ "move3d", cx, cy, cz ],
+                    [ type, value ],
+                    [ "move3d", -cx, -cy, -cz ]
+                );
 
                 chart.axis(0).update(newData);
                 chart.render();
