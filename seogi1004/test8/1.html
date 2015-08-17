@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../xy_tpl/jui.chart.min.js"></script>
+<script src="../xy_tpl/coordinate.js"></script>
+<script>
+jui.define("chart.brush.template", [], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group(),
+                polygon = this.chart.svg.polygon({
+                    "fill": "transparent",
+                    "stroke": this.color(0),
+                    "stroke-width": this.brush.borderWidth
+                });
+
+            g.append(polygon);
+
+            this.eachData(function(i, data) {
+                var x = this.axis.x(data.x),
+                    y = this.axis.y(data.y);
+
+                polygon.point(x, y);
+
+                g.append(this.chart.svg.circle({
+                    fill: this.color(1),
+                    r: this.brush.circleRadius,
+                    cx: x,
+                    cy: y
+                }));
+
+                g.append(this.chart.text({
+                    fill: this.brush.fontColor,
+                    x: x + 3,
+                    y: y + 3
+                }).text(data.title));
+            });
+
+            return g;
+        }
+    }
+
+    Template.setup = function() {
+        return {
+            circleRadius: 3,
+            borderWidth: 1,
+            fontColor: "white"
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder" ], function(builder) {
+    var data = [
+        { x: 0,     y: 0,   title: "A" },
+        { x: 10,    y: 0,   title: "B" },
+        { x: 5,     y: 10,  title: "C" }
+    ];
+
+    var data2 = [
+        { x: (data[0].x + data[1].x) / 2, y: (data[0].y + data[1].y) / 2, title: "AB 중점" },
+        { x: (data[1].x + data[2].x) / 2, y: (data[1].y + data[2].y) / 2, title: "BC 중점" },
+        { x: (data[2].x + data[0].x) / 2, y: (data[2].y + data[0].y) / 2, title: "CA 중점" }
+    ]
+
+    chart = builder("#result", {
+        theme: "dark",
+        padding: 20,
+        width: 500,
+        height: 500,
+        axis: [{
+            x: {
+                type: "range",
+                domain: [ -15, 15 ],
+                unit: 1,
+                line: "solid"
+            },
+            y: {
+                type: "range",
+                domain: [ -15, 15 ],
+                unit: 1,
+                line: "solid"
+            },
+            data: data
+        }, {
+            extend: 0,
+            data: data2
+        }],
+        brush: [{
+            type: "template"
+        }, {
+            type: "template",
+            axis: 1,
+            borderWidth: 0
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0,
+            gridXFontSize: 9,
+            gridYFontSize: 9
+        }
+    });
+});
+
+// A와 B의 거리
+var res1 = Math.sqrt(Math.pow(data[1].x - data[0].x, 2) + Math.pow(data[1].y - data[0].y, 2));
+$("body").append("<div>A와 B의 거리: " + res1 + "</div>");
+
+// B와 C의 거리
+var res2 = Math.sqrt(Math.pow(data[2].x - data[1].x, 2) + Math.pow(data[2].y - data[1].y, 2));
+$("body").append("<div>B와 C의 거리: " + res2 + "</div>");
+
+// C와 A의 거리
+var res3 = Math.sqrt(Math.pow(data[2].x - data[0].x, 2) + Math.pow(data[2].y - data[0].y, 2));
+$("body").append("<div>C와 A의 거리: " + res3 + "</div>");
+</script>
+</head>
+
+<body>
+<div id="result"></div>
+</body>
+</html>
