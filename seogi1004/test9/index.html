@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../dist/jui.min.css" rel="stylesheet" />
+<link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../dist/jui.min.js"></script>
+<script src="../xy_tpl/util.js"></script>
+
+<style>
+    .input {
+        margin-right: 20px !important;
+    }
+    .group {
+        margin-right: 5px !important;
+    }
+    .head {
+        height: 35px !important;
+    }
+</style>
+<script>
+var timer = null;
+
+jui.define("chart.brush.missile3d", [], function() {
+    var Missible3DBrush = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                var x = this.axis.x(data[0]),
+                    y = this.axis.y(data[1]);
+
+                var c = this.chart.svg.circle({
+                    fill: this.color(0),
+                    r: this.brush.r,
+                    cx: x,
+                    cy: y
+                });
+
+                g.append(c);
+            });
+
+            return g;
+        }
+    }
+
+    Missible3DBrush.setup = function() {
+        return {
+            r: 5
+        }
+    }
+
+    return Missible3DBrush;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, Transform, Math2) {
+    var domain = [ -10000, 10000 ];
+
+    var chart = builder("#result", {
+        width: 750,
+        height: 750,
+        theme: "dark",
+        axis: [{
+            x: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            },
+            y: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            },
+            data: getData(10)
+        }],
+        brush: [{
+            type: "missile3d",
+            clip: false
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0
+        }
+    });
+
+    initEvents();
+
+    function run(step) {
+        if(step > domain[1]) return;
+
+        var degree = 360 / data.length;
+
+        for(var i = 0; i < data.length; i++) {
+            var r = Math2.radian(degree * i);
+
+            data[i] = [
+                data[i][0] + (step * Math.cos(r)),
+                data[i][1] + (step * Math.sin(r)),
+                data[i][2]
+            ]
+        }
+
+        chart.axis(0).update(data);
+
+        setTimeout(function() {
+            run(step + 1);
+        }, 25);
+    }
+
+    function initEvents() {
+        var rx = 0,
+            ry = 0,
+            rz = 0;
+
+        $(".rotate-x").off("click").on("click", function() {
+            var val = 0;
+
+            switch($(this).val()) {
+                case "cw": val = -5; break;
+                case "ccw": val = 5; break;
+            }
+
+            rx += val;
+            data = ctrl.rotate3dx(5);
+
+            console.log("rotate3dx: " + rx);
+        });
+
+        $(".rotate-y").off("click").on("click", function() {
+            var val = 0;
+
+            switch($(this).val()) {
+                case "cw": val = -5; break;
+                case "ccw": val = 5; break;
+            }
+
+            ry += val;
+            data = ctrl.rotate3dy(val);
+
+            console.log(data);
+            console.log("rotate3dy: " + ry);
+        });
+
+        $(".rotate-z").off("click").on("click", function() {
+            var val = 0;
+
+            switch($(this).val()){
+                case "cw": val = -5; break;
+                case "ccw": val = 5; break;
+            }
+
+            rz += val;
+            data = ctrl.rotate3dz(val);
+
+            console.log("rotate3dz: " + rz);
+        });
+
+        $(".run").off("click").on("click", function() {
+            run(0);
+        });
+    }
+
+    function getData(count) {
+        var res = [];
+
+        for(var i = 0; i < count; i++) {
+            res.push([ 0, 0, 0, 1 ]);
+        }
+
+        return res;
+    }
+});
+</script>
+</head>
+
+<body class="jui">
+
+<div class="panel">
+    <div class="head">
+        <button class="btn small run">Run</button>&nbsp;&nbsp;
+
+        Rotate-X:
+        <div class="group">
+            <button class="btn small rotate-x" value="cw">&lt;</button>
+            <button class="btn small rotate-x" value="ccw">&gt;</button>
+        </div>
+
+        Rotate-Y:
+        <div class="group">
+            <button class="btn small rotate-y" value="cw">&lt;</button>
+            <button class="btn small rotate-y" value="ccw">&gt;</button>
+        </div>
+
+        Rotate-Z:
+        <div class="group">
+            <button class="btn small rotate-z" value="cw">&lt;</button>
+            <button class="btn small rotate-z" value="ccw">&gt;</button>
+        </div>
+    </div>
+    <div class="body fit">
+        <div id="result"></div>
+    </div>
+</div>
+
+</body>
+</html>
