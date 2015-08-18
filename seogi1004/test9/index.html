@@ -47,7 +47,8 @@ jui.define("chart.brush.missile3d", [], function() {
 
     Missible3DBrush.setup = function() {
         return {
-            r: 5
+            r: 5,
+            clip: true
         }
     }
 
@@ -55,8 +56,14 @@ jui.define("chart.brush.missile3d", [], function() {
 }, "chart.brush.core");
 
 jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, Transform, Math2) {
+    var isRun = false;
+
     var domain = [ -10000, 10000 ],
         step = 3000;
+
+    var rx = 0,
+        ry = 0,
+        rz = 0;
 
     var chart = builder("#result", {
         width: 750,
@@ -78,8 +85,7 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
             data: getData(50)
         }],
         brush: [{
-            type: "missile3d",
-            clip: false
+            type: "missile3d"
         }],
         style: {
             gridXAxisBorderWidth: 1,
@@ -92,15 +98,24 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
 
     function run(step) {
         if(step > domain[1]) return;
+        isRun = true;
 
         var data = chart.axis(0).data,
             degree = 360 / data.length;
 
         for(var i = 0; i < data.length; i++) {
-            var form = new Transform([ data[i] ]),
+            var f = new Transform([ data[i] ]),
                 r = Math2.radian(degree * i);
 
-            data[i] = form.move3d(step * Math.cos(r), step * Math.sin(r), 0)[0];
+            data[i] = f.merge(
+                [ "rotate3dx", -rx ],
+                [ "rotate3dy", -ry ],
+                [ "rotate3dz", -rz ],
+                [ "move3d", step * Math.cos(r), step * Math.sin(r), 0 ],
+                [ "rotate3dx", rx ],
+                [ "rotate3dy", ry ],
+                [ "rotate3dz", rz ]
+            )[0];
         }
 
         chart.axis(0).update(data);
@@ -111,11 +126,9 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
     }
 
     function initEvents() {
-        var rx = 0,
-            ry = 0,
-            rz = 0;
-
         $(".rotate-x").off("click").on("click", function() {
+            if(isRun) return;
+
             var val = 0,
                 form = new Transform(chart.axis(0).data);
 
@@ -129,6 +142,8 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
         });
 
         $(".rotate-y").off("click").on("click", function() {
+            if(isRun) return;
+
             var val = 0,
                 form = new Transform(chart.axis(0).data);
 
@@ -142,6 +157,8 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
         });
 
         $(".rotate-z").off("click").on("click", function() {
+            if(isRun) return;
+
             var val = 0,
                 form = new Transform(chart.axis(0).data);
 
