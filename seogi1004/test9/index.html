@@ -55,7 +55,8 @@ jui.define("chart.brush.missile3d", [], function() {
 }, "chart.brush.core");
 
 jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, Transform, Math2) {
-    var domain = [ -10000, 10000 ];
+    var domain = [ -10000, 10000 ],
+        step = 3000;
 
     var chart = builder("#result", {
         width: 750,
@@ -74,7 +75,7 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
                 step: 10,
                 line: true
             },
-            data: getData(10)
+            data: getData(50)
         }],
         brush: [{
             type: "missile3d",
@@ -92,16 +93,14 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
     function run(step) {
         if(step > domain[1]) return;
 
-        var degree = 360 / data.length;
+        var data = chart.axis(0).data,
+            degree = 360 / data.length;
 
         for(var i = 0; i < data.length; i++) {
-            var r = Math2.radian(degree * i);
+            var form = new Transform([ data[i] ]),
+                r = Math2.radian(degree * i);
 
-            data[i] = [
-                data[i][0] + (step * Math.cos(r)),
-                data[i][1] + (step * Math.sin(r)),
-                data[i][2]
-            ]
+            data[i] = form.move3d(step * Math.cos(r), step * Math.sin(r), 0)[0];
         }
 
         chart.axis(0).update(data);
@@ -117,46 +116,42 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
             rz = 0;
 
         $(".rotate-x").off("click").on("click", function() {
-            var val = 0;
+            var val = 0,
+                form = new Transform(chart.axis(0).data);
 
             switch($(this).val()) {
-                case "cw": val = -5; break;
-                case "ccw": val = 5; break;
+                case "cw": val = -10; break;
+                case "ccw": val = 10; break;
             }
 
             rx += val;
-            data = ctrl.rotate3dx(5);
-
-            console.log("rotate3dx: " + rx);
+            chart.axis(0).update(form.rotate3dx(val));
         });
 
         $(".rotate-y").off("click").on("click", function() {
-            var val = 0;
+            var val = 0,
+                form = new Transform(chart.axis(0).data);
 
             switch($(this).val()) {
-                case "cw": val = -5; break;
-                case "ccw": val = 5; break;
+                case "cw": val = -10; break;
+                case "ccw": val = 10; break;
             }
 
             ry += val;
-            data = ctrl.rotate3dy(val);
-
-            console.log(data);
-            console.log("rotate3dy: " + ry);
+            chart.axis(0).update(form.rotate3dy(val));
         });
 
         $(".rotate-z").off("click").on("click", function() {
-            var val = 0;
+            var val = 0,
+                form = new Transform(chart.axis(0).data);
 
             switch($(this).val()){
-                case "cw": val = -5; break;
-                case "ccw": val = 5; break;
+                case "cw": val = -10; break;
+                case "ccw": val = 10; break;
             }
 
             rz += val;
-            data = ctrl.rotate3dz(val);
-
-            console.log("rotate3dz: " + rz);
+            chart.axis(0).update(form.rotate3dz(val));
         });
 
         $(".run").off("click").on("click", function() {
@@ -165,13 +160,21 @@ jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, 
     }
 
     function getData(count) {
-        var res = [];
+        var data = [],
+            degree = 360 / count;
 
         for(var i = 0; i < count; i++) {
-            res.push([ 0, 0, 0, 1 ]);
+            var r = Math2.radian(degree * i);
+
+            data[i] = [
+                i + (step * Math.cos(r)),
+                i + (step * Math.sin(r)),
+                0,
+                1
+            ]
         }
 
-        return res;
+        return data;
     }
 });
 </script>
