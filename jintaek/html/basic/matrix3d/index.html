@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="../../../lib/jquery-1.11.0.min.js"></script>
+    <script src="../../../lib/jui.chart.min.js"></script>
+    <script src="coordinate.js"></script>
+    <script>
+        jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+            var Template = function() {
+
+                this.draw = function() {
+
+                    var g = this.chart.svg.group();
+                    var data = this.listData();
+                    for(var i=0;i<data[0].length;i++){
+                        g.append(this.chart.svg.circle({
+                             fill: data[1][i],
+                            r: this.brush.circleRadius,
+                            cx:this.axis.x(data[0][i][0]),
+                            cy:this.axis.y(data[0][i][1])
+                        }));
+                    }
+
+                    return g;
+                }
+            };
+
+            Template.setup = function(a) {
+
+                return {
+                    circleRadius: 3,
+                    borderWidth: 1,
+                }
+
+            };
+
+
+            return Template;
+        }, "chart.brush.core");
+
+        jui.ready([ "chartx.coordinate" ], function(builder) {
+
+            var circleData = setCircle(36, 10);
+
+
+
+
+            var val = [];
+
+            window.c = builder("#chart", {
+                domain: [ -20, 20 ],
+                brush: "template",
+                data : circleData
+            });
+
+
+            window.matrix = function(type){
+
+                var matrixs = {
+                    scale3d : [
+                        [ val[0], 0, 0, 0],
+                        [ 0, val[0], 0, 0],
+                        [ 0, 0, val[0], 0],
+                        [ 0, 0, 0, 1]
+                    ],
+                    rotate3dz: [
+                        [ Math.cos(radian(val[0])), -Math.sin(radian(val[0])), 0, 0 ],
+                        [ Math.sin(radian(val[0])), Math.cos(radian(val[0])), 0, 0 ],
+                        [ 0, 0, 1, 0 ],
+                        [ 0, 0, 0, 1 ]
+                    ],
+                    rotate3dx: [
+                        [ 1, 0, 0, 0 ],
+                        [ 0, Math.cos(radian(val[0])), -Math.sin(radian(val[0])), 0 ],
+                        [ 0, Math.sin(radian(val[0])), Math.cos(radian(val[0])), 0 ],
+                        [ 0, 0, 0, 1 ]
+                    ],
+                    rotate3dy: [
+                        [ Math.cos(radian(val[0])), 0, Math.sin(radian(val[0])), 0 ],
+                        [ 0, 1, 0, 0 ],
+                        [ -Math.sin(radian(val[0])), 0, Math.cos(radian(val[0])), 0 ],
+                        [ 0, 0, 0, 1 ]
+                    ]
+                }
+
+                function radian(degree){
+                    return (degree/180) * Math.PI;
+                };
+
+                window.calc(matrixs[type]);
+
+            };
+
+
+            window.calc = function(matrixs){
+
+                for(var i = 0; i < circleData[0].length; i++) {
+                    circleData[0][i] = multiple(matrixs, circleData[0][i]);
+                };
+
+                function multiple(a, b) {
+                    var m = [];
+                    for(var i = 0; i < a.length; i++) {
+                        var sum = 0;
+                        for(var j = 0; j < a[i].length; j++) {
+                            sum += a[i][j] * b[j];
+                        }
+                        m.push(sum);
+                    }
+                    return m;
+                }
+
+                window.c.update(circleData);
+
+            };
+
+
+            window.scale3d = function(type){
+                switch (type){
+                    case 'up'   : val[0] = 1.1; break;
+                    case 'down' : val[0] = 0.9; break;
+                }
+                window.matrix('scale3d');
+            };
+
+            window.skew3dY = function(type){
+                val[0] = type;
+                window.matrix('skewY');
+            };
+            window.rotate3dz = function(type){
+                val[0] = type;
+                window.matrix('rotate3dz');
+            }
+
+            window.rotate3dx = function(type){
+                val[0] = type;
+                window.matrix('rotate3dx');
+            }
+
+            window.rotate3dy = function(type){
+                val[0] = type;
+                window.matrix('rotate3dy');
+            }
+
+
+        });
+
+
+        function setCircle(count, distance){
+
+            var pos = [], color = [], degree = 360 / count;
+
+            for(var i=0;i<count;i++){
+
+                var radian = (degree*i/180) * Math.PI;
+                pos.push([
+                    distance * Math.cos(radian),
+                    distance * Math.sin(radian),
+                    0,
+                    1
+                ]);
+                color.push('#' + Math.floor(Math.random()*16777215).toString(16));
+            };
+            return [pos, color];
+        };
+
+    </script>
+</head>
+
+<body>
+
+
+<div>
+    <button type="button" onclick="window.scale3d('up')">scale+</button>
+    <button type="button" onclick="window.scale3d('down')">scale-</button>
+    <hr/>
+    <button type="button" onclick="window.rotate3dz(20)">rotate3dz 20</button>
+    <button type="button" onclick="window.rotate3dx(20)">rotate3dx 20</button>
+    <button type="button" onclick="window.rotate3dy(20)">rotate3dy 20</button>
+    <hr/>
+</div>
+
+
+
+<div id="chart"></div>
+
+</body>
+</html>
