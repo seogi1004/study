@@ -20,14 +20,15 @@
                         }else{
                             value += 'L' + this.axis.x(data[key].x) + ' ' + this.axis.y(data[key].y) + ' '
                         }
-                    }
+                    };
+
                     g.append(this.chart.svg.path({
                         fill: '#ff7a00',
                         "fill-opacity": 0.5,
                         stroke :"#ff7a00",
                         "stroke-width" : 1,
                         d : value + ' Z'
-                    }))
+                    }));
 
                     return g;
                 }
@@ -120,7 +121,6 @@
 
                 window.c.update(data);
             };
-
 
         });
     </script>
