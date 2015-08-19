@@ -13,12 +13,12 @@
 
                     var g = this.chart.svg.group();
                     var data = this.listData();
-                    for(var i=0;i<data[0].length;i++){
+                    for(var i=0;i<data.length;i++){
                         g.append(this.chart.svg.circle({
-                             fill: data[1][i],
+                             fill: this.color(0),
                             r: this.brush.circleRadius,
-                            cx:this.axis.x(data[0][i][0]),
-                            cy:this.axis.y(data[0][i][1])
+                            cx:this.axis.x(data[i][0]),
+                            cy:this.axis.y(data[i][1])
                         }));
                     }
 
@@ -42,8 +42,6 @@
         jui.ready([ "chartx.coordinate" ], function(builder) {
 
             var circleData = setCircle(36, 10);
-
-
 
 
             var val = [];
@@ -95,8 +93,8 @@
 
             window.calc = function(matrixs){
 
-                for(var i = 0; i < circleData[0].length; i++) {
-                    circleData[0][i] = multiple(matrixs, circleData[0][i]);
+                for(var i = 0; i < circleData.length; i++) {
+                    circleData[i] = multiple(matrixs, circleData[i]);
                 };
 
                 function multiple(a, b) {
@@ -124,10 +122,6 @@
                 window.matrix('scale3d');
             };
 
-            window.skew3dY = function(type){
-                val[0] = type;
-                window.matrix('skewY');
-            };
             window.rotate3dz = function(type){
                 val[0] = type;
                 window.matrix('rotate3dz');
@@ -149,7 +143,7 @@
 
         function setCircle(count, distance){
 
-            var pos = [], color = [], degree = 360 / count;
+            var pos = [], degree = 360 / count;
 
             for(var i=0;i<count;i++){
 
@@ -160,10 +154,24 @@
                     0,
                     1
                 ]);
-                color.push('#' + Math.floor(Math.random()*16777215).toString(16));
             };
-            return [pos, color];
+            return pos;
         };
+
+        function run(){
+            setTimeout( function(){
+                var count = 0;
+                setInterval( function(){
+                    window.rotate3dx(10);
+                    window.rotate3dz(10);
+                    window.rotate3dy(10);
+                }, 100 )
+            }, 3000 );
+        }
+
+        function stop(){
+            clearInterval(run());
+        }
 
     </script>
 </head>
@@ -171,7 +179,7 @@
 <body>
 
 
-<div>
+<div style="margin-bottom:20px">
     <button type="button" onclick="window.scale3d('up')">scale+</button>
     <button type="button" onclick="window.scale3d('down')">scale-</button>
     <hr/>
@@ -179,6 +187,7 @@
     <button type="button" onclick="window.rotate3dx(20)">rotate3dx 20</button>
     <button type="button" onclick="window.rotate3dy(20)">rotate3dy 20</button>
     <hr/>
+    <button type="button" onclick="run()">run!!</button>
 </div>
 
 
