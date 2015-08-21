@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../xy_tpl/jui.chart.min.js"></script>
+<script src="../xy_tpl/coordinate.js"></script>
+<style>
+    div {
+        display: inline;
+        margin-right: 10px;
+    }
+</style>
+<script>
+jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                g.append(this.chart.svg.circle({
+                    fill: this.color(0),
+                    r: 3,
+                    cx: this.axis.x(data.x),
+                    cy: this.axis.y(data.y)
+                }));
+            });
+
+            return g;
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+jui.ready([ "chartx.coordinate" ], function(builder) {
+    var data1 = [],
+        data2 = [];
+
+    for(var x = -5; x < 5; x += 0.5) {
+        // 일차함수: y = x + 1의 직선
+        data1.push(getFunc1(x, 1, 1));
+    }
+
+    for(var x = -5; x < 5; x += 0.5) {
+        // 역행렬이 없을 때, 직선이 원점이 되는 경우
+        data2.push(getXY(x, getFunc1(x, 1, 1)["y"]));
+    }
+
+    builder("#chart1", {
+        width: 500,
+        height: 500,
+        domain: [ -15, 15 ],
+        brush: "template",
+        data: data1
+    });
+
+    builder("#chart2", {
+        width: 500,
+        height: 500,
+        domain: [ -15, 15 ],
+        brush: "template",
+        data: data2
+    });
+});
+
+function getXY(x, y) {
+    var a = -1,
+        b = 1,
+        c = -1,
+        d = 1;
+
+    return {
+        x: (a * x) + (b * y),
+        y: (c * x) + (d * y)
+    }
+}
+
+// 일차함수 (직선의 방정식)
+function getFunc1(x, a, b) {
+    return {
+        x: x,
+        y: a * x + b
+    }
+}
+</script>
+</head>
+
+<body>
+<div id="chart1"></div>
+<div id="chart2"></div>
+</body>
+</html>

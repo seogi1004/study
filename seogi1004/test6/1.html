@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../xy_tpl/jui.chart.min.js"></script>
+<script src="coordinate.js"></script>
+<script>
+jui.define("util.transform3d", [], function() {
+    var Transform3D = function(data) {
+        this.getPoints = function(m) {
+            var newData = [];
+
+            for(var k = 0; k < data.length; k++) {
+                newData[k] = (function(points) {
+                    /*
+                     |a, b, c| |x|
+                     |d, e, f| |y|
+                     |g, h, i| |z|
+                     */
+                    var point;
+                    var x, y, z, scale = 1;
+                    var result = null;
+                    for( var i= 0,count= points.length ; i<count ; i+= 1 ){
+                        point =points[ i ];
+                        z = 1;
+                        x = point.x;
+                        y = point.y;
+                        result = {};
+                        result.x = m.a * x + m.b * y + m.c * z;
+                        result.y = m.d * x + m.e * y + m.f * z;
+                        result.z = m.g * x  + m.h * y + m.i * z;
+                        points[ i ] = result;
+                    }
+
+                    var scalePoints = [];
+                    for( i= 0, count= points.length ; i<count ;i+= 1 ){
+                        scalePoints[ i ] = { x:points[i].x *scale, y:points[ i].y *scale };
+                    }
+
+                    return scalePoints;
+                })(data[k]);
+            }
+
+            return newData;
+        },
+
+        this.rotateZ = function(a){
+            a = a / 180 * Math.PI;
+            /*
+             | a, b, c || cosA, -sinA, 0 |
+             | d, e, f || sinA, cosA,  0 |
+             | g, h, i ||    0,    0,  1 |
+             */
+            var cosA = Math.cos(a);
+            var sinA = Math.sin(a);
+
+            return this.getPoints({
+                a : cosA,
+                b : -sinA,
+                c : 0,
+                d : sinA,
+                e : cosA,
+                f : 0,
+                g : 0,
+                h : 0,
+                i : 1
+            });
+        },
+
+        this.rotateX = function(a) {
+            a = a / 180 * Math.PI;
+            /*
+             | a, b, c || 1,    0,     0 |
+             | d, e, f || 0, cosA, -sinA |
+             | g, h, i || 0, sinA,  cosA |
+             */
+            var cosA = Math.cos(a);
+            var sinA = Math.sin(a);
+
+            return this.getPoints({
+                a : 1,
+                b : 0,
+                c : 0,
+                d : 0,
+                e : cosA,
+                f :  -sinA,
+                g : 0,
+                h : sinA,
+                i : cosA
+            });
+        },
+
+        this.rotateY = function(a) {
+            a = a / 180 * Math.PI;
+            /*
+             | a, b, c || cosA,  0, -sinA |
+             | d, e, f || 0,    1,     0 |
+             | g, h, i || sinA, 0,  cosA |
+             */
+            var cosA = Math.cos(a);
+            var sinA = Math.sin(a);
+
+            return this.getPoints({
+                a : cosA,
+                b : 0,
+                c : -sinA ,
+                d : 0,
+                e : 1,
+                f : 0,
+                g : sinA,
+                h : 0,
+                i : cosA
+            });
+        }
+    }
+
+    return Transform3D;
+});
+
+jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                var poly = this.chart.svg.polygon({
+                    fill: this.color(i)
+                });
+
+                for(var j = 0; j < data.length; j++) {
+                    poly.point(data[j].x, data[j].y);
+                }
+
+                g.append(poly);
+            });
+
+            return g;
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+var timer, transform, chart;
+
+jui.ready([ "chartx.coordinate", "util.transform3d" ], function(builder, Transform3D) {
+    var data = [
+        [{"x":220.755,"y":242.365},{"x":106.257,"y":251.787},{"x":316.174,"y":260.173},{"x":380.541,"y":246.389}],
+        [{"x":320.662,"y":247.567},{"x":236.049,"y":245.219},{"x":236.049,"y":218.5},{"x":276.575,"y":190.656},{"x":320.662,"y":218.5}],
+        [{"x":236.049,"y":245.219},{"x":184.323,"y":250.25},{"x":184.323,"y":218.5},{"x":236.049,"y":218.5}],
+        [{"x":184.323,"y":218.5},{"x":236.049,"y":218.5},{"x":276.575,"y":190.656},{"x":230.256,"y":185.149}],
+        [{"x":320.662,"y":218.5},{"x":281.067,"y":218.5},{"x":230.256,"y":185.149},{"x":276.575,"y":190.656}],
+        [{"x":320.662,"y":247.567},{"x":281.067,"y":253.621},{"x":281.067,"y":218.5},{"x":320.662,"y":218.5}],
+        [{"x":281.067,"y":253.621},{"x":184.323,"y":250.25},{"x":184.323,"y":218.5},{"x":230.256,"y":185.149},{"x":281.067,"y":218.5}]
+    ];
+
+    transform = new Transform3D(data);
+
+    chart = builder("#result", {
+        width: 500,
+        height: 500,
+        domain: [ -10, 10 ],
+        brush: "template",
+        data: data
+    });
+
+    $(".rotate-x").on("click", function() {
+        var type = "rotateX";
+        var value = null;
+
+        switch($(this).val()) {
+            case "cw": value = -5; break;
+            case "ccw": value = 5; break;
+        }
+
+        update(type, value);
+    });
+
+
+    $(".rotate-y").on("click", function(){
+        var type = "rotateY";
+        var value = null;
+
+        switch($(this).val()) {
+            case "cw": value = -5; break;
+            case "ccw": value = 5; break;
+        }
+
+        update(type, value);
+    });
+
+    $(".rotate-z").on("click", function() {
+        var type = "rotateZ";
+        var value = null;
+
+        switch($(this).val()){
+            case "cw": value = -5; break;
+            case "ccw": value = 5; break;
+        }
+
+        update(type, value);
+    });
+
+    function update(type, value){
+        if(timer) { clearInterval(timer); }
+
+        timer = setInterval(function(){
+            chart.update(transform[type](value));
+        }, 10);
+    }
+});
+</script>
+</head>
+
+<body>
+<div>
+    <div class="group">
+        Rotate X :
+        <button class="btn mini rotate-x" value="cw">cw</button>
+        <button class="btn mini rotate-x" value="ccw">ccw</button>
+    </div>
+    <div class="group">
+        Rotate Y :
+        <button class="btn mini rotate-y" value="cw">cw</button>
+        <button class="btn mini rotate-y" value="ccw">ccw</button>
+    </div>
+    <div class="group">
+        Rotate Z :
+        <button class="btn mini rotate-z" value="cw">cw</button>
+        <button class="btn mini rotate-z" value="ccw">ccw</button>
+    </div>
+</div>
+
+<div id="result"></div>
+</body>
+</html>

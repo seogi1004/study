@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="../lib/jquery-1.8.0.min.js"></script>
+    <script src="../lib/jui.chart.min.js"></script>
+    <script>
+        jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Math2) {
+            var origin = [];
+            var dir = 1;
+            var sx = 200;
+            var sy = 200;
+            var radius = 0;
+            var change = 0.1;
+            var ang = 0;
+
+            function init( list ){
+                for( var i= 0, count=list.length ; i<count ; i+=1 ){
+                    list[ i].raedy = +new Date();
+                    list[ i].start = list[ i].raedy  + (100*i);
+                    list[ i].radius = 0;
+                }
+            }
+
+            return {
+                start: function(list) {
+                    console.log("start");
+                    origin = list;
+                    init( origin );
+                },
+                move: function(seq, limit) {
+                    var data = [];
+                    var epi = 10*Math.PI;
+                    for(var i = 0, len = origin.length; i < len; i++) {
+                       if( +new Date() < origin[ i].start ) break;
+                        var seg = i / len + ang;
+                        var item = origin[ i ];
+                        var r = origin[ i ].radius;
+                        data[i] = {
+                            cx: sx  + item.radius * Math.cos( epi*seg ),
+                            cy: sy  + item.radius * Math.sin( epi*seg ),
+                            fill: item.fill
+                        };
+
+                        item.radius += dir;
+                    }
+
+                  //  ang += change;
+                    return data;
+                },
+                end: function() {
+                    console.log("end");
+                    init( origin );
+                },
+
+                width: 500,     // 차트 넓이
+                height: 500,    // 차트 높이
+                fps: 60,        // 렌더링 시간 (ms)
+                timeout: 5000, // 그리는 시간
+                count: 200,      // 공 개수
+                radius: 3       // 공 반지름
+            }
+        });
+    </script>
+    <script src="template.js"></script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>

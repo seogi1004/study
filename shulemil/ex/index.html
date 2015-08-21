@@ -6,26 +6,29 @@
 <script src="../lib/jui.chart.min.js"></script>
 <script>
 jui.define("handler", [ "jquery", "util.base", "util.math" ], function($, _, Math2) {
-    var origin = [];
-
+    var data = [], degree = 0;
     return {
         start: function(list, round) {
             console.log("start : " + round);
-            origin = list;
+            data = list;
+            degree = 360 / data.length;
         },
         move: function(seq, limit) {
             console.log("move : " + seq + "/" + limit);
-            var data = [];
 
-            for(var i = 0, len = origin.length; i < len; i++) {
-                data[i] = {
-                    cx: origin[i].cx + seq,
-                    cy: origin[i].cy + seq,
-                    fill: origin[i].fill
+            var radian = 0, list = [];
+
+            for(var i = 0, len = data.length; i < len; i++) {
+                radian = degree * i * Math.PI / 180;
+                //radian = ((degree * i) + seq * -3) * Math.PI / 180;
+                list[i] = {
+                    cx: data[i].cx + seq *  Math.cos(radian),
+                    cy: data[i].cy + seq *  Math.sin(radian),
+                    fill: data[i].fill
                 };
             }
 
-            return data;
+            return list;
         },
         end: function() {
             console.log("end");

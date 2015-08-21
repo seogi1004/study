@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../../lib/jquery-1.8.0.min.js"></script>
+<script src="jui.chart.min.js"></script>
+<script src="coordinate.js"></script>
+<script>
+jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                g.append(this.chart.svg.circle({
+                    fill: this.color(i),
+                    r: this.brush.size,
+                    cx: this.axis.x(data.x),
+                    cy: this.axis.y(data.y)
+                }));
+            });
+
+            return g;
+        }
+    }
+
+    Template.setup = function() {
+        return {
+            size: 5
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+jui.ready([ "chartx.coordinate" ], function(builder) {
+    window.c = builder("#chart", {
+        domain: [ -20, 20 ],
+        brush: "template",
+        data: [
+            { x: 6, y: 6 },
+            { x: 3, y: 3 }, // 원점 기준, 대칭 이동
+            { x: 3, y: 6 }, // Y축 기준, 대칭 이동
+            { x: 6, y: 3 }, // X축 기준, 대칭 이동
+        ]
+    });
+
+    var m = [], s = [], r =[], h = 1,
+            tx = 0, ty = 0;
+            arrData = c.options.data,
+            rect = [arrData[0],arrData[1],arrData[2],arrData[3]];
+
+//    setTimeout(function() {
+//        tx = 10, ty = 5;
+//        m = [[1, 0, tx], [0, 1, ty], [0, 0, 1]];
+//        for(var i = 0, lenR = rect.length; i < lenR; i++) {
+//            rect[i].x = (m[0][0] * rect[i].x) + (m[0][1] * rect[i].y) + (m[0][2] * h);
+//            rect[i].y = (m[1][0] * rect[i].x) + (m[1][1] * rect[i].y) + (m[1][2] * h);
+//        }
+//        c.update(rect);
+//    }, 1000);
+
+//    setTimeout(function() {
+//        var xf = 0, yf = 0, // 기준점
+//            x = 0, y = 0;
+//        tx = 1.2, ty = 1.2;
+//
+//        // s = [[tx, 0, 0], [0, ty, 0], [0, 0, 1]]; 원점 기준
+//        s = [[tx, 0, xf*(1-tx)], [0, ty, yf*(1-ty)], [0, 0, 1]]; // 기준점 기준
+//        for(var i = 0, lenR = rect.length; i < lenR; i++) {
+//            x = rect[i].x, y = rect[i].y;
+//
+//            rect[i].x = (s[0][0] * x) + (s[0][1] * y) + (s[0][2] * h);
+//            rect[i].y = (s[1][0] * x) + (s[1][1] * y) + (s[1][2] * h);
+//
+//        }
+//        c.update(rect);
+//    }, 1000)
+
+    setInterval(function() {
+        var x = 0, y = 0,
+            xf = 8, yf = 8, // 기준점
+            radin = -15/180*Math.PI,
+            cosa  = Math.cos(radin), sina = Math.sin(radin);
+
+        //r = [[cosa, -sina, 0], [sina, cosa, 0], [0, 0, 1]]; 원점기준
+        r = [[cosa, -sina, xf*(1-cosa)+yf*sina], [sina, cosa, yf*(1-cosa)-xf*sina], [0, 0, 1]]; // 기준점기준
+
+        for(var i = 0, lenR = rect.length; i < lenR; i++) {
+            x = rect[i].x, y = rect[i].y;
+            rect[i].x = (r[0][0] * x) + (r[0][1] * y) + (r[0][2] * h);
+            rect[i].y = (r[1][0] * x) + (r[1][1] * y) + (r[1][2] * h);
+        }
+        c.update(rect);
+    },1000);
+
+});
+</script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>

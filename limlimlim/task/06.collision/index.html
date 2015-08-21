@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Untitled Document</title>
+<head>
+    <script type="text/javascript">
+
+        window.addEventListener( "load", eventWindowLoaded, false );
+
+        function eventWindowLoaded(){
+            canvasApp();
+        }
+
+        function canvasApp(){
+            var MAXSIZE = 35;
+            var MINSIZE = 15;
+            var NUMBALL = 20;
+            var FRICTION = 0.001;
+            var ELASTICITY = 0.95;
+            var GRAVITY = 0.2;
+
+            var balls = [];
+            var canvas = document.getElementById("canvas");
+            var context = canvas.getContext("2d");
+            var timer;
+
+            createBall();
+            timer = setInterval( updateDisplay, 30 );
+
+            function createBall(){
+                for( var i = 0 ; i < NUMBALL ; i += 1 ){
+                    balls.push( getBall() );
+                }
+            }
+
+            function updateDisplay(){
+                clearDisplay();
+                hitTestWall();
+                hitTestBalls();
+                render();
+            }
+
+            function clearDisplay(){
+                context.clearRect( 0, 0, canvas.width, canvas.height );
+                context.fillStyle = "black";
+                context.fillRect( 0, 0, canvas.width, canvas.height );
+            }
+
+
+            function hitTestWall(){
+                var ball;
+                for( var i = 0 ; i < NUMBALL ; i += 1 ){
+                    ball = balls[ i ];
+                    if( 0 > ball.x - ball.radius ){
+                        ball.vx = -( ball.vx );
+                        ball.x = ball.radius;
+
+                    }else if( canvas.width < ball.x + ball.radius ){
+                        ball.vx = -( ball.vx );
+                        ball.x = canvas.width - ball.radius;
+
+                    }else if( 0 > ball.y - ball.radius ){
+                        ball.vy = -( ball.vy );
+                        ball.y = ball.radius;
+
+                    }else if( canvas.height < ball.y + ball.radius ){
+                        ball.vy = -( ball.vy ) * ELASTICITY;
+                        ball.y = canvas.height - ball.radius;
+                    }
+                }
+            }
+
+            function hitTestBalls(){
+                var ball1;
+                var ball2;
+                for( var i = 0 ; i < NUMBALL ; i += 1 ){
+                    ball1 = balls[ i ];
+                    for( var j = i+1 ; j < NUMBALL ; j += 1 ){
+                        ball2 = balls[ j ];
+                        if( isCollisionBall( ball1, ball2 ) ){
+                            collidedBall( ball1, ball2 );
+                        }
+                    }
+                }
+            }
+
+            function render(){
+                context.fillStyle = "gray";
+                var ball;
+                for( var i = 0 ; i < NUMBALL ; i += 1 ){
+                    ball = balls[ i ];
+                    context.beginPath();
+                    context.arc( ball.x, ball.y, ball.radius, 2*Math.PI, false );
+                    context.closePath();
+                    context.fill();
+                    ball.vx = ball.vx - ( ball.vx * FRICTION );
+                    ball.vy = ball.vy - ( ball.vy * FRICTION );
+                    ball.vy += GRAVITY;
+                    ball.x += ball.vx;
+                    ball.y += ball.vy;
+                }
+            }
+
+            function isCollisionBall( ball1, ball2 ){
+                var collidVx = ball2.x - ball1.x;
+                var collidVy = ball2.y - ball1.y;
+                var distance = Math.sqrt( collidVx * collidVx + collidVy * collidVy );
+                var sumRadius = ball1.radius + ball2.radius;
+
+                return distance <= sumRadius;
+            }
+
+
+
+            ////////////////////
+            function collidedBall( ball1, ball2 ){
+                var collidVx = ball2.x - ball1.x;
+                var collidVy = ball2.y - ball1.y;
+                var distance = Math.sqrt( collidVx * collidVx + collidVy * collidVy );
+                var unitCollideVx = collidVx / distance;
+                var unitCollideVy = collidVy / distance;
+
+                var beforeBall1Vp = unitCollideVx *  ball1.vx + unitCollideVy * ball1.vy;
+                var beforeBall1Vn = -unitCollideVy *  ball1.vx + unitCollideVx * ball1.vy;
+                var beforeBall2Vp = unitCollideVx *  ball2.vx + unitCollideVy * ball2.vy;
+                var beforeBall2Vn = -unitCollideVy *  ball2.vx + unitCollideVx * ball2.vy;
+
+                if( beforeBall1Vp - beforeBall2Vp <= 0 ) return;
+
+                var afterBall1Vp = beforeBall1Vp + ( 1 + ELASTICITY ) * ( beforeBall2Vp - beforeBall1Vp ) * ball2.mass / ( ball1.mass + ball2.mass );
+                var afterBall2Vp = beforeBall2Vp + ( 1 + ELASTICITY ) * ( beforeBall1Vp - beforeBall2Vp ) * ball1.mass / ( ball1.mass + ball2.mass );
+                var afterBall1Vn = beforeBall1Vn;
+                var afterBall2Vn = beforeBall2Vn;
+
+                ball1.vx = afterBall1Vp*unitCollideVx - beforeBall1Vn*unitCollideVy;
+                ball1.vy = afterBall1Vp*unitCollideVy + beforeBall1Vn*unitCollideVx;
+                ball2.vx = afterBall2Vp*unitCollideVx - beforeBall2Vn*unitCollideVy;
+                ball2.vy = afterBall2Vp*unitCollideVy + beforeBall2Vn*unitCollideVx;
+            }
+            ////////////////////
+
+
+
+            function getBall(){
+                var radius = getRandom( MINSIZE, MAXSIZE );
+                var x = getRandom( radius, canvas.width - radius );
+                var y = getRandom( radius, canvas.height - radius );
+                var speed = getRandom( 5, 15 );
+                var degree = getRandom( 0, 360 );
+                var radian = degree * Math.PI / 180;
+                var vx = Math.cos( radian ) * speed;
+                var vy = Math.sin( radian ) * speed;
+                return { x:x, y:y, vx:vx, vy:vy, radius:radius, mass:radius };
+            }
+
+            function getRandom( min, max ){
+                return Math.floor( Math.random() * ( max - min ) ) + min;
+            }
+        }
+    </script>
+</head>
+<body>
+<div style="position: absolute; top: 50px; left: 50px;">
+    <canvas id="canvas" width="800" height="500"></canvas>
+</div>
+</body>
+</html>

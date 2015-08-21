@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../lib/jui.chart.min.js"></script>
+<link rel="stylesheet" type="text/css" href="../lib/jui.min.css">
+<script>
+    var CONTENTS_WIDTH = 800,
+        CONTENTS_HEIGHT = 300,
+        SCROLL_SIZE = 20,
+        THUMB_SIZE = 20;
+
+    jui.define("chart.brush.scroll", [ "util.base" ], function(_) {
+        var ScrollBrush = function(chart, axis, brush) {
+            var self = this;
+
+            var scrollHeight = $(".contents")[0].scrollHeight - CONTENTS_HEIGHT,
+                rate = scrollHeight / (CONTENTS_HEIGHT - THUMB_SIZE),
+                thumbY = 0;
+
+            this.setScrollTop = function(y) {
+                $(".contents").scrollTop(rate * y);
+            }
+
+            this.getScrollY = function(scrollTop) {
+                return scrollTop / rate;
+            }
+
+            this.setScrollEvent = function(bar, thumb) {
+                var startY = 0;
+
+                thumb.on("mousedown", function(e) {
+                    if(startY != 0) return;
+
+                    startY = e.y;
+                });
+
+                thumb.on("mousemove", function(e) {
+                    if(startY == 0) return;
+
+                    var y = thumbY + e.y - startY;
+
+                    if(y >= 0 && y <= CONTENTS_HEIGHT - THUMB_SIZE) {
+                        // 컨텐츠 스크롤 위치 변경
+                        self.setScrollTop(y);
+
+                        thumb.attr({
+                            y: y
+                        });
+                    }
+                });
+
+                thumb.on("mouseup", moveEnd);
+                bar.on("mouseout", moveEnd);
+                this.on("bg.mouseover", moveEnd);
+                this.on("chart.mouseover", moveEnd);
+
+                function moveEnd(e) {
+                    if(startY == 0) return;
+
+                    startY = 0;
+                    thumbY = thumb.attributes.y;
+                }
+            }
+
+            this.draw = function() {
+                var g = chart.svg.group({}, function() {
+                    thumbY = self.getScrollY(brush.scrollTop);
+
+                    var bar = chart.svg.rect({
+                        width: SCROLL_SIZE,
+                        height: CONTENTS_HEIGHT,
+                        fill: "#dcdcdc"
+                    });
+
+                    var thumb = chart.svg.rect({
+                        width: SCROLL_SIZE,
+                        height: THUMB_SIZE,
+                        fill: "#a9a9a9",
+                        cursor: "pointer",
+                        y: thumbY - 1
+                    });
+
+                    self.setScrollEvent(bar, thumb);
+                });
+
+                return g;
+            }
+        }
+
+        ScrollBrush.setup = function() {
+            return {
+                scrollTop: 0
+            }
+        }
+
+        return ScrollBrush;
+    }, "chart.brush.core");
+
+    jui.ready([ "chart.builder" ], function(chart) {
+        // 컨텐츠 스타일 설정
+        $(".contents").css({
+            width: CONTENTS_WIDTH + "px",
+            "max-width": CONTENTS_WIDTH + "px",
+            "max-height": CONTENTS_HEIGHT + "px",
+            overflow: "hidden"
+        });
+
+        setTimeout(function() {
+            var c = chart("#chart", {
+                padding: 0,
+                width: SCROLL_SIZE,
+                height: CONTENTS_HEIGHT,
+                axis: {
+                    c: {
+                        type : "panel"
+                    }
+                },
+                brush: {
+                    type : "scroll",
+                    scrollTop : 0
+                }
+            });
+
+            $(".contents").on("mousewheel", function(e) {
+                var top = $(this).scrollTop(),
+                    delta = e.originalEvent.wheelDelta,
+                    offset = delta / 120;
+
+                if(offset > 0) {
+                    if(top < 0) return;
+                    $(this).scrollTop(top - delta);
+                } else {
+                    if(top > $(this)[0].scrollHeight) return;
+                    $(this).scrollTop(top - delta);
+                }
+
+                c.updateBrush(0, { scrollTop: $(this).scrollTop() });
+            });
+        }, 500);
+    });
+</script>
+</head>
+
+<body class="jui">
+
+<div class="row">
+    <div class="col contents">
+        <img src="img1.jpg"><br/>
+        <img src="img2.jpg"><br/>
+        <img src="img3.jpg"><br/>
+        <img src="img4.jpg"><br/>
+    </div>
+    <div class="col">
+        <div id="chart"></div>
+    </div>
+</div>
+</body>
+</html>

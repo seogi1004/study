@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <style>
+            * { margin: 0; padding: 0; }
+            html, body { height: 100%; overflow: hidden; cursor: default; }
+            svg text::selection { background: none; }
+            svg text { pointer-events: none; }
+            #svgBox { width: 100%; height: 100%; background-color: #eaeaea; }
+            #text1 { font-size: 15px; text-anchor: middle; alignment-baseline: middle; }
+            .point { cursor: move; }
+        </style>
+        <script type="text/javascript" src="../../lib/jquery-1.8.0.min.js"></script>
+    </head>
+    <body>
+        <div id="svgBox">
+            <svg width="100%" height="100%">
+                <text id="text1" x="10" y="20" ></text>
+                <path d="M100 100 L300 100 z" fill="gray" stroke="gray" stroke-width="1" class="line"></path>
+                <circle cx="100" cy="100" r="5" fill="red" class="point" id="point1"></circle>
+                <circle cx="300" cy="100" r="5" fill="red" class="point" id="point2"></circle>
+            </svg>
+        </div>
+
+        <script>
+            var distance = (function(){
+                var $point1, $point2, $text1, $line, p1 = {}, p2 = {}, point = {}, mouse = {};
+
+                function init(){
+                    $point1 = $("#point1"), $point2 = $("#point2"), $text1 = $("#text1"), $line = $(".line"), $win = $(window);
+                    update();
+                    addEvent();
+                }
+
+                function addEvent(){
+                    $(".point").on("mousedown", function(e){
+                        var $target = $(this);
+                        mouseDown($target, e);
+                        $win.on({
+                            "mousemove": function(e){mouseMove($target, e)},
+                            "mouseup": function(e){removeEvent()}
+                        });
+                    });
+                }
+
+                function removeEvent(){
+                    $win.off("mousemove mouseup");
+                }
+
+                function mouseDown($target, e){
+                    point.x = $target.attr("cx");
+                    point.y = $target.attr("cy");
+                    mouse.x = e.offsetX;
+                    mouse.y = e.offsetY;
+                }
+
+                function mouseMove($target, e){
+                    var posX = e.offsetX + (point.x - mouse.x);
+                    var posY = e.offsetY + (point.y - mouse.y);
+                    $target.attr({"cx": posX, "cy": posY});
+                    update();
+                }
+
+                function textField(txt, x, y){
+                    $text1.text(txt);
+                    $text1.attr({"x": x, "y": y});
+                }
+
+                function update(){
+                    p1.x = parseInt($point1.attr("cx"));
+                    p1.y = parseInt($point1.attr("cy"));
+                    p2.x = parseInt($point2.attr("cx"));
+                    p2.y = parseInt($point2.attr("cy"));
+
+                    var distance = getDistance(p1, p2);
+                    textField(distance.toFixed(2), p1.x + (p2.x-p1.x)/2, p1.y + (p2.y-p1.y)/2);
+                    $line.attr("d", "M"+p1.x+" "+p1.y+" L"+p2.x+" "+p2.y+" z");
+                }
+
+                function getDistance(p1, p2){
+                    return Math.sqrt( Math.pow(Math.abs(p2.x-p1.x), 2) + Math.pow(Math.abs(p2.y-p1.y), 2) );
+                }
+
+                return {
+                    init: init
+                }
+            })();
+
+            distance.init();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="jui.chart.min.js"></script>
+<script>
+jui.define("chart.brush.template", [], function() {
+    var Template = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                g.append(this.chart.svg.line({
+                    stroke: this.color(i),
+                    "stroke-width": this.brush.size,
+                    x1: this.axis.x(0),
+                    y1: this.axis.y(0),
+                    x2: this.axis.x(data.x),
+                    y2: this.axis.y(data.y)
+                }));
+            });
+
+            return g;
+        }
+    }
+
+    Template.setup = function() {
+        return {
+            size: 1
+        }
+    }
+
+    return Template;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
+    var domain = [ -20, 20 ];
+
+    var a = 10,
+        b = 10,
+        data = [];
+
+    for(var i = 0; i < 5; i++) {
+        var degree = -5 * i;
+
+        data.push({
+            x: (a * Math.cos(_.radian(degree))) + (b * Math.sin(_.radian(degree))),
+            y: -(a * Math.sin(_.radian(degree))) + (b * Math.cos(_.radian(degree)))
+        });
+    }
+
+    builder("#chart", {
+        theme: "dark",
+        padding: 20,
+        width: 750,
+        height: 750,
+        axis: [{
+            x: {
+                type: "range",
+                domain: domain,
+                unit: 1,
+                line: "solid"
+            },
+            y: {
+                type: "range",
+                domain: domain,
+                unit: 1,
+                line: "solid"
+            },
+            data: data
+        }],
+        brush: [{
+            type: "template"
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0,
+            gridXFontSize: 9,
+            gridYFontSize: 9
+        }
+    });
+});
+</script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
