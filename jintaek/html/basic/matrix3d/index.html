@@ -26,11 +26,11 @@
                 }
             };
 
-            Template.setup = function(a) {
+            Template.setup = function() {
 
                 return {
                     circleRadius: 3,
-                    borderWidth: 1,
+                    borderWidth: 1
                 }
 
             };
@@ -160,13 +160,12 @@
 
         function run(){
             setTimeout( function(){
-                var count = 0;
                 setInterval( function(){
                     window.rotate3dx(10);
                     window.rotate3dz(10);
                     window.rotate3dy(10);
                 }, 100 )
-            }, 3000 );
+            }, 1000 );
         }
 
     </script>
