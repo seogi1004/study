@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../dist/jui.min.css" rel="stylesheet" />
+<link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../dist/jui.min.js"></script>
+<script src="../xy_tpl/util.js"></script>
+
+<style>
+    .input {
+        margin-right: 20px !important;
+    }
+    .group {
+        margin-right: 5px !important;
+    }
+    .head {
+        height: 35px !important;
+    }
+    input.mini {
+        width: 50px;
+    }
+</style>
+<script>
+var timer = null;
+
+jui.define("chart.brush.missile3d", [], function() {
+    var Missible3DBrush = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                var x = this.axis.x(data[0]),
+                    y = this.axis.y(data[1]);
+
+                var c = this.chart.svg.circle({
+                    fill: this.color(0),
+                    r: this.brush.r,
+                    cx: x,
+                    cy: y
+                });
+
+                g.append(c);
+            });
+
+            return g;
+        }
+    }
+
+    Missible3DBrush.setup = function() {
+        return {
+            r: 1,
+            clip: true
+        }
+    }
+
+    return Missible3DBrush;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder" ], function(builder) {
+    var domain = [ -50, 50 ];
+
+    var chart = builder("#result", {
+        width: 750,
+        height: 750,
+        theme: "dark",
+        axis: [{
+            x: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            },
+            y: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            }
+        }],
+        brush: [{
+            type: "missile3d",
+            colors: [ 0 ]
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0
+        }
+    });
+
+    initEvents(chart.axis(0));
+});
+
+function initEvents(axis) {
+    var start = parseInt($("#start").val()),
+        end = parseInt($("#end").val()),
+        a = 1,
+        h = 0,
+        k = 0;
+
+    $("#bk_1").on("click", function(e) {
+        k++;
+        axis.update(getData(start, end, k, a, h));
+        $("#vk").html((k > 0 ? "+ " : "- ") + Math.abs(k));
+    });
+    $("#bk_2").on("click", function(e) {
+        k--;
+        axis.update(getData(start, end, k, a, h));
+        $("#vk").html((k > 0 ? "+ " : "- ") + Math.abs(k));
+    });
+
+    $("#ba_1").on("click", function(e) {
+        a++;
+        axis.update(getData(start, end, k, a, h));
+        $("#va").html((a > 0 ? "" : "-") + Math.abs(a));
+    });
+    $("#ba_2").on("click", function(e) {
+        a--;
+        axis.update(getData(start, end, k, a, h));
+        $("#va").html((a > 0 ? "" : "-") + Math.abs(a));
+    });
+
+    $("#bh_1").on("click", function(e) {
+        h--;
+        axis.update(getData(start, end, k, a, h));
+        $("#vh").html((-h > 0 ? "+ " : "- ") + Math.abs(-h));
+    });
+    $("#bh_2").on("click", function(e) {
+        h++;
+        axis.update(getData(start, end, k, a, h));
+        $("#vh").html((-h > 0 ? "+ " : "- ") + Math.abs(-h));
+    });
+
+    $("#start").on("change", function(e) {
+        start = parseInt($("#start").val());
+        axis.update(getData(start, end, k, a, h));
+    });
+    $("#end").on("change", function(e) {
+        end = parseInt($("#end").val());
+        axis.update(getData(start, end, k, a, h));
+    });
+
+    axis.update(getData(start, end, k, a, h));
+}
+
+function getData(start, end, k, a, h) {
+    var data = [];
+
+    // x축 범위 조정
+    start += h;
+    end += h;
+
+    var func = function(x) { // y - k = A(x - h)^2
+        return (a * ((x - h) * (x - h))) - k;
+    }
+
+    for(var i = start; i < end; i+=0.1) {
+        data.push([ i, func(i) ]);
+    }
+
+    return data;
+}
+</script>
+</head>
+
+<body class="jui">
+
+<div class="panel">
+    <div class="head">
+        <div class="row">
+            <div class="col col-1">
+                y <span id="vk">+ 0</span> = <span id="va">1</span>(x <span id="vh">+ 0</span>)^2
+            </div>
+
+            <div class="col col-4">
+                k :
+                <div class="group">
+                    <a id="bk_1" href="#" class="btn mini"><i class="icon-plus"></i></a>
+                    <a id="bk_2" href="#" class="btn mini"><i class="icon-minus"></i></a>
+                </div>
+
+                a :
+                <div class="group">
+                    <a id="ba_1" href="#" class="btn mini"><i class="icon-plus"></i></a>
+                    <a id="ba_2" href="#" class="btn mini"><i class="icon-minus"></i></a>
+                </div>
+
+                h :
+                <div class="group">
+                    <a id="bh_1" href="#" class="btn mini"><i class="icon-plus"></i></a>
+                    <a id="bh_2" href="#" class="btn mini"><i class="icon-minus"></i></a>
+                </div>
+            </div>
+
+            <div class="col col-2">
+                Start : <input id="start" type="number" value="-5" min="-10" step="1" class="input mini" />
+                End : <input id="end" type="number" value="5" max="10" step="1" class="input mini" />
+            </div>
+        </div>
+    </div>
+    <div class="body fit">
+        <div id="result"></div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../dist/jui.min.css" rel="stylesheet" />
+<link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../dist/jui.min.js"></script>
+<script src="../xy_tpl/util.js"></script>
+
+<style>
+    .input {
+        margin-right: 20px !important;
+    }
+    .group {
+        margin-right: 5px !important;
+    }
+    .head {
+        height: 35px !important;
+    }
+</style>
+<script>
+var timer = null;
+
+jui.define("chart.brush.missile3d", [], function() {
+    var Missible3DBrush = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                var x = this.axis.x(data[0]),
+                    y = this.axis.y(data[1]);
+
+                var c = this.chart.svg.circle({
+                    fill: this.color(0),
+                    r: this.brush.r,
+                    cx: x,
+                    cy: y
+                });
+
+                g.append(c);
+            });
+
+            return g;
+        }
+    }
+
+    Missible3DBrush.setup = function() {
+        return {
+            r: 1,
+            clip: true
+        }
+    }
+
+    return Missible3DBrush;
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder", "util.transform", "util.math" ], function(builder, Transform, Math2) {
+    var domain = [ -50, 50 ];
+
+    var chart = builder("#result", {
+        width: 750,
+        height: 750,
+        theme: "dark",
+        axis: [{
+            x: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            },
+            y: {
+                type: "range",
+                domain: domain,
+                step: 10,
+                line: true
+            },
+            data: getData(1)
+        }, {
+            extend : 0,
+            data: getData(2)
+        }, {
+            extend : 0,
+            data: getData(3)
+        }, {
+            extend : 0,
+            data: getData(4)
+        }, {
+            extend : 0,
+            data: getData(5)
+        }, {
+            extend : 0,
+            data: getData(6)
+        }, {
+            extend : 0,
+            data: getData(7)
+        }],
+        brush: [{
+            type: "missile3d",
+            colors: [ 0 ]
+        }, {
+            type: "missile3d",
+            axis: 1,
+            colors: [ 1 ]
+        }, {
+            type: "missile3d",
+            axis: 2,
+            colors: [ 2 ]
+        }, {
+            type: "missile3d",
+            axis: 3,
+            colors: [ 3 ]
+        }, {
+            type: "missile3d",
+            axis: 4,
+            colors: [ 4 ]
+        }, {
+            type: "missile3d",
+            axis: 5,
+            colors: [ 5 ]
+        }, {
+            type: "missile3d",
+            axis: 6,
+            colors: [ 6 ]
+        }],
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0
+        }
+    });
+});
+
+function getData(type, k) {
+    var data = [],
+        start = -5,
+        end = 5,
+        func = null;
+
+    if(type == 1) { // y = x^2
+        func = function(x) {
+            return x * x;
+        }
+    } else if(type == 2) { // y - k = x^2
+        var k = -5;
+        func = function(x) {
+            return (x * x) - k;
+        }
+    } else if(type == 3) { // y = (x - h)^2
+        var h = 5;
+
+        start += h;
+        end += h;
+
+        func = function(x) {
+            return (x - h) * (x - h);
+        }
+    } else if(type == 4) { // y = -x^2
+        func = function(x) {
+            return -(x * x);
+        }
+    } else if(type == 5) { // y = -2x^2
+        func = function(x) {
+            return -2 * (x * x);
+        }
+    } else if(type == 6) { // y = -1/2x^2
+        func = function(x) {
+            return -0.5 * (x * x);
+        }
+    } else if(type == 7) { // y - k = A(x - h)^2 <-- 종합 공식
+        var a = 1, h = 30, k = 30;
+
+        start += h;
+        end += h;
+
+        func = function(x) {
+            return (a * ((x - h) * (x - h))) - k;
+        }
+    }
+
+    for(var i = start; i < end; i+=0.1) {
+        data.push([ i, func(i) ]);
+    }
+
+    return data;
+}
+</script>
+</head>
+
+<body class="jui">
+
+<div class="panel">
+    <div class="head">
+    </div>
+    <div class="body fit">
+        <div id="result"></div>
+    </div>
+</div>
+
+</body>
+</html>
