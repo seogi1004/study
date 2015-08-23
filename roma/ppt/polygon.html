@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title></title>
+	<style>
+		* { font-family: dotum; }
+		h1 { margin: 30px 0 15px 0; font-size: 30px; }
+		h1:after { content: ""; display: block; height: 1px; margin-top: 6px; background-color: #ccc; }
+		p { font-size: 14px; }
+		label { font-size: 12px; }
+	</style>
+</head>
+<body>
+
+<div>
+	<h1>&#60;polygon&#62;</h1>
+
+	<p>&#60;polygon points="100,0 0,150 200,150"  fill="yellow" stroke="black" stroke-width="1" /&#62;</p>
+	<svg height="200" width="500">
+		<polygon points="100,0 0,150 200,150"  fill="yellow" stroke="black" stroke-width="1" />
+	</svg>
+
+	<br>
+
+	<p>&#60;polygon points="100,10 40,198 190,78 10,78 160,198" fill-rule="evenodd"  fill="yellow" stroke="black" stroke-width="1"/&#62;</p>
+	<svg height="200" width="500">
+		<polygon points="100,10 40,198 190,78 10,78 160,198" fill-rule="evenodd"  fill="yellow" stroke="black" stroke-width="1" />
+	</svg>
+</div>
+
+</body>
+</html>

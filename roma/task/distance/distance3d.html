@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>distance3d</title>
+        <style>
+            * { margin: 0; padding: 0; }
+            svg .brush-template text { text-anchor: middle; alignment-baseline: middle; }
+        </style>
+        <script src="../../lib/jquery-1.8.0.min.js"></script>
+        <script src="../../lib/jui.chart.min.js"></script>
+        <script src="main4.js"></script>
+        <script>
+            var box = {w: 14, h: 6, d: 8};
+            var rect = new Rect( box.w, box.h, box.d );
+            var world = null;
+            var realView = false;
+
+            jui.define("chart.brush.template", [ "util.base", "util.math" ], function(_, math) {
+                var Template = function() {
+                    this.draw = function() {
+                        var g = this.chart.svg.group();
+
+                        /* 초록 사각박스 */
+                        var path = this.chart.svg.path({ fill: "none", "fill-opacity": 0.1, stroke: this.color(1), "stroke-width": 1, "stroke-dasharray": 5 });
+                        path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                        path.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                        path.LineTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                        path.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        path.LineTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+
+                        path.MoveTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                        path.LineTo(this.axis.x(this.axis.data[5].x), this.axis.y(this.axis.data[5].y));
+                        path.LineTo(this.axis.x(this.axis.data[6].x), this.axis.y(this.axis.data[6].y));
+                        path.LineTo(this.axis.x(this.axis.data[7].x), this.axis.y(this.axis.data[7].y));
+                        path.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+
+                        path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                        path.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                        path.MoveTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                        path.LineTo(this.axis.x(this.axis.data[5].x), this.axis.y(this.axis.data[5].y));
+                        path.MoveTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                        path.LineTo(this.axis.x(this.axis.data[6].x), this.axis.y(this.axis.data[6].y));
+                        path.MoveTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        path.LineTo(this.axis.x(this.axis.data[7].x), this.axis.y(this.axis.data[7].y));
+                        g.append(path);
+
+                        /* 노랑 삼각형 */
+                        var path2 = this.chart.svg.path({ fill: this.color(2), "fill-opacity": 0.1, stroke: this.color(2), "stroke-width": 1 });
+                        path2.MoveTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        path2.LineTo(this.axis.x(this.axis.data[5].x), this.axis.y(this.axis.data[5].y));
+                        path2.LineTo(this.axis.x(this.axis.data[6].x), this.axis.y(this.axis.data[6].y));
+                        path2.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        g.append(path2);
+
+                        /* 빨강 삼각형 */
+                        var path3 = this.chart.svg.path({ fill: this.color(4), "fill-opacity": 0.1, stroke: this.color(4), "stroke-width": 1 });
+                        path3.MoveTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        path3.LineTo(this.axis.x(this.axis.data[6].x), this.axis.y(this.axis.data[6].y));
+                        path3.LineTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                        path3.LineTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        g.append(path3);
+
+
+                        var p1 = { x: this.axis.x(this.axis.data[3].x), y: this.axis.y(this.axis.data[3].y) }
+                        var p2 = { x: this.axis.x(this.axis.data[6].x), y: this.axis.y(this.axis.data[6].y) }
+                        var p3 = { x: this.axis.x(this.axis.data[5].x), y: this.axis.y(this.axis.data[5].y) }
+
+                        /* 빨강 거리 */
+                        var distance2d = getDistance(p1, p2);
+                        var distance2dReal = getDistance( {x:-box.w/2, y:-box.h/2, z:box.d/2}, {x:box.w/2, y:-box.h/2, z:-box.d/2} );
+                        var text = this.chart.svg.text({ fill: this.color("#FFF"), x: p1.x + (p2.x-p1.x)/2, y: p1.y + (p2.y-p1.y)/2 });
+                        realView ? text.text("AB: "+distance2dReal.toFixed(2) + " px") : text.text("AB: "+distance2d.toFixed(2) + " px");
+                        g.append(text);
+
+                        /* 노랑 거리 */
+                        var distance3d = getDistance(p1, p3);
+                        var distance3dReal = getDistance3d( {x:-box.w/2, y:-box.h/2, z:box.d/2}, {x:box.w/2, y:-box.h/2, z:-box.d/2}, {x:box.w/2, y:box.h/2, z:-box.d/2} );
+                        var text2 = this.chart.svg.text({ fill: this.color("#FFF"), x: p1.x + (p3.x-p1.x)/2, y: p1.y + (p3.y-p1.y)/2 });
+                        realView ? text2.text("AC: "+distance3dReal.toFixed(2) + " px") : text2.text("AC: "+distance3d.toFixed(2) + " px");
+                        g.append(text2);
+
+                        var A = this.chart.svg.text({ fill: this.color("#FFF"), x: this.axis.x(this.axis.data[3].x), y: this.axis.y(this.axis.data[3].y)+10 });
+                        var B = this.chart.svg.text({ fill: this.color("#FFF"), x: this.axis.x(this.axis.data[6].x), y: this.axis.y(this.axis.data[6].y)+10 });
+                        var C = this.chart.svg.text({ fill: this.color("#FFF"), x: this.axis.x(this.axis.data[5].x), y: this.axis.y(this.axis.data[5].y)-10 });
+                        var text3 = this.chart.svg.text({ fill: this.color("#FFF"), x: 100, y: 10 });
+                        var text4 = this.chart.svg.text({ fill: this.color("#FFF"), x: 140, y: 30 });
+
+                        g.append(A.text("A"));
+                        g.append(B.text("B"));
+                        g.append(C.text("C"));
+                        g.append(text3.text("AB = √ (B.x-A.x)^2 + (B.y- A.y)^2"));
+                        g.append( text4.text("AC = √ (B.x-A.x)^2 + (B.y- A.y)^2 + (C.z- C.z)^2"));
+
+                        return g;
+                    }
+                }
+
+                return Template;
+            }, "chart.brush.core");
+
+            jui.ready([ "chart.builder" ], function(builder) {
+                var domain = [ -20, 20 ];
+
+                world = builder("#chart", {
+                    theme: "dark",
+                    padding: 20,
+                    width: 600,
+                    height: 600,
+                    axis: [{
+                        x: {
+                            type: "range",
+                            domain: domain,
+                            unit: 1,
+                            line: "solid"
+                        },
+                        y: {
+                            type: "range",
+                            domain: domain,
+                            unit: 1,
+                            line: "solid"
+                        },
+                        data:  rect.rotateX(0)
+                    }],
+                    brush: [{
+                        type: "template"
+                    }],
+                    style: {
+                        gridXAxisBorderWidth: 1,
+                        gridYAxisBorderWidth: 1,
+                        gridTickBorderSize: 0,
+                        gridXFontSize: 9,
+                        gridYFontSize: 9
+                    }
+                });
+            });
+            function getDistance(p1, p2){
+                return Math.sqrt( Math.pow(Math.abs(p2.x-p1.x), 2) + Math.pow(Math.abs(p2.y-p1.y), 2) );
+            }
+            function getDistance3d(p1, p2, p3){
+                return Math.sqrt( Math.pow(Math.abs(p2.x-p1.x), 2) + Math.pow(Math.abs(p2.y-p1.y), 2) + Math.pow(Math.abs(p1.z-p3.z), 2) );
+            }
+        </script>
+    </head>
+
+    <body>
+        <div id="chart">
+        </div>
+
+        <div>
+            rotate x:
+            <button class="btn-rotate-x" value="cw">cw</button>
+            <button class="btn-rotate-x" value="ccw">ccw</button>
+        </div>
+
+        <div>
+            rotate y:
+            <button class="btn-rotate-y" value="cw">cw</button>
+            <button class="btn-rotate-y" value="ccw">ccw</button>
+        </div>
+
+        <div>
+            rotate z:
+            <button class="btn-rotate-z" value="cw">cw</button>
+            <button class="btn-rotate-z" value="ccw">ccw</button>
+        </div>
+        <div style="position: absolute; top: 610px; left: 466px;">
+            <button class="btnView1" value="">그려진거리</button>
+            <button class="btnView2" value="">실제거리</button>
+        </div>
+
+        <script>
+
+            var rotateValue = 10;
+            $( '.btn-rotate-x').on( 'click', function(){
+                var type = 'rotateX';
+                var value = null;
+                switch( $( this ).val() ){
+                    case 'cw': value = -rotateValue; break;
+                    case 'ccw': value = rotateValue; break;
+                }
+                update( type, value );
+            });
+
+
+            $( '.btn-rotate-y').on( 'click', function(){
+                var type = 'rotateY';
+                var value = null;
+                switch( $( this ).val() ){
+                    case 'cw': value = -rotateValue; break;
+                    case 'ccw': value = rotateValue; break;
+                }
+                update( type, value );
+            });
+
+
+            $( '.btn-rotate-z').on( 'click', function(){
+                var type = 'rotateZ';
+                var value = null;
+                switch( $( this ).val() ){
+                    case 'cw': value = -rotateValue; break;
+                    case 'ccw': value = rotateValue; break;
+                }
+                update( type, value );
+            });
+
+            $( '.btnView1').on( 'click', function(){ realView = false; });
+            $( '.btnView2').on( 'click', function(){ realView = true; });
+
+            var timer = null;
+            function update( type, value ){
+                //if( timer ){  clearInterval(  timer ) }
+                //timer = setInterval( function(){
+                    world.axis(0).update( rect[ type ]( value ) );
+                //}, 10 )
+            }
+
+        </script>
+    </body>
+</html>

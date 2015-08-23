@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>distance</title>
+        <style>
+            * { margin: 0; padding: 0; }
+            html, body { height: 100%; cursor: default; overflow: hidden; }
+            svg text::selection { background: none; }
+            svg text { pointer-events: none; font-size: 12px; text-anchor: middle; alignment-baseline: middle; }
+            #svgBox { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+            .point { cursor: move; }
+        </style>
+        <script src="../../lib/jquery-1.8.0.min.js"></script>
+        <script src="../../lib/jui.chart.min.js"></script>
+        <script src="../../lib/coordinate.js"></script>
+        <script>
+            jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+                var Template = function() {
+                    this.draw = function() {
+                        var g = this.chart.svg.group();
+
+                        this.eachData(function(i, data) {
+                            g.append(this.chart.svg.circle({
+                                fill: this.color(0),
+                                r: this.brush.size,
+                                cx: this.axis.x(data.x),
+                                cy: this.axis.y(data.y)
+                            }));
+                        });
+
+                        /*var path = this.chart.svg.path({
+                         fill: this.color(0),
+                         "fill-opacity": 0.1,
+                         stroke: this.color(0),
+                         "stroke-width": 1,
+                         "stroke-opacity": 0.3,
+                         });
+                         path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                         path.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                         g.append(path);
+
+                         var text = this.chart.svg.text({
+                         x: 400,
+                         y: 300
+                         });
+                         text.text(100);
+                         g.append(text);
+                         */
+
+                        return g;
+                    }
+                }
+
+                Template.setup = function() {
+                    return {
+                        size: 3
+                    }
+                }
+
+                return Template;
+            }, "chart.brush.core");
+
+            jui.ready([ "chartx.coordinate" ], function(builder) {
+                window.c = builder("#chart", {
+                    domain: [ -20, 20 ],
+                    brush: "template",
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="chart"></div>
+
+        <div id="svgBox">
+            <svg width="100%" height="100%">
+                <path d="M100 100 L300 100 z" fill="#26f67c" stroke="#26f67c" stroke-width="1" fill-opacity="0.04" stroke-dasharray="5" class="line"></path>
+                <path d="M100 100 L300 100 z" stroke="#f94590" stroke-width="1" id="distance"></path>
+                <circle cx="376" cy="376" r="10" fill="rgba(0,0,0,0)" class="point" id="point1"></circle>
+                <circle cx="526" cy="226" r="10" fill="rgba(0,0,0,0)" class="point" id="point2"></circle>
+                <text id="text1" x="10" y="20" fill="#FFF" ></text>
+                <text id="A" x="10" y="20" fill="#FFF" >A</text>
+                <text id="B" x="10" y="20" fill="#FFF" >B</text>
+                <text x="125" y="32" fill="#FFF" >AB = √ (B.x-A.x)^2 + (B.y- A.y)^2</text>
+            </svg>
+        </div>
+        <script>
+            var distance = (function(){
+                var $point1, $point2, $text1, $line, p1 = {}, p2 = {}, point = {}, mouse = {};
+
+                function init(){
+                    $point1 = $("#point1"), $point2 = $("#point2"), $text1 = $("#text1"), $line = $(".line"), $win = $(window);
+                    update();
+                    addEvent();
+                }
+
+                function addEvent(){
+                    $(".point").on("mousedown", function(e){
+                        var $target = $(this);
+                        mouseDown($target, e);
+                        $win.on({
+                            "mousemove": function(e){mouseMove($target, e)},
+                            "mouseup": function(e){removeEvent()}
+                        });
+                    });
+                }
+
+                function removeEvent(){
+                    $win.off("mousemove mouseup");
+                }
+
+                function mouseDown($target, e){
+                    point.x = $target.attr("cx");
+                    point.y = $target.attr("cy");
+                    mouse.x = e.offsetX;
+                    mouse.y = e.offsetY;
+                }
+
+                function mouseMove($target, e){
+                    var posX = e.offsetX + (point.x - mouse.x);
+                    var posY = e.offsetY + (point.y - mouse.y);
+                    $target.attr({"cx": posX, "cy": posY});
+                    update();
+                }
+
+                function textField(txt, x, y){
+                    $text1.text("AB: " + txt + " px");
+                    $text1.attr({"x": x, "y": y});
+                }
+
+                function update(){
+                    p1.x = parseInt($point1.attr("cx"));
+                    p1.y = parseInt($point1.attr("cy"));
+                    p2.x = parseInt($point2.attr("cx"));
+                    p2.y = parseInt($point2.attr("cy"));
+
+                    var distance = getDistance(p1, p2);
+                    textField(distance.toFixed(2), p1.x + (p2.x-p1.x)/2, p1.y + (p2.y-p1.y)/2);
+                    $line.attr("d", "M"+p1.x+" " +p2.y+"L"+p2.x+" "+p2.y+" L"+p2.x+" "+p1.y+" L"+p1.x+" "+p1.y+" z");
+                    $("#distance").attr("d", "M"+p1.x+" "+p1.y+" L"+p2.x+" "+p2.y+" z");
+                    $("#A").attr({"x": p1.x, "y": p1.y});
+                    $("#B").attr({"x": p2.x, "y": p2.y});
+                }
+
+                function getDistance(p1, p2){
+                    return Math.sqrt( Math.pow(Math.abs(p2.x-p1.x), 2) + Math.pow(Math.abs(p2.y-p1.y), 2) );
+                }
+
+                return {
+                    init: init
+                }
+            })();
+
+            distance.init();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>matrix</title>
+        <script src="../../lib/jquery-1.8.0.min.js"></script>
+        <script src="../../lib/jui.chart.min.js"></script>
+        <script src="../../lib/coordinate.js"></script>
+    </head>
+    <body>
+
+        <div id="chart"></div>
+
+        <script>
+            jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+                var Template = function() {
+                    this.draw = function() {
+                        var g = this.chart.svg.group();
+
+                        this.eachData(function(i, data) {
+                            g.append(this.chart.svg.circle({
+                                fill: this.color(i),
+                                r: this.brush.size,
+                                cx: this.axis.x(data.x),
+                                cy: this.axis.y(data.y)
+                            }));
+                        });
+
+                        return g;
+                    }
+                }
+
+                Template.setup = function() {
+                    return {
+                        size: 3
+                    }
+                }
+
+                return Template;
+            }, "chart.brush.core");
+
+            jui.ready([ "chartx.coordinate" ], function(builder) {
+                window.c = builder("#chart", {
+                    domain: [ -20, 20 ],
+                    brush: "template",
+                    data: [
+                        { x: 6, y: 6 },
+                        { x: 3, y: 3 }, // 원점 기준, 대칭 이동
+                        { x: 3, y: 6 }, // Y축 기준, 대칭 이동
+                        { x: 6, y: 3 }, // X축 기준, 대칭 이동
+                    ]
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>circle3d</title>
+    <style>
+        html, body { cursor: move; }
+    </style>
+    <script src="../../lib/jquery-1.8.0.min.js"></script>
+    <script src="../../lib/jui.chart.min.js"></script>
+    <script src="../../lib/coordinate.js"></script>
+</head>
+<body>
+    <div id="chart"></div>
+
+    <script>
+        jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+            var Template = function() {
+                this.draw = function() {
+                    var g = this.chart.svg.group();
+
+                    this.eachData(function(i, data) {
+                        g.append(this.chart.svg.rect({
+                            fill: this.color(i%15),
+                            width: this.brush.size,
+                            height: this.brush.size,
+                            x: this.axis.x(data.x) - this.brush.size/2,
+                            y: this.axis.y(data.y) - this.brush.size/2
+                        }));
+                    });
+
+                    return g;
+                }
+            }
+            Template.setup = function() {
+                return { size: 30 }
+            }
+            return Template;
+        }, "chart.brush.core");
+
+        var data = [], total = 24, radius = 10;
+        jui.ready([ "chartx.coordinate" ], function(builder) {
+
+            var degree, radian, distance = 20;
+
+            for(var i = 0; i < total; i++) {
+                degree = ( 360 / total ) * i;
+                radian = getRadian(degree);
+                var p = distance / ( distance + getX(radian, radius) );
+                data[i] = { x: getX(radian, radius), y: getY(radian, radius)*0.2, z: 0 }
+            }
+
+            window.c = builder("#chart", {
+                domain: [ -20, 20 ],
+                brush: "template",
+                data: data,
+            });
+        });
+
+        function getX(radian, radius){
+            return Math.cos(radian) * radius;
+        };
+
+        function getY(radian, radius){
+            return Math.sin(radian) * radius;
+        };
+
+        function getRadian(degree){
+            return degree / 180 * Math.PI;
+        }
+
+        var $win = $(window);
+        $win.on("mousedown", function(e){
+            var $target = $(this);
+            mouseDown($target, e);
+            $win.on({
+                "mousemove": function(e){mouseMove($target, e)},
+                "mouseup": function(e){removeEvent()}
+            });
+        });
+
+        function removeEvent(){
+            $win.off("mousemove mouseup");
+        }
+
+        function mouseDown($target, e){
+            //console.log("mouseDown");
+        }
+
+        function mouseMove($target, e){
+            var mouseX = (e.clientX-375) * 0.005;
+            var mouseY = (e.clientY-375) * 0.005;
+            update(mouseX, mouseY);
+        }
+        function update(mouseX, mouseY){
+            for( var i = 0; i < total; i++){
+                var degree = ( 360 / total ) * i;
+                var radian = getRadian(degree);
+                radian = radian + mouseX;
+                //console.log(radian);
+                data[i] = {
+                    x: getX(radian, radius),
+                    y: getY(radian, Math.max(-10, Math.min(10, radius * mouseY))),
+                    z: 0
+                };
+            }
+            c.update(data);
+        }
+    </script>
+</body>
+</html>
