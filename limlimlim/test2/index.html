@@ -5,19 +5,22 @@
     <title></title>
 
     <style>
+        body{
+            background-color: black;
+        }
         #world{
-            width: 400px;
-            height: 400px;
-            background-color: white;
+            width: 600px;
+            height: 600px;
+            outline: 1px solid black;
+            position: relative;
         }
 
         .rect{
-            width: 50px;
-            height: 50px;
+            width: 20px;
+            height: 20px;
             position: absolute;
-            background-image: url("./img.png");
+            background-image: url("./img4.png");
             background-size: cover;
-
         }
     </style>
 </head>
@@ -32,32 +35,104 @@
     <div class="rect" ></div>
     <div class="rect" ></div>
     <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
+    <div class="rect" ></div>
 </div>
 <script src="jquery-1.8.0.min.js"></script>
 <script src="matrix.js"></script>
 <script src="dom3d.js"></script>
+<script src="d3.js"></script>
 <script>
 
     var items = [];
-    var center = $( '#world').width()/2-25;
-    var radius = 80;
+    var center = $( '#world').width()/2-15;
+    var radius = 200;
+
     $( '.rect' ).each( function(){
         items.push( new window.Dom3D( $( this ) ) );
     });
 
     for( var i = 0, count=items.length ; i<count ; i+=1 ){
-        var x = center + radius * Math.cos( 2*Math.PI * ( i/count ));
-        var y = center + radius * Math.sin( 2*Math.PI * ( i/count ));
+        var angle = 2*Math.PI * ( i/count );
+        var x = center + radius * Math.cos( angle );
+        var y = center + radius * Math.sin( angle );
         items[ i].translate( x, y, 0).render();
     }
 
-    setInterval( function(){
-        var item;
-        for( var i = 0, count=items.length ; i<count ; i+=1 ){
-            item = items[ i ];
-            //item.translate( -center, -center, 0).rotateY( 0.05 ).translate( center, center, 0).render();
-        }
-    }, 50 )
+    for( var i = 0, count=items.length ; i<count ; i+=1 ){
+        items[ i].translate( -center, -center, 0).scale( 0.2, 0.2, 0.2  ).rotateX( 1.4 ).translate( center, center, 0).render();
+//        items[ i].translate( -center, -center, 0).rotateX( 1.2 ).translate( center, center, 0).render();
+    }
+
+    var tick = 30;
+    var timer;
+    var dir = 1;
+    var scaleMatrix = 0;
+    var startTime = +new Date();
+    var scale = d3.scale.linear() .domain( [ -220, 220 ]).range([ 1, 4]);
+    var scale2 = d3.scale.linear() .domain( [ -220, 0 ]).range([ 0.2, 1]);
+
+
+    function run(){
+        tiemr = setInterval( function(){
+            var now = +new Date()
+            if( now - startTime > 6000 ){
+                startTime = +new Date();
+                dir *= -1
+            }
+
+            if( dir === 1){ scaleMatrix = 1.01;
+            }else{ scaleMatrix = 0.99; }
+
+            var item;
+            items.sort( function(a, b){ return a._z - b._z; });
+
+            for( var i = 0, count=items.length ; i<count ; i+=1 ){
+                item = items[ i ];
+                var size = scale( item._z  ) * 20;
+                var opa = scale2( item._z  );
+                item.$el.css( {'z-index':i, 'width':size, 'height': size, 'opacity': opa } );
+                item.translate(-center,-center, 0).scale( scaleMatrix,scaleMatrix, scaleMatrix ).rotateY(0.05).translate(center,  center, 0 ).render()
+            }
+        }, tick )
+    }
+
+
+    run();
+    function stop(){
+        clearInterval( tiemr );
+    }
+
+
+
 
 </script>
 </body>
