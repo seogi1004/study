@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta charset="UTF-8">
+        <title>bezier</title>
+        <script src="../../lib/jquery-1.8.0.min.js"></script>
+        <script src="../../lib/jui.chart.min.js"></script>
+        <script src="../../lib/coordinate.js"></script>
+    </head>
+    <body>
+        <div id="chart"></div>
+
+        <script>
+            jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+                var Template = function() {
+
+                    this.draw = function() {
+                        var g = this.chart.svg.group();
+
+                        var path = this.chart.svg.path({ fill: "none", "fill-opacity": 0.1, stroke: "gray", "stroke-width": 2 });
+                        path.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                        path.LineTo(this.axis.x(this.axis.data[1].x), this.axis.y(this.axis.data[1].y));
+                        path.LineTo(this.axis.x(this.axis.data[2].x), this.axis.y(this.axis.data[2].y));
+                        g.append(path);
+
+                        var path2 = this.chart.svg.path({ fill: "none", stroke: "#00ff00", "stroke-width": 2, "stroke-dasharray": 5 });
+                        path2.MoveTo(this.axis.x(this.axis.data[3].x), this.axis.y(this.axis.data[3].y));
+                        path2.LineTo(this.axis.x(this.axis.data[4].x), this.axis.y(this.axis.data[4].y));
+                        g.append(path2);
+
+                        var path3 = this.chart.svg.path({ fill: "none", stroke: "red", "stroke-width": 2, });
+                        path3.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
+                        path3.LineTo(this.axis.x(this.axis.data[5].x), this.axis.y(this.axis.data[5].y));
+                        g.append(path3);
+
+                        this.eachData(function(i, data) {
+                            g.append(this.chart.svg.circle({
+                                fill: this.color(i),
+                                r: this.brush.size,
+                                cx: this.axis.x(data.x),
+                                cy: this.axis.y(data.y)
+                            }));
+                        });
+
+
+                        return g;
+                    }
+                }
+                Template.setup = function() {
+                    return { size: 4 }
+                }
+                return Template;
+            }, "chart.brush.core");
+
+            jui.ready([ "chartx.coordinate" ], function(builder) {
+
+                var data = [
+                    {x: 0, y: 0},
+                    {x: 10, y: 10},
+                    {x: 20, y: 0},
+                    {x: 0, y: 0},
+                    {x: 10, y: 10},
+                    {x: 0, y: 0},
+                ];
+
+                window.c = builder("#chart", {
+                    domain: [ -20, 20 ],
+                    brush: "template",
+                    data: data,
+                });
+
+                var interval = setInterval(drawBezier, 100);
+                var time = 0;
+                function drawBezier() {
+                    //console.log(time);
+                    time = time + 0.01;
+
+                    var px1 = data[0].x * (1-time) + data[1].x * time;
+                    var py1 = data[0].y * (1-time) + data[1].y * time;
+                    data[3].x = px1;
+                    data[3].y = py1;
+
+                    var px2 = data[1].x * (1-time) + data[2].x * time;
+                    var py2 = data[1].y * (1-time) + data[2].y * time;
+                    data[4].x = px2;
+                    data[4].y = py2;
+
+                    var px3 = data[0].x * Math.pow((1-time), 2) + data[1].x * 2 * time * (1-time) + data[2].x * Math.pow(time, 2);
+                    var py3 = data[0].y * Math.pow((1-time), 2) + data[1].y * 2 * time * (1-time) + data[2].y * Math.pow(time, 2);
+                    data[5].x = px3;
+                    data[5].y = py3;
+
+                    c.update(data);
+
+                    if(time >= 1)clearInterval(interval);
+                };
+            });
+
+        </script>
+    </body>
+</html>
