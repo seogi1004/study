@@ -12,6 +12,9 @@
 
         <script>
             jui.define("chart.brush.template", [ "util.base", "util.math" ], function() {
+            	var bezierPath = "";
+            	var bezierPathTemp = "";
+            	
                 var Template = function() {
 
                     this.draw = function() {
@@ -30,7 +33,9 @@
 
                         var path3 = this.chart.svg.path({ fill: "none", stroke: "red", "stroke-width": 2, });
                         path3.MoveTo(this.axis.x(this.axis.data[0].x), this.axis.y(this.axis.data[0].y));
-                        path3.LineTo(this.axis.x(this.axis.data[5].x), this.axis.y(this.axis.data[5].y));
+                        
+                        bezierPath += this.axis.x(this.axis.data[5].x)+","+this.axis.y(this.axis.data[5].y)+" L";
+                        path3.LineTo(bezierPath, bezierPathTemp);
                         g.append(path3);
 
                         this.eachData(function(i, data) {
@@ -41,7 +46,6 @@
                                 cy: this.axis.y(data.y)
                             }));
                         });
-
 
                         return g;
                     }
@@ -55,9 +59,9 @@
             jui.ready([ "chartx.coordinate" ], function(builder) {
 
                 var data = [
-                    {x: 0, y: 0},
-                    {x: 10, y: 10},
-                    {x: 20, y: 0},
+                    {x: 0, y: 0}, //Point 1
+                    {x: 5, y: 10}, //Point 2
+                    {x: 20, y: 0}, //Point 3
                     {x: 0, y: 0},
                     {x: 10, y: 10},
                     {x: 0, y: 0},
@@ -89,7 +93,7 @@
                     var py3 = data[0].y * Math.pow((1-time), 2) + data[1].y * 2 * time * (1-time) + data[2].y * Math.pow(time, 2);
                     data[5].x = px3;
                     data[5].y = py3;
-
+					
                     c.update(data);
 
                     if(time >= 1)clearInterval(interval);
