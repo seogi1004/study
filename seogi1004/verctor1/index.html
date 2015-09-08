@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="jui.chart.min.js"></script>
+<script>
+jui.define("chart.brush.egg", [], function() {
+    var EggBrush = function() {
+        this.draw = function() {
+            var g = this.chart.svg.group();
+
+            this.eachData(function(i, data) {
+                var c = this.chart.svg.circle({
+                    fill: this.color(i),
+                    r: this.brush.size,
+                    cx: this.axis.x(data.x),
+                    cy: this.axis.y(data.y),
+                    cursor: "pointer"
+                });
+
+                this.addEvent(c, i, 0);
+                g.append(c);
+            });
+
+            return g;
+        }
+    }
+
+    EggBrush.setup = function() {
+        return {
+            size: 8
+        }
+    }
+
+    return EggBrush;
+}, "chart.brush.core");
+
+jui.define("chart.widget.finger", [ "util.math" ], function(_) {
+    var FingerWidget = function() {
+        var target = null,
+            degree = 0,
+            width = 10,
+            height = 20,
+            radius = 22;
+
+        this.initEvents = function(finger) {
+            var self = this;
+
+            // 원 클릭시 이벤트
+            this.on("click", function(obj, e) {
+                target = obj
+
+                var x = this.axis.x(target.data.x),
+                    y = this.axis.y(target.data.y);
+
+                finger.attr({
+                    visibility: "visible"
+                });
+
+                finger.translate(x - width/2, y - height/2);
+            });
+
+            this.on("axis.mousemove", function(e) {
+                if(target == null) return;
+
+                var cx = this.axis.x(target.data.x),
+                    cy = this.axis.y(target.data.y),
+                    r = Math.atan2(e.chartY - cy, e.chartX - cx),
+                    d = _.degree(r),
+                    tx = cx + (radius * Math.cos(r)),
+                    ty = cy + (radius * Math.sin(r));
+
+                finger.translate(tx - width/2, ty - height/2);
+                finger.rotate(d - 90, width/2, height/2);
+
+                degree = 180 - d;
+            });
+
+            finger.on("click", function(e) {
+                if(target == null) return;
+
+                self.chart.emit("finger.hit", [ target.dataIndex, degree ]);
+                target = null;
+            });
+        }
+
+        this.draw = function() {
+            var g = this.chart.svg.group(),
+                finger = this.chart.svg.polygon({
+                    fill: this.widget.color,
+                    visibility: "hidden",
+                    cursor: "crosshair"
+                });
+
+            finger.point(0, height);
+            finger.point(width, height);
+            finger.point(width/2, 0);
+            g.append(finger);
+            g.translate(this.chart.area("x"), this.chart.area("y"));
+            this.initEvents(finger);
+
+            return g;
+        }
+    }
+
+    FingerWidget.setup = function() {
+        return {
+            color: "red"
+        }
+    }
+
+    return FingerWidget;
+}, "chart.widget.core");
+
+jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
+    var domain = [ -20, 20 ];
+
+    var data = [
+        { x: 5,     y: 5 },
+        { x: -5,    y: 5 },
+        { x: -5,    y: -5 },
+        { x: 5,     y: -5 }
+    ];
+
+    var c = builder("#chart", {
+        theme: "dark",
+        padding: 20,
+        width: 750,
+        height: 750,
+        axis: [{
+            x: {
+                type: "range",
+                domain: domain,
+                unit: 1,
+                line: "solid"
+            },
+            y: {
+                type: "range",
+                domain: domain,
+                unit: 1,
+                line: "solid"
+            },
+            data: data
+        }],
+        brush: [{
+            type: "egg"
+        }],
+        widget: [{
+            type: "finger"
+        }],
+        event: {
+            "finger.hit": function(index, degree) {
+                var dist = 10,
+                    d = data[index],
+                    tx = dist * Math.cos(_.radian(degree)),
+                    ty = dist * Math.sin(_.radian(degree)),
+                    sx = tx / dist,
+                    sy = ty / dist;
+
+                run();
+
+                function run() {
+                    d.x += sx;
+                    d.y += sy;
+                    c.axis(0).update(data);
+
+                    setTimeout(run, 60);
+                }
+            }
+        },
+        style: {
+            gridXAxisBorderWidth: 1,
+            gridYAxisBorderWidth: 1,
+            gridTickBorderSize: 0,
+            gridXFontSize: 9,
+            gridYFontSize: 9
+        }
+    });
+});
+</script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
