@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Vector</title>
+    <style>
+
+        body{
+            font-size: 11px;
+        }
+
+        #world{
+            background-color: #d0d0d0;
+        }
+
+        input[type="range"]{
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="world" width="1000" height="500" ></canvas>
+    <span>각도 : </span><input id="r" type="range" min="3.9269908169872414" max="5.497787143782138" step="0.01"/>
+    <span>바람 : </span><input id="w" type="range" min="-0.5" max="0.5" step="0.01"/>
+    <span>힘 : </span><input id="p" type="range" min="20" max="40" />
+    <span>증력 : </span><input id="g" type="range" min="0.97" max="1.5" value="0.97" step="0.01"/>
+    <input id="start" type="button" value="실행"/>
+    <script src="lib/jquery.js"></script>
+    <script src="src/vec.js"></script>
+    <script src="src/vecoper.js"></script>
+
+    <script>
+        var canvas = document.getElementById( 'world' );
+        var context = canvas.getContext( '2d' );
+
+        var $r = $( '#r').on( 'change', function(){
+            World.ball.v.setDirection( +$r.val() );
+        });
+
+        var $w = $( '#w' ).on( 'change', function(){
+            var value = $w.val();
+            var dir = value > 0 ? 0 : Math.PI
+            World.wind.setDirection( dir );
+            World.wind.setLength( Math.abs( value ) );
+        });
+
+        var $p = $( '#p' ).on( 'change', function(){
+            World.ball.v.setLength( +$p.val() );
+        });
+
+        var $g = $( '#g' ).on( 'change', function(){
+            World.gravity.setLength( +$g.val() );
+        });
+
+        $( '#start').on( 'click', function(){
+            World.stop();
+            canvas.width = canvas.width;
+            context.fillStyle = 'white';
+            init();
+            World.start();
+        })
+
+        var World;
+
+        function init(){
+
+            World = {
+                timer:null,
+                ball : {
+                    x:canvas.width/2,
+                    y:canvas.height,
+                    r:5,
+                    v:new Vec(),
+                    update:function(){
+                        this.x += this.v.x;
+                        this.y += this.v.y;
+                    },
+                    render:function() {
+
+                        context.beginPath();
+                        context.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+                        context.fill();
+                    }
+                },
+                wind : new Vec(),
+                gravity : new Vec( Math.PI/2 ),
+                update:function(){
+                    this.ball.v = vecoper.sum( this.ball.v, this.wind, this.gravity );
+                    this.ball.update();
+                },
+                render:function(){
+                    this.ball.render();
+                },
+                start:function(){
+                    var self = this;
+                    this.timer = setInterval( function(){
+                        self.update();
+                        self.render();
+                        self.ball.y >= canvas.height ? self.stop(): null;
+                    }, 1000/24 )
+                },
+                stop:function(){
+                    clearInterval( this.timer );
+                }
+            };
+
+            $r.trigger( 'change' );
+            $w.trigger( 'change' );
+            $p.trigger( 'change' );
+            $g.trigger( 'change' );
+
+
+            World.render();
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
