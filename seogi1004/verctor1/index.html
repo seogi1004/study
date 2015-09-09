@@ -38,19 +38,25 @@ jui.define("chart.brush.egg", [], function() {
 
 jui.define("chart.widget.finger", [ "util.math" ], function(_) {
     var MSG_1 = "Step 1. Select a circle",
-        MSG_2 = "Step 2. Set your angle, then click the arrow";
+        MSG_2 = "Step 2. Set your angle, then click the background",
+        MSG_3 = "Step 3. Set the strength of the circle";
+
+    var FINGER_WIDTH = 10,
+        FINGER_HEIGHT = 20,
+        FINGER_RADIUS = 22,
+        GAUGE_WIDTH = 40,
+        GAUGE_HEIGHT = 3,
+        GAUGE_RADIUS = 3;
 
     var FingerWidget = function() {
         var target = null,
             degree = 0,
-            width = 10,
-            height = 20,
-            radius = 22;
+            percent = 0,
+            pvector = 10,
+            interval = null;
 
-        this.initEvents = function(finger, title) {
-            var self = this;
+        this.initEvents = function(finger, gauge, title) {
 
-            // 원 클릭시 이벤트
             this.on("click", function(obj, e) {
                 target = obj
 
@@ -61,46 +67,94 @@ jui.define("chart.widget.finger", [ "util.math" ], function(_) {
                     visibility: "visible"
                 });
 
-                finger.translate(x - width/2, y - height/2);
+                finger.translate(x - FINGER_WIDTH/2, y + FINGER_HEIGHT*2);
 
                 title.text(MSG_2);
             });
 
-            this.on("axis.mousemove", function(e) {
-                if(target == null) return;
+            this.on("chart.mousemove", function(e) {
+                var status = finger.attributes.visibility;
+
+                if(target == null || status == "hidden") return;
 
                 var cx = this.axis.x(target.data.x),
                     cy = this.axis.y(target.data.y),
                     r = Math.atan2(e.chartY - cy, e.chartX - cx),
                     d = _.degree(r),
-                    tx = cx + (radius * Math.cos(r)),
-                    ty = cy + (radius * Math.sin(r));
+                    tx = cx + (FINGER_RADIUS * Math.cos(r)),
+                    ty = cy + (FINGER_RADIUS * Math.sin(r));
 
-                finger.translate(tx - width/2, ty - height/2);
-                finger.rotate(d - 90, width/2, height/2);
+                finger.translate(tx - FINGER_WIDTH / 2, ty - FINGER_HEIGHT / 2);
+                finger.rotate(d - 90, FINGER_WIDTH / 2, FINGER_HEIGHT / 2);
+                gauge.translate(tx - GAUGE_WIDTH / 2, ty - GAUGE_HEIGHT / 2);
+                gauge.rotate(d - 90, GAUGE_WIDTH / 2, GAUGE_HEIGHT / 2);
 
                 degree = 180 - d;
             });
 
-            finger.on("click", function(e) {
+            this.on("chart.mousedown", function(e) {
+                var gaugeStatus = gauge.attributes.visibility,
+                    fingerStatus = finger.attributes.visibility;
+
                 if(target == null) return;
 
-                self.chart.emit("finger.hit", [ target.dataIndex, degree ]);
-                target = null;
+                if(fingerStatus == "visible") {
+                    gauge.attr({
+                        visibility: "visible"
+                    });
 
-                finger.attr({
-                    visibility: "hidden"
-                });
-                title.text(MSG_1);
+                    finger.attr({
+                        visibility: "hidden"
+                    });
+
+                    title.text(MSG_3);
+
+                    // 바 게이지 작동
+                    interval = setInterval(function() {
+                        var bar = gauge.get(1),
+                            tick = GAUGE_WIDTH/100;
+
+                        percent += pvector;
+
+                        if(percent < 10) {
+                            pvector = -pvector;
+                            percent = 10;
+                        }
+                        if(percent > 90) {
+                            pvector = -pvector;
+                            percent = 100;
+                        }
+
+                        bar.attr({ width: tick * percent });
+                    }, 50);
+                }
+
+                if(gaugeStatus == "visible") {
+                    clearInterval(interval);
+
+                    gauge.attr({
+                        visibility: "hidden"
+                    });
+
+                    title.text(MSG_1);
+
+                    this.chart.emit("finger.hit", [ target.dataIndex, degree, percent ]);
+
+                    target = null;
+                    interval = null;
+                    percent = 0;
+                }
             });
         }
 
         this.draw = function() {
             var g = this.chart.svg.group(),
+                gauge = this.chart.svg.group({
+                    visibility: "hidden"
+                }),
                 finger = this.chart.svg.polygon({
-                    fill: this.widget.color,
-                    visibility: "hidden",
-                    cursor: "crosshair"
+                    fill: this.widget.fingerColor,
+                    visibility: "hidden"
                 }),
                 title = this.chart.svg.text({
                     "text-anchor": "middle",
@@ -110,11 +164,28 @@ jui.define("chart.widget.finger", [ "util.math" ], function(_) {
                     "fill": this.chart.theme("titleFontColor")
                 });
 
+            // 게이지 생성
+            gauge.append(this.chart.svg.rect({
+                rx: GAUGE_RADIUS,
+                ry: GAUGE_RADIUS,
+                width: GAUGE_WIDTH,
+                height: GAUGE_HEIGHT,
+                fill: this.widget.gaugeColor
+            }));
+            gauge.append(this.chart.svg.rect({
+                rx: GAUGE_RADIUS,
+                ry: GAUGE_RADIUS,
+                width: 0,
+                height: GAUGE_HEIGHT,
+                fill: this.widget.fingerColor
+            }));
+
             // 각도 조작기 생성
-            finger.point(0, height);
-            finger.point(width, height);
-            finger.point(width/2, 0);
+            finger.point(0, FINGER_HEIGHT);
+            finger.point(FINGER_WIDTH, FINGER_HEIGHT);
+            finger.point(FINGER_WIDTH/2, 0);
             g.append(finger);
+            g.append(gauge);
 
             // 타이틀 생성
             title.text(MSG_1);
@@ -123,7 +194,8 @@ jui.define("chart.widget.finger", [ "util.math" ], function(_) {
             // 기본 좌표 설정
             g.translate(this.chart.area("x"), this.chart.area("y"));
 
-            this.initEvents(finger, title);
+            // 이벤트 설정
+            this.initEvents(finger, gauge, title);
 
             return g;
         }
@@ -131,7 +203,8 @@ jui.define("chart.widget.finger", [ "util.math" ], function(_) {
 
     FingerWidget.setup = function() {
         return {
-            color: "red"
+            fingerColor: "#ff7800",
+            gaugeColor: "#dcdcdc"
         }
     }
 
@@ -180,8 +253,8 @@ jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
             type: "finger"
         }],
         event: {
-            "finger.hit": function(index, degree) {
-                var dist = 10,
+            "finger.hit": function(index, degree, percent) {
+                var dist = domain[1] * (percent / 100),
                     d = data[index];
 
                 var v = { // 벡터
