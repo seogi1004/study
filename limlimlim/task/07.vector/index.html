@@ -14,17 +14,19 @@
         }
 
         input[type="range"]{
-            width: 50px;
+            width: 100px;
         }
     </style>
 </head>
 <body>
-    <canvas id="world" width="1000" height="500" ></canvas>
-    <span>각도 : </span><input id="r" type="range" min="3.9269908169872414" max="5.497787143782138" step="0.01"/>
-    <span>바람 : </span><input id="w" type="range" min="-0.5" max="0.5" step="0.01"/>
-    <span>힘 : </span><input id="p" type="range" min="20" max="40" />
-    <span>증력 : </span><input id="g" type="range" min="0.97" max="1.5" value="0.97" step="0.01"/>
-    <input id="start" type="button" value="실행"/>
+    <canvas id="world" width="1000" height="700" ></canvas>
+    <div>
+        <span>각도 : </span><input id="r" type="range" min="3.9269908169872414" max="5.497787143782138" step="0.01"/>
+        <span>바람 : </span><input id="w" type="range" min="-0.5" max="0.5" step="0.01"/>
+        <span>힘 : </span><input id="p" type="range" min="20" max="40" />
+        <span>증력 : </span><input id="g" type="range" min="0.97" max="1.5" value="0.97" step="0.01"/>
+        <input id="start" type="button" value="실행"/>
+    </div>
     <script src="lib/jquery.js"></script>
     <script src="src/vec.js"></script>
     <script src="src/vecoper.js"></script>
