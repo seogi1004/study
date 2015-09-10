@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        #container canvas{
+            position: absolute;
+        }
+        #land{
+            background-color: #ececec;
+        }
+        #temp{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <canvas id="land" width="700" height="400"></canvas>
+    <canvas id="sky" width="700" height="400"></canvas>
+    <canvas id="temp" width="700" height="400"></canvas>
+</div>
+
+
+<script src="lib/jquery.js"></script>
+<script src="src/vec.js"></script>
+<script src="src/vecoper.js"></script>
+<script>
+
+
+    var land = document.getElementById( 'land' );
+    var landc = land.getContext( '2d' );
+    var sky = document.getElementById( 'sky' );
+    var skyc = sky.getContext( '2d' );
+    var temp = document.getElementById( 'temp' );
+    var tempc = temp.getContext( '2d' );
+    var PI2 = 2*Math.PI;
+
+    var Land = {
+        vtx:20,
+        tempColor:'blue',
+        init:function(){
+            var x = 0;
+            var y = land.height / 1.5
+            var l = land.width / this.vtx;
+            var d;
+            var h;
+            landc.save();
+            landc.fillStyle = '#cccccc';
+            landc.beginPath();
+            landc.moveTo( x, y );
+            for( var i=0, count=this.vtx ; i<count ; i+=1 ){
+                x+=l;
+                h = Math.random() * 20;
+                d = Math.round( Math.random() );
+                if( d){ y-=h; }
+                else{ y+=h; }
+                landc.lineTo( x, y );
+            }
+            landc.lineTo( x, land.height );
+            landc.lineTo( 0, land.height );
+            landc.closePath();
+            landc.fill();
+            landc.restore();
+        },
+
+        drawTemp:function() {
+            tempc.drawImage( land, 0, 0, 700, 400, 0, 200, 700, 200 );
+        }
+    };
+
+    var Bomb = function(){
+        this.init();
+    };
+
+    Bomb.prototype = {
+        init:function(){
+            this.x = Math.random() * sky.width;
+            this.y = 0//Math.random() * -100;
+            this.speed = Math.random() + 1;
+            this.size = ( Math.random() * 5 ) + 5;
+            this.pixelmap = [];
+            this.color = '#cccccc';
+            this.tempColor = 'red';
+            this.updatePixelmap();
+        },
+
+        updatePixelmap:function(){
+            this.pixelmap = [];
+            var size = this.size;
+            var size2 = this.size*2;
+            temp.width = temp.width;
+            tempc.save();
+            tempc.fillStyle = this.tempColor;
+            tempc.beginPath();
+            tempc.arc( size, size, size, 0, PI2, false );
+            tempc.fill();
+            tempc.restore();
+            var pixelData = tempc.getImageData(0,0, size2, size2).data;
+            for( var i= 0, count=pixelData.length ; i<count ; i+=4 ){
+                if( pixelData[i+3] !== 0 ){ this.pixelmap.push( { index:i,r:pixelData[i],g:pixelData[i+1],b:pixelData[i+2]} ); }
+            }
+        },
+
+        drawTemp:function(){
+            temp.width = temp.width;
+            tempc.save();
+            tempc.fillStyle = this.tempColor;
+            tempc.beginPath();
+            tempc.arc( this.x, this.y, this.size, 0, PI2, false );
+            tempc.fill();
+            tempc.restore();
+        },
+
+        update:function(){
+            this.y += this.speed;
+            skyc.save();
+            skyc.fillStyle = this.color;
+            skyc.beginPath();
+            skyc.arc( this.x, this.y, this.size, 0, PI2, false );
+            skyc.fill();
+            skyc.restore();
+        },
+
+        exp:function(){
+
+        }
+
+    };
+
+    var Temp = {
+        isCollision:function( bomb, land ){
+            temp.width = temp.width;
+            bomb.drawTemp();
+            land.drawTemp();
+            var targetPixelData = tempc.getImageData( bomb.x-bomb.size/2, bomb.y-bomb.size/2, bomb.size*2, bomb.size*2).data;
+            var index;
+            var pdata;
+            for( var i= 0, count=bomb.pixelmap.length ; i<count ; i+=1 ){
+                pdata = bomb.pixelmap[ i];
+                index = pdata.index;
+                if( targetPixelData[ index ] != pdata.r ||  targetPixelData[ index+1 ] != pdata.g || targetPixelData[ index+2 ] != pdata.b ){
+//                    alert( '!!!!!!!!' );
+                    console.log( '------------------------')
+                    console.log( targetPixelData[ index ], pdata.r )
+                    console.log( targetPixelData[ index+1 ], pdata.g )
+                    console.log( targetPixelData[ index+2 ], pdata.b )
+                    console.log( targetPixelData[ index+3 ], pdata.b )
+                                        alert( '!!!!!!!!' );
+                }
+            }
+        }
+    }
+
+    var World = {
+        land:Land,
+        temp:Temp,
+        bombs:[ new Bomb() ],
+        init:function(){
+            land.width = land.width;
+            sky.width = sky.width;
+            this.land.init();
+        },
+
+        update:function(){
+            sky.width = sky.width;
+            skyc.save();
+            var bomb;
+            for( var i= 0, count=this.bombs.length ; i<count ; i+=1 ){
+                bomb = this.bombs[ i];
+                bomb.update();
+                this.temp.isCollision( bomb, this.land );
+            }
+            skyc.restore();
+        },
+
+        start:function(){
+            var self = this;
+            setInterval( function(){
+                self.update();
+            }, 1000/24 )
+        }
+    };
+
+
+
+
+    World.init();
+</script>
+</body>
+</html>
