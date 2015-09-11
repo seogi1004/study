@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../../../lib/jquery-1.11.0.min.js"></script>
 <script src="jui.chart.min.js"></script>
 <script>
 jui.define("chart.brush.egg", [], function() {
@@ -12,6 +12,7 @@ jui.define("chart.brush.egg", [], function() {
 
             this.eachData(function(i, data) {
                 var c = this.chart.svg.circle({
+                    id: 'egg' + i,
                     fill: this.color(i),
                     r: this.brush.size,
                     cx: this.axis.x(data.x),
@@ -29,7 +30,7 @@ jui.define("chart.brush.egg", [], function() {
 
     EggBrush.setup = function() {
         return {
-            size: 8
+            size: 20
         }
     }
 
@@ -215,10 +216,11 @@ jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
     var domain = [ -20, 20 ];
 
     var data = [
+        { x: 0,     y: 0 },
         { x: 5,     y: 5 },
         { x: -5,    y: 5 },
         { x: -5,    y: -5 },
-        { x: 5,     y: -5 }
+        { x: 5,    y: -5 }
     ];
 
     var c = builder("#chart", {
@@ -254,6 +256,7 @@ jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
         }],
         event: {
             "finger.hit": function(index, degree, percent) {
+
                 var dist = domain[1] * (percent / 100),
                     d = data[index];
 
@@ -269,17 +272,96 @@ jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
 
                 run(d.x+v.x, d.y+v.y);
 
+                /* 움직여!!! */
                 function run(tx, ty) {
+
                     d.x += u.x;
                     d.y += u.y;
                     c.axis(0).update(data);
 
-                    if (Math.abs(tx - d.x) > 0.001) {
+                    var collisionData = collisionDetect(index, data);
+                    if(collisionData[0]){
+                        collisionAction(index, collisionData[1]);
+                    }
+
+                    if (Math.abs(tx - d.x) > 0.01) {
                         setTimeout(function() {
                             run(tx, ty);
-                        }, 60);
+                        },1000/30);
                     }
                 }
+
+
+                /* 쿵? */
+                function collisionDetect(idx, data){
+
+                    var distance = {};     //슈팅한 알의 원점과 다른 알들의 원점과의 거리 (n개)
+                    var result   = [];     //충돌된 알의 index (n개)
+                    var test     = false; //충돌여부
+
+
+                    //슈팅한 알 제외하고 거리 계산
+                    for(var i=0;i<data.length;i++){
+                        if(idx != i){
+                            var dx = data[i].x - data[idx].x;
+                            var dy = data[i].y - data[idx].y;
+                            //distance[i] = Math.sqrt((dx * dx) + (dy * dy)); //알들 사이의 거리, 피타고라스
+                            distance[i] = dx * dx + dy * dy // sqrt 보다 연산 효율 좋음..
+                        }
+                    }
+
+                    //두 원의 중점간의 거리가 두 원의 반지름의 합보다 작거나 같으면 충돌
+                    for(var key in distance){
+                        var radiusSum = (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1];
+
+                        //if( Math.abs(distance[key]) <= (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1]){
+                        if( Math.abs(distance[key]) <= radiusSum * radiusSum ){
+                            console.log("hit");
+                            test = true;
+                            result.push(key);
+                        }
+                    }
+
+                    return [test, result];
+                }
+
+                /* 쿵! */
+                function collisionAction(egg1, egg2){
+
+                    //충돌 이후 움직임에 뭐가 필요 할까?
+                    /*
+                         1. 충돌후 충돌한 알의 움직일 방향 [o]
+                         2. 충돌후 얼마나 움직여야 되지? []
+                         3. 마찰력 []
+                    */
+
+                    for(var i=0;i<egg2.length;i++){
+
+                        var fx = data[egg2[i]].x - data[egg1].x;
+                        var fy = data[egg2[i]].y - data[egg1].y;
+
+                        //공의 충돌 각도 계산(Math.atan2)
+                        var angle = Math.atan2(fy, fx);
+
+                        //테스트
+                        data[egg2[i]].x += Math.cos(angle);
+                        data[egg2[i]].y += Math.sin(angle);
+
+                    };
+
+
+
+                };
+
+                function getAngle(){
+
+                }
+
+                /* 벽이랑 충돌하면 제거 */
+                function collisionWall(test){
+                    console.log(test);
+                };
+
             }
         },
         style: {
