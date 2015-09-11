@@ -93,7 +93,7 @@
             landc.save();
             landc.globalCompositeOperation = "destination-out";
             landc.beginPath();
-            landc.arc( bomb.x, bomb.y, 25, 0, Math.PI*2, false );
+            landc.arc( bomb.x, bomb.y, bomb.power, 0, Math.PI*2, false );
             landc.fill();
             landc.restore();
         }
@@ -109,6 +109,7 @@
             this.y = Math.random() * -200;
             this.speed = Math.random() + 5;
             this.size = ( Math.random() * 10 ) + 5;
+            this.power = this.size*3;
             this.pixelmap = [];
             this.color = '#cccccc';
             this.tempColor = 'red';
@@ -172,6 +173,11 @@
                 if( this.land.isCollision( bomb ) ){
                     this.land.destroy( bomb );
                     bomb.init();
+                }else{
+                    console.log( bomb.y+bomb.size/2, land.height );
+                    if( bomb.y+bomb.size/2 > land.height ){
+                        bomb.init();
+                    }
                 }
             }
             skyc.restore();
