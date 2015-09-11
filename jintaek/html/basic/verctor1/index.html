@@ -1,382 +1,451 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<script src="../../../lib/jquery-1.11.0.min.js"></script>
-<script src="jui.chart.min.js"></script>
-<script>
-jui.define("chart.brush.egg", [], function() {
-    var EggBrush = function() {
-        this.draw = function() {
-            var g = this.chart.svg.group();
+    <meta charset="utf-8">
+    <script src="../../../lib/jquery-1.11.0.min.js"></script>
+    <script src="jui.chart.min.js"></script>
+    <script>
+        jui.define("chart.brush.egg", [], function() {
+            var EggBrush = function() {
+                this.draw = function() {
+                    var g = this.chart.svg.group();
 
-            this.eachData(function(i, data) {
-                var c = this.chart.svg.circle({
-                    id: 'egg' + i,
-                    fill: this.color(i),
-                    r: this.brush.size,
-                    cx: this.axis.x(data.x),
-                    cy: this.axis.y(data.y),
-                    cursor: "pointer"
-                });
+                    this.eachData(function(i, data) {
+                        var c = this.chart.svg.circle({
+                            id: 'egg' + i,
+                            fill: this.color(i),
+                            r: data.r,
+                            cx: this.axis.x(data.x),
+                            cy: this.axis.y(data.y),
+                            cursor: "pointer"
+                        });
 
-                this.addEvent(c, i, 0);
-                g.append(c);
-            });
-
-            return g;
-        }
-    }
-
-    EggBrush.setup = function() {
-        return {
-            size: 20
-        }
-    }
-
-    return EggBrush;
-}, "chart.brush.core");
-
-jui.define("chart.widget.finger", [ "util.math" ], function(_) {
-    var MSG_1 = "Step 1. Select a circle",
-        MSG_2 = "Step 2. Set your angle, then click the background",
-        MSG_3 = "Step 3. Set the strength of the circle";
-
-    var FINGER_WIDTH = 10,
-        FINGER_HEIGHT = 20,
-        FINGER_RADIUS = 22,
-        GAUGE_WIDTH = 40,
-        GAUGE_HEIGHT = 3,
-        GAUGE_RADIUS = 3;
-
-    var FingerWidget = function() {
-        var target = null,
-            degree = 0,
-            percent = 0,
-            pvector = 10,
-            interval = null;
-
-        this.initEvents = function(finger, gauge, title) {
-
-            this.on("click", function(obj, e) {
-                target = obj
-
-                var x = this.axis.x(target.data.x),
-                    y = this.axis.y(target.data.y);
-
-                finger.attr({
-                    visibility: "visible"
-                });
-
-                finger.translate(x - FINGER_WIDTH/2, y + FINGER_HEIGHT*2);
-
-                title.text(MSG_2);
-            });
-
-            this.on("chart.mousemove", function(e) {
-                var status = finger.attributes.visibility;
-
-                if(target == null || status == "hidden") return;
-
-                var cx = this.axis.x(target.data.x),
-                    cy = this.axis.y(target.data.y),
-                    r = Math.atan2(e.chartY - cy, e.chartX - cx),
-                    d = _.degree(r),
-                    tx = cx + (FINGER_RADIUS * Math.cos(r)),
-                    ty = cy + (FINGER_RADIUS * Math.sin(r));
-
-                finger.translate(tx - FINGER_WIDTH / 2, ty - FINGER_HEIGHT / 2);
-                finger.rotate(d - 90, FINGER_WIDTH / 2, FINGER_HEIGHT / 2);
-                gauge.translate(tx - GAUGE_WIDTH / 2, ty - GAUGE_HEIGHT / 2);
-                gauge.rotate(d - 90, GAUGE_WIDTH / 2, GAUGE_HEIGHT / 2);
-
-                degree = 180 - d;
-            });
-
-            this.on("chart.mousedown", function(e) {
-                var gaugeStatus = gauge.attributes.visibility,
-                    fingerStatus = finger.attributes.visibility;
-
-                if(target == null) return;
-
-                if(fingerStatus == "visible") {
-                    gauge.attr({
-                        visibility: "visible"
+                        this.addEvent(c, i, 0);
+                        g.append(c);
                     });
 
-                    finger.attr({
-                        visibility: "hidden"
-                    });
-
-                    title.text(MSG_3);
-
-                    // 바 게이지 작동
-                    interval = setInterval(function() {
-                        var bar = gauge.get(1),
-                            tick = GAUGE_WIDTH/100;
-
-                        percent += pvector;
-
-                        if(percent < 10) {
-                            pvector = -pvector;
-                            percent = 10;
-                        }
-                        if(percent > 90) {
-                            pvector = -pvector;
-                            percent = 100;
-                        }
-
-                        bar.attr({ width: tick * percent });
-                    }, 50);
+                    return g;
                 }
-
-                if(gaugeStatus == "visible") {
-                    clearInterval(interval);
-
-                    gauge.attr({
-                        visibility: "hidden"
-                    });
-
-                    title.text(MSG_1);
-
-                    this.chart.emit("finger.hit", [ target.dataIndex, degree, percent ]);
-
-                    target = null;
-                    interval = null;
-                    percent = 0;
-                }
-            });
-        }
-
-        this.draw = function() {
-            var g = this.chart.svg.group(),
-                gauge = this.chart.svg.group({
-                    visibility: "hidden"
-                }),
-                finger = this.chart.svg.polygon({
-                    fill: this.widget.fingerColor,
-                    visibility: "hidden"
-                }),
-                title = this.chart.svg.text({
-                    "text-anchor": "middle",
-                    "font-size": 12,
-                    "x": this.chart.area("width") / 2,
-                    "y": -15,
-                    "fill": this.chart.theme("titleFontColor")
-                });
-
-            // 게이지 생성
-            gauge.append(this.chart.svg.rect({
-                rx: GAUGE_RADIUS,
-                ry: GAUGE_RADIUS,
-                width: GAUGE_WIDTH,
-                height: GAUGE_HEIGHT,
-                fill: this.widget.gaugeColor
-            }));
-            gauge.append(this.chart.svg.rect({
-                rx: GAUGE_RADIUS,
-                ry: GAUGE_RADIUS,
-                width: 0,
-                height: GAUGE_HEIGHT,
-                fill: this.widget.fingerColor
-            }));
-
-            // 각도 조작기 생성
-            finger.point(0, FINGER_HEIGHT);
-            finger.point(FINGER_WIDTH, FINGER_HEIGHT);
-            finger.point(FINGER_WIDTH/2, 0);
-            g.append(finger);
-            g.append(gauge);
-
-            // 타이틀 생성
-            title.text(MSG_1);
-            g.append(title);
-
-            // 기본 좌표 설정
-            g.translate(this.chart.area("x"), this.chart.area("y"));
-
-            // 이벤트 설정
-            this.initEvents(finger, gauge, title);
-
-            return g;
-        }
-    }
-
-    FingerWidget.setup = function() {
-        return {
-            fingerColor: "#ff7800",
-            gaugeColor: "#dcdcdc"
-        }
-    }
-
-    return FingerWidget;
-}, "chart.widget.core");
-
-jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
-    var domain = [ -20, 20 ];
-
-    var data = [
-        { x: 0,     y: 0 },
-        { x: 5,     y: 5 },
-        { x: -5,    y: 5 },
-        { x: -5,    y: -5 },
-        { x: 5,    y: -5 }
-    ];
-
-    var c = builder("#chart", {
-        theme: "dark",
-        padding: {
-            top: 40,
-            bottom: 20,
-            left: 20,
-            right: 20
-        },
-        width: 750,
-        height: 750,
-        axis: [{
-            x: {
-                type: "range",
-                domain: domain,
-                unit: 1,
-                line: "solid"
-            },
-            y: {
-                type: "range",
-                domain: domain,
-                unit: 1,
-                line: "solid"
-            },
-            data: data
-        }],
-        brush: [{
-            type: "egg"
-        }],
-        widget: [{
-            type: "finger"
-        }],
-        event: {
-            "finger.hit": function(index, degree, percent) {
-
-                var dist = domain[1] * (percent / 100),
-                    d = data[index];
-
-                var v = { // 벡터
-                    x: dist * Math.cos(_.radian(degree)),
-                    y: dist * Math.sin(_.radian(degree))
-                };
-
-                var u = {
-                    x: v.x / dist,
-                    y: v.y / dist
-                };
-
-                run(d.x+v.x, d.y+v.y);
-
-                /* 움직여!!! */
-                function run(tx, ty) {
-
-                    d.x += u.x;
-                    d.y += u.y;
-                    c.axis(0).update(data);
-
-                    var collisionData = collisionDetect(index, data);
-                    if(collisionData[0]){
-                        collisionAction(index, collisionData[1]);
-                    }
-
-                    if (Math.abs(tx - d.x) > 0.01) {
-                        setTimeout(function() {
-                            run(tx, ty);
-                        },1000/30);
-                    }
-                }
-
-
-                /* 쿵? */
-                function collisionDetect(idx, data){
-
-                    var distance = {};     //슈팅한 알의 원점과 다른 알들의 원점과의 거리 (n개)
-                    var result   = [];     //충돌된 알의 index (n개)
-                    var test     = false; //충돌여부
-
-
-                    //슈팅한 알 제외하고 거리 계산
-                    for(var i=0;i<data.length;i++){
-                        if(idx != i){
-                            var dx = data[i].x - data[idx].x;
-                            var dy = data[i].y - data[idx].y;
-                            //distance[i] = Math.sqrt((dx * dx) + (dy * dy)); //알들 사이의 거리, 피타고라스
-                            distance[i] = dx * dx + dy * dy // sqrt 보다 연산 효율 좋음..
-                        }
-                    }
-
-                    //두 원의 중점간의 거리가 두 원의 반지름의 합보다 작거나 같으면 충돌
-                    for(var key in distance){
-                        var radiusSum = (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1];
-
-                        //if( Math.abs(distance[key]) <= (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1]){
-                        if( Math.abs(distance[key]) <= radiusSum * radiusSum ){
-                            console.log("hit");
-                            test = true;
-                            result.push(key);
-                        }
-                    }
-
-                    return [test, result];
-                }
-
-                /* 쿵! */
-                function collisionAction(egg1, egg2){
-
-                    //충돌 이후 움직임에 뭐가 필요 할까?
-                    /*
-                         1. 충돌후 충돌한 알의 움직일 방향 [o]
-                         2. 충돌후 얼마나 움직여야 되지? []
-                         3. 마찰력 []
-                    */
-
-                    for(var i=0;i<egg2.length;i++){
-
-                        var fx = data[egg2[i]].x - data[egg1].x;
-                        var fy = data[egg2[i]].y - data[egg1].y;
-
-                        //공의 충돌 각도 계산(Math.atan2)
-                        var angle = Math.atan2(fy, fx);
-
-                        //테스트
-                        data[egg2[i]].x += Math.cos(angle);
-                        data[egg2[i]].y += Math.sin(angle);
-
-                    };
-
-
-
-                };
-
-                function getAngle(){
-
-                }
-
-                /* 벽이랑 충돌하면 제거 */
-                function collisionWall(test){
-                    console.log(test);
-                };
-
             }
-        },
-        style: {
-            gridXAxisBorderWidth: 1,
-            gridYAxisBorderWidth: 1,
-            gridTickBorderSize: 0,
-            gridXFontSize: 9,
-            gridYFontSize: 9
-        }
-    });
-});
-</script>
+
+            return EggBrush;
+        }, "chart.brush.core");
+
+        jui.define("chart.widget.finger", [ "util.math" ], function(_) {
+            var MSG_1 = "Step 1. Select a circle",
+                    MSG_2 = "Step 2. Set your angle, then click the background",
+                    MSG_3 = "Step 3. Set the strength of the circle";
+
+            var FINGER_WIDTH = 10,
+                    FINGER_HEIGHT = 20,
+                    FINGER_RADIUS = 22,
+                    GAUGE_WIDTH = 40,
+                    GAUGE_HEIGHT = 3,
+                    GAUGE_RADIUS = 3;
+
+            var FingerWidget = function() {
+                var target = null,
+                        degree = 0,
+                        percent = 0,
+                        pvector = 10,
+                        interval = null;
+
+                this.initEvents = function(finger, gauge, title) {
+
+                    this.on("click", function(obj, e) {
+                        target = obj
+
+                        var x = this.axis.x(target.data.x),
+                                y = this.axis.y(target.data.y);
+
+                        finger.attr({
+                            visibility: "visible"
+                        });
+
+                        finger.translate(x - FINGER_WIDTH/2, y + FINGER_HEIGHT*2);
+
+                        title.text(MSG_2);
+                    });
+
+                    this.on("chart.mousemove", function(e) {
+                        var status = finger.attributes.visibility;
+
+                        if(target == null || status == "hidden") return;
+
+                        var cx = this.axis.x(target.data.x),
+                                cy = this.axis.y(target.data.y),
+                                r = Math.atan2(e.chartY - cy, e.chartX - cx),
+                                d = _.degree(r),
+                                tx = cx + (FINGER_RADIUS * Math.cos(r)),
+                                ty = cy + (FINGER_RADIUS * Math.sin(r));
+
+                        finger.translate(tx - FINGER_WIDTH / 2, ty - FINGER_HEIGHT / 2);
+                        finger.rotate(d - 90, FINGER_WIDTH / 2, FINGER_HEIGHT / 2);
+                        gauge.translate(tx - GAUGE_WIDTH / 2, ty - GAUGE_HEIGHT / 2);
+                        gauge.rotate(d - 90, GAUGE_WIDTH / 2, GAUGE_HEIGHT / 2);
+
+                        degree = 180 - d;
+                    });
+
+                    this.on("chart.mousedown", function(e) {
+                        var gaugeStatus = gauge.attributes.visibility,
+                                fingerStatus = finger.attributes.visibility;
+
+                        if(target == null) return;
+
+                        if(fingerStatus == "visible") {
+                            gauge.attr({
+                                visibility: "visible"
+                            });
+
+                            finger.attr({
+                                visibility: "hidden"
+                            });
+
+                            title.text(MSG_3);
+
+                            // 바 게이지 작동
+                            interval = setInterval(function() {
+                                var bar = gauge.get(1),
+                                        tick = GAUGE_WIDTH/100;
+
+                                percent += pvector;
+
+                                if(percent < 10) {
+                                    pvector = -pvector;
+                                    percent = 10;
+                                }
+                                if(percent > 90) {
+                                    pvector = -pvector;
+                                    percent = 100;
+                                }
+
+                                bar.attr({ width: tick * percent });
+                            }, 50);
+                        }
+
+                        if(gaugeStatus == "visible") {
+                            clearInterval(interval);
+
+                            gauge.attr({
+                                visibility: "hidden"
+                            });
+
+                            title.text(MSG_1);
+
+                            this.chart.emit("finger.hit", [ target.dataIndex, degree, percent ]);
+
+                            target = null;
+                            interval = null;
+                            percent = 0;
+                        }
+                    });
+                }
+
+                this.draw = function() {
+                    var g = this.chart.svg.group(),
+                            gauge = this.chart.svg.group({
+                                visibility: "hidden"
+                            }),
+                            finger = this.chart.svg.polygon({
+                                fill: this.widget.fingerColor,
+                                visibility: "hidden"
+                            }),
+                            line = this.chart.svg.line({
+                                'stroke' : this.widget.fingerColor,
+                                'stroke-width' : 2
+                            }),
+                            title = this.chart.svg.text({
+                                "text-anchor": "middle",
+                                "font-size": 12,
+                                "x": this.chart.area("width") / 2,
+                                "y": -15,
+                                "fill": this.chart.theme("titleFontColor")
+                            });
+
+                    // 게이지 생성
+                    gauge.append(this.chart.svg.rect({
+                        rx: GAUGE_RADIUS,
+                        ry: GAUGE_RADIUS,
+                        width: GAUGE_WIDTH,
+                        height: GAUGE_HEIGHT,
+                        fill: this.widget.gaugeColor
+                    }));
+                    gauge.append(this.chart.svg.rect({
+                        rx: GAUGE_RADIUS,
+                        ry: GAUGE_RADIUS,
+                        width: 0,
+                        height: GAUGE_HEIGHT,
+                        fill: this.widget.fingerColor
+                    }));
+
+
+                    // 각도 조작기 생성
+                    finger.point(0, FINGER_HEIGHT);
+                    finger.point(FINGER_WIDTH, FINGER_HEIGHT);
+                    finger.point(FINGER_WIDTH/2, 0);
+                    g.append(finger);
+                    g.append(line);
+                    g.append(gauge);
+
+                    // 타이틀 생성
+                    title.text(MSG_1);
+                    g.append(title);
+
+                    // 기본 좌표 설정
+                    g.translate(this.chart.area("x"), this.chart.area("y"));
+
+                    // 이벤트 설정
+                    this.initEvents(finger, gauge, title);
+
+                    return g;
+                }
+            }
+
+            FingerWidget.setup = function() {
+                return {
+                    fingerColor: "#ff7800",
+                    gaugeColor: "#dcdcdc"
+                }
+            }
+
+            return FingerWidget;
+        }, "chart.widget.core");
+
+        jui.ready(["chart.builder", "util.math", "chart.brush.egg" ], function(builder, _, e) {
+
+            var domain = [ -20, 20 ];
+
+            //공의 데이터
+            var data = [];
+
+            //공의 데이터
+            var egg = []
+
+            initEgg();
+
+            function initEgg(){
+                var eggNum = 3;
+                for(var i=0; i<eggNum; i++){
+
+                    var obj = {};
+                    var max = domain[1] / 2;
+                    var min = max * -1;
+
+                    obj.x       = Math.floor( (Math.random() * (max - min + 1)) + min ); //임의의 x
+                    obj.y       = Math.floor( (Math.random() * (max - min + 1)) + min ); //임의의 y
+                    obj.r       = 20; //원의 반지름
+                    obj.mass    = obj.r; //질량(운동량을 계산하기 위해서는 물체의 질량이 필요함)
+                    //obj.angle   = Math.floor(Math.random()*360); //알의각도
+                    obj.angle   = 0; //알의각도
+                    obj.speed   = 0; //알의 속도
+                    obj.vx      = Math.cos(_.radian(obj.angle)) * obj.speed; //x축 속력
+                    obj.vy      = Math.cos(_.radian(obj.angle)) * obj.speed; //x축 속력
+
+                    data.push(obj);
+
+                }
+            };
+
+            var c = builder("#chart", {
+                theme: "dark",
+                padding: {
+                    top: 40,
+                    bottom: 20,
+                    left: 20,
+                    right: 20
+                },
+                width: 750,
+                height: 750,
+                axis: [{
+                    x: {
+                        type: "range",
+                        domain: domain,
+                        unit: 1,
+                        line: "solid"
+                    },
+                    y: {
+                        type: "range",
+                        domain: domain,
+                        unit: 1,
+                        line: "solid"
+                    },
+                    data: data
+                }],
+                brush: [{
+                    type: "egg"
+                }],
+                widget: [{
+                    type: "finger"
+                }],
+                event: {
+                    "finger.hit": function(index, degree, percent) {
+
+                        var dist        = domain[1] * (percent / 100)
+                        var d           = data[index];
+                        var friction    = .1;
+
+                        //슈팅한 알의 속력을 저장 ( 거리에 대한 벡터 )
+                        d.vx = dist * Math.cos(_.radian(degree));
+                        d.vy = dist * Math.sin(_.radian(degree));
+
+                        c.axis(0).update(data);
+                        AnimateEgg();
+
+                        /* 공 움직이기 */
+                        function moveEgg(){
+
+                            var egg;
+
+                            for(var i=0;i<data.length;i++){
+
+                                egg = data[i];
+
+                                //마찰력 적용하기
+                                egg.vx = egg.vx - (egg.vx * friction);
+                                egg.vy = egg.vy - (egg.vy * friction);
+
+                                egg.x += egg.vx / dist;
+                                egg.y += egg.vy / dist;
+                            }
+
+                            c.axis(0).update(data);
+                        }
+
+                        /* 애니메이션 */
+                        function AnimateEgg(){
+
+                            moveEgg();
+                            var collisionData = collisionDetect(index, data);
+                            if(collisionData[0]){
+                                collisionAction(index, collisionData[1]);
+                            }
+
+                            if(Math.abs(d.vx) <= 0.01 && Math.abs(d.vy) <= 0.01) return;
+                            setTimeout(AnimateEgg, 1000/60);
+                        }
+
+                        /* 충돌확인 */
+                        function collisionDetect(idx, data){
+
+                            var distance = {};     //슈팅한 알의 원점과 다른 알들의 원점과의 거리 (n개)
+                            var result   = [];     //충돌된 알의 index (n개)
+                            var test     = false; //충돌여부
+
+                            //슈팅한 알 제외하고 거리 계산
+                            for(var i=0;i<data.length;i++){
+                                if(idx != i){
+                                    var dx = data[i].x - data[idx].x;
+                                    var dy = data[i].y - data[idx].y;
+                                    //distance[i] = Math.sqrt((dx * dx) + (dy * dy)); //알들 사이의 거리, 피타고라스
+                                    distance[i] = dx * dx + dy * dy // 루트연산 x
+                                }
+                            }
+
+                            //두 원의 중점간의 거리가 두 원의 반지름의 합보다 작거나 같으면 충돌
+                            for(var key in distance){
+
+                                var radiusSum = (data[idx].mass + data[key].mass) / domain[1];
+
+                                //if( Math.abs(distance[key]) <= (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1]){
+                                if( Math.abs(distance[key]) <= radiusSum * radiusSum ){
+                                    test = true;
+                                    result.push(key);
+                                }
+                            }
+
+                            return [test, result];
+                        }
+
+                        /* 충돌이후 */
+                        function collisionAction(egg1, egg2){
+
+
+                            //충돌 이후 움직임에 뭐가 필요 할까?
+                            /*
+                             0. 입사각과 반사각은 같아!!
+                             1. 슈팅한 알의 움일질 방향 []
+                             2. 충돌후 충돌한 알의 움직일 방향 []
+                             3. 충돌후 얼마나 움직여야 되지? []
+                             */
+
+                            for(var i=0;i<egg2.length;i++){
+
+                                var fx = data[egg2[i]].x - data[egg1].x;
+                                var fy = data[egg2[i]].y - data[egg1].y;
+
+                                //공의 충돌 각도 계산(Math.atan2)
+                                var angle = Math.atan2(fy, fx);
+
+                                //공이 부딪치기 전의 x,y 속도값을 이용 공들의 속도 (벡터 크기) 계산
+                                var s1 = Math.sqrt(data[egg1].vx * data[egg1].vx + data[egg1].vy * data[egg1].vy);
+                                var s2 = Math.sqrt(data[egg2[i]].vx * data[egg2[i]].vx + data[egg2[i]].vy * data[egg2[i]].vy);
+
+                                //현재공의 속도값을 이용해서 공들의 라디안 각도 계산(벡터 방향)
+                                var dir1 = Math.atan2(data[egg1].vy, data[egg1].vx);
+                                var dir2 = Math.atan2(data[egg2[i]].vy, data[egg2[i]].vx);
+
+                                // 운동량 보존 법칙 : 물체 사이에 외력이 작용하지 않고 서로의 힘이 미치기만 할 때에는 각 물체의 운동량의 총합은 일정하다
+                                // 운동량 : 물체의 질량(m) * 속도(v) = mv'
+
+                                //삼각함수를 적용하여 벡터를 반시계 방향으로 회전
+                                //속도 벡터
+                                //vx = V * cos(각도)
+                                //vy = V * sin(각도)
+                                // http://butterguy.tistory.com/entry/속도벡터
+                                var velocityx_1 = s1 * Math.cos(dir1 - angle);
+                                var velocityy_1 = s1 * Math.sin(dir1 - angle);
+                                var velocityx_2 = s2 * Math.cos(dir2 - angle);
+                                var velocityy_2 = s2 * Math.sin(dir2 - angle);
+
+                                //mass(질량)값을 운동량 보존 법칙에 적용 최종값을 구한다.
+                                //1차원 공간의 충돌에서 각 물체의 속도
+                                //https://ko.wikipedia.org/wiki/운동량
+                                //v1'={(m1-m2)v1+2m2v2} / (m1+m2)
+                                //v2'={(m2-m1)v2+2m1v1} / (m1+m2)
+                                var final_velocityx_1 = ((data[egg1].mass - data[egg2[i]].mass) * velocityx_1 + (data[egg2[i]].mass + data[egg2[i]].mass) * velocityx_2) / (data[egg1].mass + data[egg2[i]].mass);
+                                var final_velocityx_2 = ((data[egg1].mass + data[egg1].mass) * velocityx_1 + (data[egg2[i]].mass - data[egg1].mass) * velocityx_2) / (data[egg1].mass + data[egg2[i]].mass);
+
+                                var final_velocityy_1 = velocityy_1;
+                                var final_velocityy_2 = velocityy_2;
+
+                                data[egg1].vx = Math.cos(angle) * final_velocityx_1 + Math.cos(angle + Math.PI/2) * final_velocityy_1;
+                                data[egg1].vy = Math.sin(angle) * final_velocityx_1 + Math.sin(angle + Math.PI/2) * final_velocityy_1;
+                                data[egg2[i]].vx = Math.cos(angle) * final_velocityx_2 + Math.cos(angle + Math.PI/2) * final_velocityy_2;
+                                data[egg2[i]].vy = Math.sin(angle) * final_velocityx_2 + Math.sin(angle + Math.PI/2) * final_velocityy_2;
+
+                                //고고고
+                                data[egg1].x += data[egg1].vx / dist;
+                                data[egg1].y += data[egg1].vy / dist;
+                                data[egg2[i]].x += data[egg2[i]].vx / dist;
+                                data[egg2[i]].y += data[egg2[i]].vy / dist;
+
+                            };
+
+                            var html = '';
+                            html += '<p>' + '충돌검사 : 슈팅한 ' + egg1 + '번 알이랑 ' + egg2 + '번 알이랑 충돌하였습니다.' + '</p>';
+                            html += '<p>' + '속도 : ' + dist + '</p>';
+                            $('#result').html(html);
+
+
+                        };
+
+                    }
+                },
+                style: {
+                    gridXAxisBorderWidth: 1,
+                    gridYAxisBorderWidth: 1,
+                    gridTickBorderSize: 0,
+                    gridXFontSize: 9,
+                    gridYFontSize: 9
+                }
+            });
+        });
+    </script>
 </head>
 
 <body>
-<div id="chart"></div>
+    <div id="chart"></div>
+    <d id="result"></d>
 </body>
 </html>
