@@ -211,14 +211,66 @@ jui.define("chart.widget.finger", [ "util.math" ], function(_) {
     return FingerWidget;
 }, "chart.widget.core");
 
-jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
+jui.define("util.vector", [], function() {
+    var Vector = function() {
+        this.x = 0;
+        this.y = 0;
+        this.ux = 0;
+        this.uy = 0;
+        this.step = 0;
+
+        this.update = function(x, y) {
+            var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
+            // 위치 벡터
+            this.x = x;
+            this.y = y;
+
+            // 단위 벡터
+            this.ux = x / dist;
+            this.uy = y / dist;
+        }
+
+        this.run = function() {
+            if(this.step >= this.x/this.ux) {
+                this.x = 0;
+                this.y = 0;
+                this.ux = 0;
+                this.uy = 0;
+                this.step = 0;
+            } else {
+                if(this.x != 0 && this.y != 0) {
+                    this.step++;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        this.reverse = function() { // 벡터 방향반전
+            this.x = -this.x;
+            this.y = -this.y;
+            this.ux = -this.ux;
+            this.uy = -this.uy;
+        }
+
+        this.remain = function() { // 남은 이동거리
+            return 100 - ((this.step / (this.x / this.ux)) * 100);
+        }
+    }
+
+    return Vector;
+});
+
+jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, Vector) {
     var domain = [ -20, 20 ];
 
     var data = [
-        { x: 5,     y: 5 },
-        { x: -5,    y: 5 },
-        { x: -5,    y: -5 },
-        { x: 5,     y: -5 }
+        { x: 5,     y: 5,   v: new Vector() },
+        { x: -5,    y: 5,   v: new Vector() },
+        { x: -5,    y: -5,  v: new Vector() },
+        { x: 5,     y: -5,  v: new Vector() }
     ];
 
     var c = builder("#chart", {
@@ -257,27 +309,49 @@ jui.ready([ "chart.builder", "util.math" ], function(builder, _) {
                 var dist = domain[1] * (percent / 100),
                     d = data[index];
 
-                var v = { // 벡터
-                    x: dist * Math.cos(_.radian(degree)),
-                    y: dist * Math.sin(_.radian(degree))
-                };
+                // 벡터 상태 업데이트
+                d.v.update(
+                    dist * Math.cos(_.radian(degree)),
+                    dist * Math.sin(_.radian(degree))
+                );
 
-                var u = {
-                    x: v.x / dist,
-                    y: v.y / dist
-                };
+                // 벡터에 따른 공 움직임 시작
+                run();
 
-                run(d.x+v.x, d.y+v.y);
+                // 모든 데이터의 방향 벡터 체크
+                function run() {
+                    for(var i = 0; i < data.length - 1; i++) {
 
-                function run(tx, ty) {
-                    d.x += u.x;
-                    d.y += u.y;
-                    c.axis(0).update(data);
+                        // 현재 원과 다른 원의 충돌 체크
+                        for(var j = 1; j < data.length; j++) {
+                            if(data[i] == data[j]) continue;
 
-                    if (Math.abs(tx - d.x) > 0.001) {
-                        setTimeout(function() {
-                            run(tx, ty);
-                        }, 60);
+                            var dx = data[j].x - data[i].x,
+                                dy = data[j].y - data[i].y;
+
+                            // 두 원 사이의 거리 구하기
+                            var dist = Math.sqrt(
+                                Math.pow(dx, 2) + Math.pow(dy, 2)
+                            );
+
+                            // 충돌시 원의 벡터 변경하기
+                            if(dist < 1) {
+                                console.log("충돌: " + i + "," + j + " (" + dist + ") | " + data[i].v.remain());
+                            }
+                        }
+
+                        // 벡터 유무에 따른 원의 움직임
+                        if(data[i].v.run()) {
+                            data[i].x += data[i].v.ux;
+                            data[i].y += data[i].v.uy;
+                            c.axis(0).update(data);
+
+                            setTimeout(function() {
+                                run();
+                            }, 60);
+
+                            break;
+                        }
                     }
                 }
             }
