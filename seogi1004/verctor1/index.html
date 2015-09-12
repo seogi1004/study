@@ -11,9 +11,13 @@ jui.define("chart.brush.egg", [], function() {
             var g = this.chart.svg.group();
 
             this.eachData(function(i, data) {
-                var c = this.chart.svg.circle({
+                var rx = this.axis.x.rangeBand() / 2,
+                    ry = this.axis.y.rangeBand() / 2;
+
+                var c = this.chart.svg.ellipse({
                     fill: this.color(i),
-                    r: this.brush.size,
+                    rx: rx,
+                    ry: ry,
                     cx: this.axis.x(data.x),
                     cy: this.axis.y(data.y),
                     cursor: "pointer"
@@ -232,7 +236,7 @@ jui.define("util.vector", [], function() {
         }
 
         this.run = function() {
-            if(this.step >= this.x/this.ux) {
+            if(this.step > this.x/this.ux) {
                 this.x = 0;
                 this.y = 0;
                 this.ux = 0;
@@ -248,11 +252,12 @@ jui.define("util.vector", [], function() {
             return false;
         }
 
-        this.reverse = function() { // 벡터 방향반전
-            this.x = -this.x;
-            this.y = -this.y;
-            this.ux = -this.ux;
-            this.uy = -this.uy;
+        this.stop = function() {
+            this.x = 0;
+            this.y = 0;
+            this.ux = 0;
+            this.uy = 0;
+            this.step = 0;
         }
 
         this.remain = function() { // 남은 이동거리
@@ -270,7 +275,7 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
         { x: 5,     y: 5,   v: new Vector() },
         { x: -5,    y: 5,   v: new Vector() },
         { x: -5,    y: -5,  v: new Vector() },
-        { x: 5,     y: -5,  v: new Vector() }
+        { x: 5,    y: -5,  v: new Vector() }
     ];
 
     var c = builder("#chart", {
@@ -320,10 +325,10 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
 
                 // 모든 데이터의 방향 벡터 체크
                 function run() {
-                    for(var i = 0; i < data.length - 1; i++) {
+                    for(var i = 0; i < data.length; i++) {
 
                         // 현재 원과 다른 원의 충돌 체크
-                        for(var j = 1; j < data.length; j++) {
+                        for(var j = 0; j < data.length; j++) {
                             if(data[i] == data[j]) continue;
 
                             var dx = data[j].x - data[i].x,
@@ -336,6 +341,7 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
 
                             // 충돌시 원의 벡터 변경하기
                             if(dist < 1) {
+                                data[i].v.stop();
                                 console.log("충돌: " + i + "," + j + " (" + dist + ") | " + data[i].v.remain());
                             }
                         }
@@ -344,13 +350,26 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
                         if(data[i].v.run()) {
                             data[i].x += data[i].v.ux;
                             data[i].y += data[i].v.uy;
+
+                            // 벽 충돌 X축
+                            if(data[i].x <= domain[0] || data[i].x >= domain[1]) {
+                                data[i].v.x = -data[i].v.x;
+                                data[i].v.ux = -data[i].v.ux;
+                            }
+
+                            // 벽 충돌 Y축
+                            if(data[i].y <= domain[0] || data[i].y >= domain[1]) {
+                                data[i].v.y = -data[i].v.y;
+                                data[i].v.uy = -data[i].v.uy;
+                            }
+
                             c.axis(0).update(data);
 
                             setTimeout(function() {
                                 run();
                             }, 60);
+                        } else {
 
-                            break;
                         }
                     }
                 }
