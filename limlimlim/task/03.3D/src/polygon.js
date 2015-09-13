@@ -41,14 +41,13 @@
                 vtxs[ i ].update( mtrx );
             }
         },
-
         drawPath:function(){
             var vtxs = this._vertexList;
             var vtx1 = vtxs[0];
             var vtx2 = vtxs[1];
             var vtx3 = vtxs[2];
             var context = this._context;
-
+            context.save();
             context.beginPath();
             context.moveTo( vtx1.x, vtx1.y );
             context.lineTo( vtx2.x, vtx2.y );
@@ -56,6 +55,7 @@
             context.lineTo( vtx1.x, vtx1.y );
             context.closePath();
             context.stroke();
+            context.restore();
 
         },
 

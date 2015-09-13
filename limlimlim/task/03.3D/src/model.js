@@ -40,9 +40,9 @@
             var poly = this._polygons;
             var matrix = new window.Matrix();
             matrix.set(
-                x||1, 0, 0, 0,
-                0, y||1, 0, 0,
-                0, 0, z||1, 0,
+                x, 0, 0, 0,
+                0, y, 0, 0,
+                0, 0, z, 0,
                 0, 0, 0, 1
             );
             for( var i= 0, count=poly.length ; i<count ; i+=1 ){
@@ -111,6 +111,7 @@
             var context = this._context;
             var polygons = this._polygons;
             context.strokeStyle = this._option.strokeStyle;
+            context.fillStyle = this._option.fillStyle;
             context.lineWidth = this._option.lineWidth;
             for( var i= 0, count=polygons.length ; i<count ; i+=1 ){
                 polygons[ i].render();
@@ -123,7 +124,8 @@
         toRadian:function( deg ){ return deg/180 * Math.PI; },
 
         option:{
-            strokeStyle:'silver',
+            strokeStyle:'#CCC',
+            fillStyle:'#CCC',
             lineWidth:1
         },
 

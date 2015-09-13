@@ -9,14 +9,14 @@
             width: 800px;
         }
         #container > canvas{
-            background-color: #222;
+            background-color: whitesmoke;
         }
     </style>
 </head>
 <body>
 
 <div id="container">
-    <canvas id="canvas" width="650" height="450"></canvas>
+    <canvas id="canvas" width="650" height="550"></canvas>
 </div>
 
 <script src="data/teapot.js"></script>
@@ -29,38 +29,36 @@
     var canvas = document.getElementById( 'canvas');
     var world = new window.World( canvas );
     world.append( 'teapot1',teapot );
-    world.append( 'teapot2',teapot );
-    world.append( 'teapot3',teapot );
-    world.append( 'teapot4',teapot );
-    world.append( 'teapot5',teapot );
 
     var centerX = canvas.width/2;
     var centerY = canvas.height/2;
     var teapot1 = world.getModel( 'teapot1');
-    var teapot2 = world.getModel( 'teapot2');
-    var teapot3 = world.getModel( 'teapot3');
-    var teapot4 = world.getModel( 'teapot4');
-    var teapot5 = world.getModel( 'teapot5');
-
-    teapot1.scale( 0.6, 0.6, 0.6 ).translate( 400, 180, 0);
-    teapot2.scale( 0.4, 0.4, 0.4 ).translate( 100, 80, 0);
-    teapot3.scale( 0.3, 0.3, 0.3 ).translate( 500, 380, 0);
-    teapot4.scale( 0.5, 0.5, 0.5 ).translate( 150, 280, 0);
-    teapot5.scale( 0.2, 0.2, 0.2 ).translate( 500, 50, 0);
-
+    var scale = 100;
+    teapot1.scale( scale,scale,scale ).translate( centerX, centerY, 0);
     world.render();
     var angle = 0;
     var timer;
-
+    var speed1 = Math.random() * 0.05 + 0.01
+    var speed2 = Math.random() * 0.05 + 0.01
+    var speed3 = Math.random() * 0.05 + 0.01
+    var startTime = +new Date();
+    var isZooming = true;
     function start(){
         timer = setInterval( function(){
-            teapot1.translate( -400, -180, 0).rotateY( 0.1 ).rotateX( 0.1 ).rotateZ( 0.1 ).translate( 400, 180, 0);
-            teapot2.translate( -100, -80, 0).rotateY( -0.2 ).rotateX( -0.1 ).rotateZ( -0.1 ).translate( 100, 80, 0);
-            teapot3.translate( -500, -380, 0).rotateY( 0.1 ).rotateX( -0.1 ).rotateZ( -0.1 ).translate( 500, 380, 0);
-            teapot4.translate( -150, -280, 0).rotateY( 0.05 ).rotateX( -0.05 ).rotateZ( 0.05 ).translate( 150, 280, 0);
-            teapot5.translate( -500, -50, 0).rotateY( -0.3 ).rotateX( 0.1 ).rotateZ( 0.3 ).translate( 500, 50, 0);
+            if( isZooming ){
+                var now = +new Date()
+                if( now - startTime < 15000 ){
+                    teapot1.translate( -centerX, -centerY, 0).rotateY( speed1 ).rotateX( speed2 ).rotateZ( speed3 ).scale( 0.981,0.981,0.981 ).translate( centerX, centerY, 0);
+                }else{
+                    isZooming = false;
+                    teapot1.translate( -centerX, -centerY, 0).rotateY( speed1 ).rotateX( speed2 ).rotateZ( speed3 ).translate( centerX, centerY, 0);
+                }
+            }else{
+                teapot1.translate( -centerX, -centerY, 0).rotateY( speed1 ).rotateX( speed2 ).rotateZ( speed3 ).translate( centerX, centerY, 0);
+            }
+
             world.render();
-        }, 10 )
+        }, 60 )
     }
 
     function stop(){

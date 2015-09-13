@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        #container canvas{
+            position: absolute;
+        }
+        #land{
+            background-color: #ececec;
+        }
+        #temp{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <canvas id="land" width="700" height="400"></canvas>
+    <canvas id="tank" width="700" height="400"></canvas>
+</div>
+
+
+<script src="lib/jquery.js"></script>
+<script>
+
+
+    var land = document.getElementById( 'land' );
+    var landc = land.getContext( '2d' );
+    var tank = document.getElementById( 'tank' );
+    var tankc = tank.getContext( '2d' );
+
+    var Land = {
+        init:function(){
+            this.vtx = 20;
+            this.tempColor = 'blue'
+            this.pixelmap = [];
+            var x = 0;
+            var y = land.height / 1.5;
+            var l = land.width / this.vtx;
+            var d;
+            var h;
+            landc.save();
+            landc.fillStyle = '#cccccc';
+            landc.beginPath();
+            landc.moveTo( x, y );
+            for( var i=0, count=this.vtx ; i<count ; i+=1 ){
+                x+=l;
+                h = Math.random() * 40;
+                d = Math.round( Math.random() );
+                if( d){ y-=h; }
+                else{ y+=h; }
+                landc.lineTo( x, y );
+            }
+            landc.lineTo( x, land.height );
+            landc.lineTo( 0, land.height );
+            landc.closePath();
+            landc.fill();
+            landc.restore();
+            return this;
+        },
+
+        isCollision:function( tank ){
+            var point = tank.getLandingPoint();
+            var pixelmap = landc.getImageData( point.x, point.y, point.size, point.size ).data;
+            for( var i= 0, count=pixelmap.length ; i<count ; i+=4 ){
+                if( pixelmap[ i+3 ] != 0 ){
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        checkSlope:function( tank ){
+            var slopeL = tank.getSlopePointL();
+            var slopeR = tank.getSlopePointR();
+            var pixelmap = landc.getImageData( point.x, point.y, point.size, point.size ).data;
+            var slopeLIsCollision = false;
+
+            for( var i= 0, count=pixelmap.length ; i<count ; i+=4 ){
+                if( pixelmap[ i+3 ] != 0 ){
+                    slopeLIsCollision = true;
+                    break;
+                }
+            }
+            while( !slopeLIsCollision ){
+
+            }
+
+        }
+    };
+
+    var Tank = {
+        init:function(){
+            var w = 20;
+            var h = 10;
+            this.w = w;
+            this.h  = h;
+            this.r = 0;
+            this.x = Math.random() * land.width - this.w;
+            this.y = 0;
+            this.isLanding = false;
+            this.landingPoint = {
+                size:2,
+                x: w/2-1,
+                y: h-2
+            };
+            this.slopePointL = {
+                size:2,
+                x: this.landingPoint.x-5,
+                y: this.landingPoint.y
+            };
+            this.slopePointR = {
+                size:2,
+                x: this.landingPoint.x+5,
+                y: this.landingPoint.y
+            };
+            return this;
+        },
+        getLandingPoint:function(){
+          return { x:this.landingPoint.x+this.x, y:this.landingPoint.y+this.y, size:this.landingPoint.size };
+        },
+        getSlopePointL:function(){
+            return { x:this.slopePointL.x+this.x, y:this.slopePointL.y+this.y, size:this.slopePointL.size };
+        },
+        getSlopePointR:function(){
+            return { x:this.slopePointR.x+this.x, y:this.slopePointR.y+this.y, size:this.slopePointR.size };
+        },
+        update:function(){
+            if( !this.isLanding){
+                this.y += 2;
+            }
+        },
+        render:function(){
+            tankc.save();
+            tankc.fillStyle = 'gray';
+            tankc.fillRect( this.x, this.y, this.w, this.h );
+            tankc.fillStyle = 'red';
+            tankc.fillRect( this.x+this.landingPoint.x, this.y+this.landingPoint.y, this.landingPoint.size, this.landingPoint.size );
+            tankc.fillRect( this.x+this.slopePointL.x, this.y+this.slopePointL.y, this.slopePointL.size, this.slopePointL.size );
+            tankc.fillRect( this.x+this.slopePointR.x, this.y+this.slopePointR.y, this.slopePointR.size, this.slopePointR.size );
+            tankc.restore();
+        }
+    };
+
+    var World = {
+        loopId:null,
+        land:Land.init(),
+        tank:Tank.init(),
+        init:function(){
+
+        },
+
+        update:function(){
+            this.tank.isLanding = this.land.isCollision( this.tank );
+            if( this.tank.isLanding ){
+                this.land.checkSlope( this.tank );
+            }
+            this.tank.update();
+        },
+        render:function(){
+            this.tank.render();
+        },
+
+        start:function(){
+            var self = this;
+            this.stop();
+            this.loopId = setInterval( function(){
+                tank.width = tank.width;
+                self.update();
+                self.render();
+            }, 1000/40 )
+        },
+
+        stop:function(){
+            clearInterval( this.loopId );
+        }
+    };
+
+    World.start();
+</script>
+</body>
+</html>
