@@ -35,13 +35,11 @@
             /* ------------------------------------------------------------------------------------------------ */
 
             var domain = [ -20, 20 ];
-            var width = 750;
-            var height = 750;
+            var chartWidth = 750;
+            var chartHeight = 750;
             var data = []; //공의데이터
 
-
             initEgg();
-
 
             //초기화
             function initEgg(){
@@ -49,10 +47,9 @@
                 for(var i=0; i<eggNum; i++){
 
                     var obj = {};
-                    var max = width / 2;
                     obj.color   = '#' + Math.floor(Math.random()*16777215).toString(16);
-                    obj.x       = Math.floor(Math.random() * width) + 1; //임의의 x
-                    obj.y       = Math.floor(Math.random() * height) + 1; //임의의 y
+                    obj.x       = Math.floor(Math.random() * chartWidth) + 1; //임의의 x
+                    obj.y       = Math.floor(Math.random() * chartHeight) + 1; //임의의 y
                     obj.r       = 20; //원의 반지름
                     obj.mass    = obj.r; //질량(운동량을 계산하기 위해서는 물체의 질량이 필요함)
                     //obj.angle   = Math.floor(Math.random()*360); //알의각도
@@ -65,33 +62,17 @@
 
                 }
             };
-
             /* ------------------------------------------------------------------------------------------------ */
 
 
             var c = builder("#chart", {
                 theme: "dark",
-                padding: {
-                    top: 40,
-                    bottom: 20,
-                    left: 20,
-                    right: 20
-                },
-                width: width,
-                height: height,
+                padding: { top: 40, bottom: 20, left: 20, right: 20 },
+                width: chartWidth,
+                height: chartHeight,
                 axis: [{
-                    x: {
-                        type: "range",
-                        domain: domain,
-                        unit: 1,
-                        line: "solid"
-                    },
-                    y: {
-                        type: "range",
-                        domain: domain,
-                        unit: 1,
-                        line: "solid"
-                    },
+                    x: { type: "range", domain: domain, unit: 1, line: "solid" },
+                    y: { type: "range", domain: domain, unit: 1, line: "solid" },
                     data: data
                 }],
                 brush: [{
@@ -101,19 +82,15 @@
                     type: "finger"
                 }],
                 style: {
-                    gridXAxisBorderWidth: 1,
-                    gridYAxisBorderWidth: 1,
-                    gridTickBorderSize: 0,
-                    gridXFontSize: 9,
-                    gridYFontSize: 9
+                    gridXAxisBorderWidth: 1, gridYAxisBorderWidth: 1, gridTickBorderSize: 0, gridXFontSize: 9, gridYFontSize: 9
                 },
                 event: {
                     "finger.hit": function(index, degree, percent, line) {
 
-                        var maxSpeed    = 30;
+                        var maxSpeed    = 10;
                         var speed       = maxSpeed * (percent / 100);
                         var d           = data[index];
-                        var friction    = .01;
+                        var friction    = .02;
                         var framerate   = 1000/30;
 
                         window.time        = null;
@@ -131,10 +108,8 @@
 
                         time = setInterval(AnimateEgg, framerate);
 
-
                         /* 공 움직이기 */
                         function moveEgg(){
-
                             var egg;
                             for(var i=0;i<data.length;i++){
                                 egg = data[i];
@@ -155,12 +130,26 @@
                                 clearInterval(time);
                             }
 
-                            //남은거리 계산후 종료
                             var collisionData = collisionDetect(index, data);
                             if(collisionData[0]){
                                 collisionAction(index, collisionData[1]);
                             }
+
+                            collisionWall();
                         }
+
+                        function collisionWall(){
+
+                            var temp = null;
+                            for(var i=0;i<data.length;i++){
+                                var egg = data[i];
+                                if(egg.x > chartWidth){
+                                    console.log('경기장 밖으로 나감');
+                                }
+                            }
+
+
+                        };
 
                         /* 충돌확인 */
                         function collisionDetect(idx, data){
@@ -251,7 +240,6 @@
                                 data[egg2[i]].x += data[egg2[i]].vx;
                                 data[egg2[i]].y += data[egg2[i]].vy;
 
-
                             };
 
 
@@ -262,6 +250,7 @@
             });
         });
     </script>
+
 </head>
 
 <body>
