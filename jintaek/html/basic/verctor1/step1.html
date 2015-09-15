@@ -103,7 +103,7 @@
                         //슈팅한 공의 속도 저장
                         d.speed = speed;
 
-                        // 데이터 초기와
+                        // [ 벡터이동 ]
                         // 조준을 통해 얻어진 각도를 이용하여 x, y의 진행방향을 결정하고 속도(힘)을 곱하여 움직임을 정한다.
                         for(var i=0; i<data.length;i++){
                             data[i].vx = Math.cos(_.radian(degree)) * data[i].speed;
@@ -125,7 +125,7 @@
                             for(var i=0;i<data.length;i++){
                                 egg = data[i];
 
-                                // [ 마찰력의 적용 ]
+                                // [ 등속운동과 마찰력 ]
                                 // 외력이 작용받지 않는 물체는 등속운동이 지속 되므로 표면상에서 운동이 된다는 가정하에 마찰력을 적용하여 감속시킨다.
                                 // http://www.scienceall.com/%EB%93%B1%EC%86%8D%EC%9A%B4%EB%8F%99uniform-motion/
 
