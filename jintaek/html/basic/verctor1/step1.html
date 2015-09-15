@@ -43,13 +43,16 @@
 
             //초기화
             function initEgg(){
-                var eggNum = 3;
+
+                var eggNum = 1;
+                var flag = false;
+
                 for(var i=0; i<eggNum; i++){
 
                     var obj = {};
                     obj.color   = '#' + Math.floor(Math.random()*16777215).toString(16);
-                    obj.x       = Math.floor(Math.random() * chartWidth) + 1; //임의의 x
-                    obj.y       = Math.floor(Math.random() * chartHeight) + 1; //임의의 y
+                    obj.x       = 200; //임의의 x
+                    obj.y       = 200; //임의의 y
                     obj.r       = 20; //원의 반지름
                     obj.mass    = obj.r; //질량(운동량을 계산하기 위해서는 물체의 질량이 필요함)
                     //obj.angle   = Math.floor(Math.random()*360); //알의각도
@@ -62,6 +65,8 @@
 
                 }
             };
+
+
             /* ------------------------------------------------------------------------------------------------ */
 
 
@@ -90,160 +95,50 @@
                         var maxSpeed    = 10;
                         var speed       = maxSpeed * (percent / 100);
                         var d           = data[index];
-                        var friction    = .02;
+                        var friction    = .02;  //마찰력
                         var framerate   = 1000/30;
 
                         window.time        = null;
 
-                        line.attr({ stroke : d.color });
-
                         //슈팅한 공의 속도 저장
                         d.speed = speed;
 
-                        //데이터 초기와
+                        // 데이터 초기와
+                        // 조준을 통해 얻어진 각도를 이용하여 x, y의 진행방향을 결정하고 속도(힘)을 곱하여 움직임을 정한다.
                         for(var i=0; i<data.length;i++){
                             data[i].vx = Math.cos(_.radian(degree)) * data[i].speed;
                             data[i].vy = Math.sin(_.radian(degree)) * data[i].speed;
                         }
 
-                        time = setInterval(AnimateEgg, framerate);
+                        line.attr({
+                            stroke : d.color
+                        });
+
+
+                        time = setInterval(moveEgg, framerate);
 
                         /* 공 움직이기 */
                         function moveEgg(){
+
                             var egg;
+
                             for(var i=0;i<data.length;i++){
                                 egg = data[i];
-                                //마찰력
-                                egg.vx = egg.vx - ( egg.vx * friction);
-                                egg.vy = egg.vy - ( egg.vy * friction);
+
+                                // [ 마찰력의 적용 ]
+                                // 외력이 작용받지 않는 물체는 등속운동이 지속 되므로 표면상에서 운동이 된다는 가정하에 마찰력을 적용하여 감속시킨다.
+                                // http://www.scienceall.com/%EB%93%B1%EC%86%8D%EC%9A%B4%EB%8F%99uniform-motion/
+
+                                // interval 마다 감산되여 결국엔 속도가 0이 되도록한다.
+                                egg.vx = egg.vx - (egg.vx * friction);
+                                egg.vy = egg.vy - (egg.vy * friction);
+
                                 egg.x += egg.vx;
                                 egg.y += egg.vy;
                             }
+
                             c.axis(0).update(data);
                         }
-
-                        /* 애니메이션 */
-                        function AnimateEgg(){
-                            moveEgg();
-
-                            if(Math.abs(data[index].vx) <= 0.1 && Math.abs(data[index].vy) <= 0.1){
-                                clearInterval(time);
-                            }
-
-                            var collisionData = collisionDetect(index, data);
-                            if(collisionData[0]){
-                                collisionAction(index, collisionData[1]);
-                            }
-
-                            collisionWall();
-                        }
-
-                        function collisionWall(){
-
-                            var temp = null;
-                            for(var i=0;i<data.length;i++){
-                                var egg = data[i];
-                                if(egg.x > chartWidth){
-                                    console.log('경기장 밖으로 나감');
-                                }
-                            }
-
-
-                        };
-
-                        /* 충돌확인 */
-                        function collisionDetect(idx, data){
-
-                            var distance = {};     //슈팅한 알의 원점과 다른 알들의 원점과의 거리 (n개)
-                            var result   = [];     //충돌된 알의 index (n개)
-                            var test     = false; //충돌여부
-
-                            //슈팅한 알 제외하고 모든 알에 대하여 거리 계산
-                            for(var i=0;i<data.length;i++){
-                                if(idx != i){
-                                    var dx = data[i].x - data[idx].x;
-                                    var dy = data[i].y - data[idx].y;
-                                    distance[i] = Math.sqrt((dx * dx) + (dy * dy)); //알들 사이의 거리, 피타고라스
-                                }
-                            }
-
-                            //슈팅한 알과 다른 알들의 중점간의 거리가 두 원의 반지름의 합보다 작거나 같으면 충돌판정
-                            for(var key in distance){
-                                var radiusSum = (data[idx].mass + data[key].mass);
-                                //if( Math.abs(distance[key]) <= (c.get('brush')[0].size + c.get('brush')[0].size) / domain[1]){
-                                if( Math.abs(distance[key]) <= radiusSum ){
-                                    test = true;
-                                    result.push(key);
-                                }
-                            }
-
-                            return [test, result];
-                        }
-
-                        /* 충돌이후 */
-                        function collisionAction(egg1, egg2){
-
-
-                            //충돌 이후 움직임에 뭐가 필요 할까?
-
-                            for(var i=0;i<egg2.length;i++){
-
-                                var fx = data[egg2[i]].x - data[egg1].x;
-                                var fy = data[egg2[i]].y - data[egg1].y;
-
-                                //공의 충돌 각도 계산(Math.atan2)
-                                //수구의 위치와 목적구 위치의 차를 이용하여 충돌각을 계산한다.
-                                var angle = Math.atan2(fy, fx);
-
-                                //공이 부딪치기 전의 x,y 속도값을 이용 공들의 속도 (벡터 크기) 계산
-                                var s1 = Math.sqrt(data[egg1].vx * data[egg1].vx + data[egg1].vy * data[egg1].vy);
-                                var s2 = Math.sqrt(data[egg2[i]].vx * data[egg2[i]].vx + data[egg2[i]].vy * data[egg2[i]].vy);
-
-                                //현재공의 속도값을 이용해서 공들의 라디안 각도 계산(벡터 방향)
-                                var dir1 = Math.atan2(data[egg1].vy, data[egg1].vx);
-                                var dir2 = Math.atan2(data[egg2[i]].vy, data[egg2[i]].vx);
-
-                                // 운동량 보존 법칙 : 물체 사이에 외력이 작용하지 않고 서로의 힘이 미치기만 할 때에는 각 물체의 운동량의 총합은 일정하다
-                                // 운동량 : 물체의 질량(m) * 속도(v) = mv'
-
-                                //삼각함수를 적용하여 벡터를 반시계 방향으로 회전
-                                //속도 벡터
-                                //vx = V * cos(각도)
-                                //vy = V * sin(각도)
-                                // http://butterguy.tistory.com/entry/속도벡터
-                                var velocityx_1 = s1 * Math.cos(dir1 - angle);
-                                var velocityy_1 = s1 * Math.sin(dir1 - angle);
-                                var velocityx_2 = s2 * Math.cos(dir2 - angle);
-                                var velocityy_2 = s2 * Math.sin(dir2 - angle);
-
-                                console.log(Math.cos(dir1 - angle));
-
-                                //mass(질량)값을 운동량 보존 법칙에 적용 최종값을 구한다.
-                                //1차원 공간의 충돌에서 각 물체의 속도
-                                //https://ko.wikipedia.org/wiki/운동량
-                                //v1'={(m1-m2)v1+2m2v2} / (m1+m2)
-                                //v2'={(m2-m1)v2+2m1v1} / (m1+m2)
-                                var final_velocityx_1 = ((data[egg1].mass - data[egg2[i]].mass) * velocityx_1 + (data[egg2[i]].mass + data[egg2[i]].mass) * velocityx_2) / (data[egg1].mass + data[egg2[i]].mass);
-                                var final_velocityx_2 = ((data[egg1].mass + data[egg1].mass) * velocityx_1 + (data[egg2[i]].mass - data[egg1].mass) * velocityx_2) / (data[egg1].mass + data[egg2[i]].mass);
-
-                                var final_velocityy_1 = velocityy_1;
-                                var final_velocityy_2 = velocityy_2;
-
-                                data[egg1].vx = Math.cos(angle) * final_velocityx_1 + Math.cos(angle + Math.PI/2) * final_velocityy_1;
-                                data[egg1].vy = Math.sin(angle) * final_velocityx_1 + Math.sin(angle + Math.PI/2) * final_velocityy_1;
-                                data[egg2[i]].vx = Math.cos(angle) * final_velocityx_2 + Math.cos(angle + Math.PI/2) * final_velocityy_2;
-                                data[egg2[i]].vy = Math.sin(angle) * final_velocityx_2 + Math.sin(angle + Math.PI/2) * final_velocityy_2;
-
-                                //고고고
-                                data[egg1].x += data[egg1].vx;
-                                data[egg1].y += data[egg1].vy;
-                                data[egg2[i]].x += data[egg2[i]].vx;
-                                data[egg2[i]].y += data[egg2[i]].vy;
-
-                            };
-
-
-                        };
 
                     }
                 }
