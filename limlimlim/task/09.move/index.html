@@ -27,16 +27,28 @@
 <script src="lib/jquery.js"></script>
 <script>
 
+    $( 'body').on( 'keydown', function( event){
+        if( event.keyCode == 37 ) KeyStatus.left = true;
+        if( event.keyCode == 39 ) KeyStatus.right = true;
+    }).on( 'keyup', function( event ){
+        if( event.keyCode == 37 ) KeyStatus.left = false;
+        if( event.keyCode == 39 ) KeyStatus.right = false;
+    });
 
     var land = document.getElementById( 'land' );
     var landc = land.getContext( '2d' );
     var tank = document.getElementById( 'tank' );
     var tankc = tank.getContext( '2d' );
 
+    var KeyStatus  = {
+        'left':false,
+        'right':false
+    }
+
     var Land = {
         init:function(){
             this.vtx = 20;
-            this.tempColor = 'blue'
+            this.tempColor = 'blue';
             this.pixelmap = [];
             var x = 0;
             var y = land.height / 1.5;
@@ -75,38 +87,47 @@
         },
 
         checkSlope:function( tank ){
-            var slopeL = tank.getSlopePointL();
-            var slopeR = tank.getSlopePointR();
-            var pixelmap = landc.getImageData( point.x, point.y, point.size, point.size ).data;
-            var slopeLIsCollision = false;
+            var slopePntL = tank.getSlopePointL();
+            var slopePntR = tank.getSlopePointR();
+            var pntLY = this._checkSlope( slopePntL );
+            var pntRY = this._checkSlope( slopePntR );
+            return [ pntLY, pntRY ];
+        },
 
+        _checkSlope:function( point ){
+            var pixelmap = landc.getImageData( point.x, point.y, point.size, point.size ).data;
             for( var i= 0, count=pixelmap.length ; i<count ; i+=4 ){
                 if( pixelmap[ i+3 ] != 0 ){
-                    slopeLIsCollision = true;
-                    break;
+                    return point.y;
+                }else{
+                    point.y++;
+                    if( point.y >= land.height ){
+                        return land.height;
+                    }else{
+                        return this._checkSlope( point );
+                    }
+
                 }
             }
-            while( !slopeLIsCollision ){
-
-            }
-
         }
+
     };
 
     var Tank = {
         init:function(){
             var w = 20;
-            var h = 10;
+            var h = 15;
             this.w = w;
             this.h  = h;
             this.r = 0;
-            this.x = Math.random() * land.width - this.w;
+            this.tr = 'r';
+            this.x = 100//Math.random() * land.width - this.w;
             this.y = 0;
             this.isLanding = false;
             this.landingPoint = {
                 size:2,
-                x: w/2-1,
-                y: h-2
+                x: this.x+w/2-1,
+                y: this.y+h-2
             };
             this.slopePointL = {
                 size:2,
@@ -121,27 +142,61 @@
             return this;
         },
         getLandingPoint:function(){
-          return { x:this.landingPoint.x+this.x, y:this.landingPoint.y+this.y, size:this.landingPoint.size };
+          return { x:this.landingPoint.x, y:this.landingPoint.y, size:this.landingPoint.size };
         },
         getSlopePointL:function(){
-            return { x:this.slopePointL.x+this.x, y:this.slopePointL.y+this.y, size:this.slopePointL.size };
+            return { x:this.slopePointL.x, y:this.slopePointL.y, size:this.slopePointL.size };
         },
         getSlopePointR:function(){
-            return { x:this.slopePointR.x+this.x, y:this.slopePointR.y+this.y, size:this.slopePointR.size };
+            return { x:this.slopePointR.x, y:this.slopePointR.y, size:this.slopePointR.size };
+        },
+        setSlopePonitY:function(lvalue, rvalue){
+            this.slopePointR.y = rvalue;
+            this.slopePointL.y = lvalue;
+        },
+        addY:function( value ){
+            this.y += value;
+            this.slopePointR.y = this.slopePointL.y = this.landingPoint.y += value;
+        },
+        addX:function( value ){
+            this.x += value;
+            this.landingPoint.x = this.x+this.w/2-1;
+            this.slopePointR.x = this.landingPoint.x+5;
+            this.slopePointL.x = this.landingPoint.x-5;
         },
         update:function(){
-            if( !this.isLanding){
-                this.y += 2;
+            if( !this.isLanding ){
+                this.addY(2);
+            }else{
+                var  a = Math.atan2( Math.abs(this.slopePointR.y - this.landingPoint.y),  Math.abs(this.slopePointR.x - this.landingPoint.x) );
+                var  b = Math.atan2( Math.abs(this.slopePointL.y - this.landingPoint.y), Math.abs(this.slopePointL.x - this.landingPoint.x) );
+                if( a > b ){
+                    this.r = Math.min( a, Math.PI/2 );
+                    this.tr = 'r';
+                }else{
+                    this.r = Math.max( Math.PI-b, Math.PI-Math.PI/2 );
+                    this.tr = 'l';
+                }
             }
         },
+
         render:function(){
             tankc.save();
             tankc.fillStyle = 'gray';
-            tankc.fillRect( this.x, this.y, this.w, this.h );
+            tankc.translate( this.landingPoint.x, this.landingPoint.y);
+            tankc.rotate( this.r );
+            if( this.tr == 'r' ){
+                tankc.fillRect( -this.w/2, -this.h+2, this.w, this.h );
+            }else{
+                tankc.fillRect( -this.w/2, 0, this.w, this.h );
+            }
+            tankc.rotate( -this.r );
+            tankc.translate( -this.landingPoint.x, -this.landingPoint.y);
             tankc.fillStyle = 'red';
-            tankc.fillRect( this.x+this.landingPoint.x, this.y+this.landingPoint.y, this.landingPoint.size, this.landingPoint.size );
-            tankc.fillRect( this.x+this.slopePointL.x, this.y+this.slopePointL.y, this.slopePointL.size, this.slopePointL.size );
-            tankc.fillRect( this.x+this.slopePointR.x, this.y+this.slopePointR.y, this.slopePointR.size, this.slopePointR.size );
+            tankc.fillRect( this.landingPoint.x, this.landingPoint.y, this.landingPoint.size, this.landingPoint.size );
+            tankc.fillRect( this.slopePointL.x, this.slopePointL.y, this.slopePointL.size, this.slopePointL.size );
+            tankc.fillRect( this.slopePointR.x, this.slopePointR.y, this.slopePointR.size, this.slopePointR.size );
+
             tankc.restore();
         }
     };
@@ -157,7 +212,11 @@
         update:function(){
             this.tank.isLanding = this.land.isCollision( this.tank );
             if( this.tank.isLanding ){
-                this.land.checkSlope( this.tank );
+                console.log( KeyStatus.left );
+                if( KeyStatus.left ){this.tank.addX( -2 );}
+                if( KeyStatus.right ){this.tank.addX( 2 );}
+                var slopePointY = this.land.checkSlope( this.tank );
+                this.tank.setSlopePonitY( slopePointY[ 0 ], slopePointY[ 1 ] );
             }
             this.tank.update();
         },
