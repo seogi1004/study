@@ -46,7 +46,7 @@ jui.define("chart.brush.vector", [ "util.math" ], function(_) {
                     y: -3
                 });
 
-                text.text(d.from[2] + d.to[2]);
+                text.text(d.to[2]);
                 text.rotate(-angle);
                 text.translate(cx, cy);
 
@@ -82,14 +82,6 @@ jui.define("chart.brush.vector", [ "util.math" ], function(_) {
     return VectorBrush;
 }, "chart.brush.core");
 
-
-/*/
- data: [
- { from: [ 0, 0, "O" ], to: [ 3, 8, "A" ] },
- { from: [ 3, 8, "A" ], to: [ -7, -3, "B" ] },
- { from: [ 3, 3, "C" ], to: [ 10, 5, "D" ] }
- ]
- /**/
 jui.define("util.vector", [], function() {
     var VectorUtil = function() {
         var cache = {},
@@ -145,22 +137,24 @@ jui.define("util.vector", [], function() {
 
         this.calculate = function(type, d) {
             if(type == "+") {
-                var x = 0,
-                    y = 0;
-
-                for(var i = 0; i < d.list.length; i++) {
-                    var toName = d.list[i],
-                        toData = data[this.index(toName)];
-
-                    x += toData.i;
-                    y += toData.j;
-                }
+                var from = data[this.index(d.from)],
+                    to = data[this.index(d.to)];
 
                 this.append({
                     name: d.name,
-                    start: cache[d.list[0]].start,
-                    i: x,
-                    j: y
+                    start: from.start,
+                    i: from.i + to.i,
+                    j: from.j + to.j
+                });
+            } else if(type == "-") {
+                var from = data[this.index(d.from)],
+                    to = data[this.index(d.to)];
+
+                this.append({
+                    name: d.name,
+                    start: d.to,
+                    i: from.i + (-to.i),
+                    j: from.j + (-to.j)
                 });
             }
         }
@@ -170,7 +164,7 @@ jui.define("util.vector", [], function() {
 });
 
 jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, VectorUtil) {
-    var domain = [ -20, 20 ];
+    var domain = [ -10, 10 ];
 
     var c = builder("#chart", {
         theme: "dark",
@@ -180,8 +174,8 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
             left: 20,
             right: 20
         },
-        width: 750,
-        height: 750,
+        width: 500,
+        height: 500,
         axis: [{
             x: {
                 type: "range",
@@ -209,12 +203,21 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
     });
 
     var vu = new VectorUtil();
-    vu.append({ name: "A", start: null, i: 5, j: 5 });
-    vu.append({ name: "B", start: "A", i: 3, j: -2 });
-    vu.append({ name: "C", start: "B", i: 2, j: 2 });
+    /*/
+    vu.append({ name: "A", start: null, i: -1, j: 2 });
+    vu.append({ name: "B", start: "A", i: 4, j: 0 });
     vu.calculate("+", {
-        name: "D", list: [ "B", "C" ]
+        name: "C", from: "A", to: "B"
     });
+    /**/
+
+    /**/
+    vu.append({ name: "A", start: null, i: -2, j: 4 });
+    vu.append({ name: "B", start: null, i: 2, j: 1 });
+    vu.calculate("-", {
+        name: "C", from: "A", to: "B"
+    });
+    /**/
 
     c.axis(0).update(vu.run());
 });
