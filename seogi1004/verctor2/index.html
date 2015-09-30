@@ -143,49 +143,6 @@ jui.define("util.vector", [], function() {
             return newData;
         }
 
-        this.calculate = function(type, d) {
-            var from = data[this.index(d.start)],
-                to = data[this.index(d.end)];
-
-            if(type == "+") {
-                this.append({
-                    name: d.name,
-                    start: d.origin || from.start,
-                    i: from.i + to.i,
-                    j: from.j + to.j
-                });
-            } else if(type == "-") {
-                this.append({
-                    name: d.name,
-                    start: d.origin || d.end,
-                    i: from.i + (-to.i),
-                    j: from.j + (-to.j)
-                });
-            } else if(type == "inner") {
-                var rates = arguments[2].split(":"),
-                    m = parseInt(rates[0]),
-                    n = parseInt(rates[1]);
-
-                this.append({
-                    name: d.name,
-                    start: null,
-                    i: ((m * to.i) + (n * from.i)) / (m + n),
-                    j: ((m * to.j) + (n * from.j)) / (m + n)
-                });
-            } else if(type == "outer") {
-                var rates = arguments[2].split(":"),
-                    m = parseInt(rates[0]),
-                    n = parseInt(rates[1]);
-
-                this.append({
-                    name: d.name,
-                    start: null,
-                    i: ((m * to.i) - (n * from.i)) / (m - n),
-                    j: ((m * to.j) - (n * from.j)) / (m - n)
-                });
-            }
-        }
-
         this.reverse = function(name) {
             var target = data[this.index(name)];
             if(!target) return;
@@ -195,6 +152,60 @@ jui.define("util.vector", [], function() {
 
             // reverse가 true일 경우, 그리지 않음
             target.reverse = true;
+        }
+
+        this.sum = function(name, obj) {
+            var start = obj.start,
+                end = obj.end,
+                origin = obj.origin;
+
+            if(start.indexOf("-") != -1 && !this.index(start)) {
+                this.reverse(start.substr(1));
+            }
+
+            if(end.indexOf("-") != -1 && !this.index(end)) {
+                origin = !origin ? end.substr(1) : origin;
+                this.reverse(end.substr(1));
+            }
+
+            var from = data[this.index(start)],
+                to = data[this.index(end)];
+
+            this.append({
+                name: name,
+                start: origin || from.start,
+                i: from.i + to.i,
+                j: from.j + to.j
+            });
+        }
+
+        this.split = function(name, rate, obj) {
+            var start = obj.start,
+                end = obj.end,
+                inner = name.indexOf("-") != -1;
+
+            var from = data[this.index(start)],
+                to = data[this.index(end)];
+
+            var rates = rate.split(":"),
+                m = parseInt(rates[0]),
+                n = parseInt(rates[1]);
+
+            if(inner) {
+                this.append({
+                    name: name,
+                    start: null,
+                    i: ((m * to.i) + (n * from.i)) / (m + n),
+                    j: ((m * to.j) + (n * from.j)) / (m + n)
+                });
+            } else {
+                this.append({
+                    name: name,
+                    start: null,
+                    i: ((m * to.i) - (n * from.i)) / (m - n),
+                    j: ((m * to.j) - (n * from.j)) / (m - n)
+                });
+            }
         }
     }
 
@@ -241,61 +252,42 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
     });
 
     var vu = new VectorUtil();
-    /*/
-    vu.append({ name: "A", start: null, i: -1, j: 2 });
-    vu.append({ name: "B", start: "A", i: 4, j: 0 });
-    vu.calculate("+", {
-        name: "C", start: "A", end: "B"
-    });
-    /**/
-
-    /*/
-    vu.append({ name: "A", start: null, i: -2, j: 4 });
-    vu.append({ name: "B", start: null, i: 2, j: 1 });
-    vu.calculate("-", {
-        name: "C", start: "A", end: "B"
-    });
-    /**/
 
     /*/
     vu.append({ name: "A", start: null, i: 5, j: 7 });
     vu.append({ name: "B", start: null, i: 6, j: 2 });
-    vu.append({ name: "C", start: "A", end: "B" });
-    vu.calculate("inner", {
-        name: "P", start: "A", end: "B"
+    vu.append({ name: "R", start: "A", end: "B" });
+    vu.split("-P", "3:1", {
+        start: "A",
+        end: "B"
     }, "3:1");
     /**/
 
     /*/
-    vu.append({ name: "A", start: null, i: 5, j: 7 });
-    vu.append({ name: "B", start: null, i: 6, j: 2 });
-    vu.calculate("outer", {
-        name: "P", start: "A", end: "B"
-    }, "2:1");
-    /**/
-
     vu.append({ name: "A", start: null, i: -2, j: 2 });
     vu.append({ name: "B", start: null, i: -4, j: -2 });
     vu.append({ name: "C", start: null, i: 2, j: -2 });
     vu.append({ name: "D", start: null, i: 4, j: 2 });
 
-    vu.reverse("A");
-    vu.calculate("+", {
-        name: "AB", start: "-A", end: "B"
+    vu.sum("AB",{
+        start: "-A",
+        end: "B"
     });
-
-    vu.calculate("+", {
-        name: "DA", start: "B", end: "A", origin: "D"
+    vu.sum("DA", {
+        start: "B",
+        end: "A",
+        origin: "D"
     });
-
-    vu.calculate("-", {
-        name: "CD", start: "A", end: "B", origin: "C"
+    vu.sum("BC", {
+        start: "-A",
+        end: "-B"
     });
-
-    vu.reverse("B");
-    vu.calculate("-", {
-        name: "CD", start: "-B", end: "A", origin: "B"
+    vu.sum("CD", {
+        start: "A",
+        end: "-B",
+        origin: "C"
     });
+    /**/
 
     c.axis(0).update(vu.run());
 });
