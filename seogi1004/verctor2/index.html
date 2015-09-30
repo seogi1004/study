@@ -289,6 +289,21 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
     });
     /**/
 
+    vu.append({ name: "A", start: null, i: 7, j: 0 });
+    vu.append({ name: "B", start: null, i: 2, j: 3 });
+    vu.append({ name: "C", start: null, i: 0, j: -(Math.sqrt(Math.pow(2, 2) + Math.pow(3, 2))) });
+    vu.append({ name: "D", start: "C", i: 2, j: 3 });
+    vu.append({ name: "E", start: "D", i: 7, j: 0 });
+
+    vu.sum("A+B", {
+        start: "A",
+        end: "B"
+    });
+    vu.sum("A+B+C", {
+        start: "A+B",
+        end: "C"
+    });
+
     c.axis(0).update(vu.run());
 });
 </script>
