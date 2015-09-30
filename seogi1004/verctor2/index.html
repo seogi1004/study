@@ -11,6 +11,8 @@ jui.define("chart.brush.vector", [ "util.math" ], function(_) {
             var g = this.chart.svg.group();
 
             this.eachData(function(i, d) {
+                if(d.reverse) return;
+
                 var sx = this.axis.x(d.from[0]),
                     sy = this.axis.y(d.from[1]),
                     tx = this.axis.x(d.to[0]),
@@ -121,7 +123,7 @@ jui.define("util.vector", [], function() {
                     start = data[i].start,
                     end = data[i].end;
 
-                newData[i] = {};
+                newData[i] = { reverse: data[i].reverse };
 
                 if(start == null) {
                     newData[i].from = [ 0, 0, "O" ];
@@ -148,14 +150,14 @@ jui.define("util.vector", [], function() {
             if(type == "+") {
                 this.append({
                     name: d.name,
-                    start: from.start,
+                    start: d.origin || from.start,
                     i: from.i + to.i,
                     j: from.j + to.j
                 });
             } else if(type == "-") {
                 this.append({
                     name: d.name,
-                    start: d.to,
+                    start: d.origin || d.end,
                     i: from.i + (-to.i),
                     j: from.j + (-to.j)
                 });
@@ -182,6 +184,17 @@ jui.define("util.vector", [], function() {
                     j: ((m * to.j) - (n * from.j)) / (m - n)
                 });
             }
+        }
+
+        this.reverse = function(name) {
+            var target = data[this.index(name)];
+            if(!target) return;
+
+            var p = this.point(name, 0, 0);
+            this.append({ name: "-" + name, start: name, i: -p.i, j: -p.j });
+
+            // reverse가 true일 경우, 그리지 않음
+            target.reverse = true;
         }
     }
 
@@ -244,7 +257,7 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
     });
     /**/
 
-    /**/
+    /*/
     vu.append({ name: "A", start: null, i: 5, j: 7 });
     vu.append({ name: "B", start: null, i: 6, j: 2 });
     vu.append({ name: "C", start: "A", end: "B" });
@@ -260,6 +273,29 @@ jui.ready([ "chart.builder", "util.math", "util.vector" ], function(builder, _, 
         name: "P", start: "A", end: "B"
     }, "2:1");
     /**/
+
+    vu.append({ name: "A", start: null, i: -2, j: 2 });
+    vu.append({ name: "B", start: null, i: -4, j: -2 });
+    vu.append({ name: "C", start: null, i: 2, j: -2 });
+    vu.append({ name: "D", start: null, i: 4, j: 2 });
+
+    vu.reverse("A");
+    vu.calculate("+", {
+        name: "AB", start: "-A", end: "B"
+    });
+
+    vu.calculate("+", {
+        name: "DA", start: "B", end: "A", origin: "D"
+    });
+
+    vu.calculate("-", {
+        name: "CD", start: "A", end: "B", origin: "C"
+    });
+
+    vu.reverse("B");
+    vu.calculate("-", {
+        name: "CD", start: "-B", end: "A", origin: "B"
+    });
 
     c.axis(0).update(vu.run());
 });
