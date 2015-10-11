@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+<meta charset="UTF-8">
+<title></title>
+    <script src="http://code.createjs.com/easeljs-0.4.2.min.js"></script>
+<script>
+function init() {
+    var stage = new Stage("demoCanvas");
+
+    var circle = new Shape();
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+    circle.x = 100;
+    circle.y = 100;
+    stage.addChild(circle);
+
+
+    stage.update();
+}
+</script>
+</head>
+<body onload="init();">
+    <canvas id="demoCanvas" width="500" height="300"></canvas>
+</body>
+</html>
