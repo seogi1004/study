@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pong</title>
+
+<script src="createjs-2015.05.21.min.js"></script>
+<script src="imagestrings.js"></script>
+
+
+<script>
+function Main() {
+    var canvas = document.getElementById("main"),
+        stage = new createjs.Stage(canvas),
+        stageHeight = 300,
+        stageWidth = 300,
+        blockWidth = 70,
+        blockHeight = 70,
+        characterHeight = 96,
+        characterWidth = 75,
+        KEYCODE_SPACE = 32,
+        KEYCODE_LEFT = 37,
+        KEYCODE_RIGHT = 39,
+        xVel = 5,
+        yVel = 0,
+        gravity = 1.2,
+        isJumping = false,
+        moveLeft = false,
+        moveRight = false,
+        characterGround = stageHeight - blockHeight - characterHeight;
+    var character,
+        spriteSheet,
+        ground;
+
+    function setup() {
+        spriteSheet = new createjs.SpriteSheet({
+            "images": [ characterImage ],
+            "frames": { "height": characterHeight, "count": 10, "width": characterWidth },
+            "animations": { run: [ 0, 9 ] }
+        });
+
+        character = new createjs.Sprite(spriteSheet);
+        character.x = (stageWidth / 2) - characterWidth;
+        character.y = characterGround;
+        stage.addChild(character);
+
+        ground = new createjs.Bitmap("ground.png");
+        for(var i = 0; i < 8; i++) {
+            var tempBitmap = ground.clone();
+            tempBitmap.x = i * blockWidth;
+            tempBitmap.y = stageHeight - blockHeight;
+            stage.addChild(tempBitmap);
+        }
+
+        createjs.Ticker.addEventListener("tick", tick);
+        document.onkeydown = handleKeyDown;
+        document.onkeyup = handleKeyUp;
+    }
+
+    function tick() {
+        if(moveLeft) {
+            character.x -= xVel;
+
+            if(character.scaleX > 0) {
+                character.scaleX *= -1;
+                character.x += characterWidth;
+            }
+        } else if(moveRight) {
+            character.x += xVel;
+
+            if(character.scaleX < 0) {
+                character.scaleX *= -1;
+                character.x -= characterWidth;
+            }
+        }
+
+        if(isJumping) {
+            yVel += gravity;
+            character.y += yVel;
+
+            if(character.y > characterGround) {
+                character.y = characterGround;
+                yVel = 0;
+                isJumping = false;
+            }
+        }
+
+        stage.update();
+    }
+
+    function jump() {
+        if(isJumping == false) {
+            yVel = -15;
+            isJumping = true;
+        }
+    }
+
+    function handleKeyDown(e) {
+        switch(e.keyCode) {
+            case KEYCODE_SPACE:
+                jump();
+                break;
+            case KEYCODE_LEFT:
+                moveLeft = true;
+                character.play();
+                break;
+            case KEYCODE_RIGHT:
+                moveRight = true;
+                character.play();
+                break;
+        }
+    }
+
+    function handleKeyUp(e) {
+        switch(e.keyCode) {
+            case KEYCODE_LEFT:
+                moveLeft = false;
+                character.gotoAndStop();
+                break;
+            case KEYCODE_RIGHT:
+                moveRight = false;
+                character.gotoAndStop();
+                break;
+        }
+    }
+
+    setup();
+}
+</script>
+</head>
+<body onload="Main();">
+    <canvas id="main" width="600" height="300"></canvas>
+</body>
+</html>
