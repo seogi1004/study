@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pong</title>
+
+<script src="lib/createjs-2015.05.21.min.js"></script>
+
+
+<script>
+function Main() {
+    var canvas = document.getElementById("main"),
+        stage = new createjs.Stage(canvas),
+        stageHeight = 300,
+        stageWidth = 600,
+        blockWidth = 100,
+        blockHeight = 140,
+        characterHeight = 32,
+        characterWidth = 31,
+        KEYCODE_LEFT = 37,
+        KEYCODE_RIGHT = 39,
+        xVel = 5,
+        yVel = 5,
+        yColVel = 0,
+        moveLeft = false,
+        moveRight = false,
+        moveDown = true;
+    var character,
+        grounds = [];
+
+    function setup() {
+        character = new createjs.Bitmap("img/tank.png");
+        character.x = Math.floor(Math.random() * (stageWidth - characterWidth));
+        stage.addChild(character);
+
+        var ground = new createjs.Bitmap("img/grassTile.png");
+
+        for(var i = 0; i < 8; i++) {
+            var tmp = ground.clone();
+            tmp.x = i * blockWidth;
+            tmp.y = stageHeight - blockHeight;
+
+            grounds.push(tmp);
+            stage.addChild(tmp);
+        }
+
+        createjs.Ticker.addEventListener("tick", tick);
+        document.onkeydown = handleKeyDown;
+        document.onkeyup = handleKeyUp;
+    }
+
+    function hitTests(x, y) {
+        var isHit = false;
+
+        for(var i = 0; i < grounds.length; i++) {
+            var tmp = grounds[i];
+
+            if(tmp.hitTest(x - tmp.x + characterWidth, y - tmp.y + characterHeight)) {
+                isHit = true;
+                break;
+            }
+        }
+
+        return isHit;
+    }
+
+    function tick() {
+        // 최초 캐릭터 배치
+        if(moveDown) {
+            character.y += yVel;
+
+            if(hitTests(character.x, character.y)) {
+                moveDown = false;
+            }
+        }
+
+        // 방향키에 의한 조작
+        if(moveLeft) {
+            character.x -= xVel;
+
+            if(character.scaleX < 0) {
+                character.scaleX *= -1;
+                character.x -= characterWidth;
+            }
+        } else if(moveRight) {
+            character.x += xVel;
+
+            if(character.scaleX > 0) {
+                character.scaleX *= -1;
+                character.x += characterWidth;
+            }
+        }
+
+        // 좌우 이동시 지형에 맞게 위아래 조절
+        if(moveLeft || moveRight) {
+            if (!hitTests(character.x, character.y)) {
+                console.log("공중")
+            }
+        }
+
+        stage.update();
+    }
+
+    function handleKeyDown(e) {
+        switch(e.keyCode) {
+            case KEYCODE_LEFT:
+                moveLeft = true;
+                break;
+            case KEYCODE_RIGHT:
+                moveRight = true;
+                break;
+        }
+    }
+
+    function handleKeyUp(e) {
+        switch(e.keyCode) {
+            case KEYCODE_LEFT:
+                moveLeft = false;
+                break;
+            case KEYCODE_RIGHT:
+                moveRight = false;
+                break;
+        }
+    }
+
+    setup();
+}
+</script>
+</head>
+<body onload="Main();">
+    <canvas id="main" width="600" height="300"></canvas>
+</body>
+</html>
