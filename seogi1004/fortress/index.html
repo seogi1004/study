@@ -19,23 +19,23 @@ function Main() {
         KEYCODE_LEFT = 37,
         KEYCODE_RIGHT = 39,
         xVel = 5,
-        yVel = 5,
-        yColVel = 0,
+        yVel = 1,
         moveLeft = false,
-        moveRight = false,
-        moveDown = true;
+        moveRight = false;
     var character,
         grounds = [];
 
-    function setup() {
-        character = new createjs.Bitmap("img/tank.png");
-        character.x = Math.floor(Math.random() * (stageWidth - characterWidth));
-        stage.addChild(character);
+    window.grounds = grounds;
 
-        var ground = new createjs.Bitmap("img/grassTile.png");
+    function setup() {
+        var ground = [
+            new createjs.Bitmap("img/grassTile.png"),
+            new createjs.Bitmap("img/grassTile2.png"),
+            new createjs.Bitmap("img/grassTile3.png")
+        ]
 
         for(var i = 0; i < 8; i++) {
-            var tmp = ground.clone();
+            var tmp = ground[Math.floor(Math.random() * 3)].clone();
             tmp.x = i * blockWidth;
             tmp.y = stageHeight - blockHeight;
 
@@ -43,35 +43,18 @@ function Main() {
             stage.addChild(tmp);
         }
 
+        character = new createjs.Bitmap("img/tank.png");
+        character.x = Math.floor(Math.random() * (stageWidth - characterWidth));
+        character.y = 0;
+        stage.addChild(character);
+
         createjs.Ticker.addEventListener("tick", tick);
         document.onkeydown = handleKeyDown;
         document.onkeyup = handleKeyUp;
     }
 
-    function hitTests(x, y) {
-        var isHit = false;
-
-        for(var i = 0; i < grounds.length; i++) {
-            var tmp = grounds[i];
-
-            if(tmp.hitTest(x - tmp.x + characterWidth, y - tmp.y + characterHeight)) {
-                isHit = true;
-                break;
-            }
-        }
-
-        return isHit;
-    }
-
     function tick() {
-        // 최초 캐릭터 배치
-        if(moveDown) {
-            character.y += yVel;
-
-            if(hitTests(character.x, character.y)) {
-                moveDown = false;
-            }
-        }
+        var tx = 0;
 
         // 방향키에 의한 조작
         if(moveLeft) {
@@ -88,16 +71,39 @@ function Main() {
                 character.scaleX *= -1;
                 character.x += characterWidth;
             }
+
+            tx = -characterWidth;
         }
 
-        // 좌우 이동시 지형에 맞게 위아래 조절
-        if(moveLeft || moveRight) {
-            if (!hitTests(character.x, character.y)) {
-                console.log("공중")
+        character.y = getGroundY(character.x + tx);
+        stage.update();
+    }
+
+    function hitTests(x, y) {
+        var isHit = false;
+
+        for(var i = 0; i < grounds.length; i++) {
+            var tmp = grounds[i],
+                tx = x - tmp.x + characterWidth / 2,
+                ty = y - tmp.y + characterHeight;
+
+            if(tx > 0 && ty > 0) {
+                if (tmp.hitTest(tx, ty)) {
+                    isHit = true;
+                    break;
+                }
             }
         }
 
-        stage.update();
+        return isHit;
+    }
+
+    function getGroundY(x) {
+        for(var i = 0; i < stageHeight; i += yVel) {
+            if(hitTests(x, i)) {
+                return i;
+            }
+        }
     }
 
     function handleKeyDown(e) {
