@@ -23,6 +23,7 @@ function Main() {
         moveLeft = false,
         moveRight = false;
     var character,
+        xy = { front: { x: 0, y: 0 }, back: { x: 0, y: 0} },
         grounds = [];
 
     window.grounds = grounds;
@@ -43,8 +44,8 @@ function Main() {
             stage.addChild(tmp);
         }
 
-        character = new createjs.Bitmap("img/tank.png");
-        character.x = Math.floor(Math.random() * (stageWidth - characterWidth));
+        character = new createjs.Bitmap("img/tank.gif");
+        character.x = 0;
         character.y = 0;
         stage.addChild(character);
 
@@ -54,28 +55,43 @@ function Main() {
     }
 
     function tick() {
-        var tx = 0;
-
         // 방향키에 의한 조작
         if(moveLeft) {
-            character.x -= xVel;
-
             if(character.scaleX < 0) {
                 character.scaleX *= -1;
                 character.x -= characterWidth;
             }
-        } else if(moveRight) {
-            character.x += xVel;
 
+            character.x -= xVel;
+            xy.front.x = character.x;
+            xy.back.x = character.x + characterWidth;
+            xy.front.y = getGroundY(xy.front.x);
+            xy.back.y = getGroundY(xy.back.x);
+
+            var gy = getGroundY(xy.front.x);
+            if(gy) {
+                character.y = gy;
+                character.rotation = -(getTankAngle() + 90);
+            }
+        } else if(moveRight) {
             if(character.scaleX > 0) {
                 character.scaleX *= -1;
                 character.x += characterWidth;
             }
 
-            tx = -characterWidth;
+            character.x += xVel;
+            xy.front.x = character.x;
+            xy.back.x = character.x - characterWidth;
+            xy.front.y = getGroundY(xy.front.x);
+            xy.back.y = getGroundY(xy.back.x);
+
+            var gy = getGroundY(xy.back.x);
+            if(gy) {
+                character.y = getGroundY(xy.front.x);
+                character.rotation = -(getTankAngle() - 90);
+            }
         }
 
-        character.y = getGroundY(character.x + tx);
         stage.update();
     }
 
@@ -84,7 +100,7 @@ function Main() {
 
         for(var i = 0; i < grounds.length; i++) {
             var tmp = grounds[i],
-                tx = x - tmp.x + characterWidth / 2,
+                tx = x - tmp.x,
                 ty = y - tmp.y + characterHeight;
 
             if(tx > 0 && ty > 0) {
@@ -99,7 +115,7 @@ function Main() {
     }
 
     function getGroundY(x) {
-        for(var i = 0; i < stageHeight; i += yVel) {
+        for(var i = stageHeight - blockHeight - characterHeight; i < stageHeight; i += yVel) {
             if(hitTests(x, i)) {
                 return i;
             }
@@ -126,6 +142,16 @@ function Main() {
                 moveRight = false;
                 break;
         }
+    }
+
+    function getTankAngle() {
+        var dx = xy.front.x - xy.back.x,
+            dy = xy.front.y - xy.back.y;
+
+        var rad = Math.atan2(dx, dy),
+            degree = (rad * 180) / Math.PI;
+
+        return degree;
     }
 
     setup();
