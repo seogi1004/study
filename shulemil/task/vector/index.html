@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script type="text/javascript">
+    (function (_w, _d, _m) {
+        var utils, fn;
+
+        utils = (function () {
+            var _u = {
+                extend: function (target, obj) {
+                    for (var i in obj) {
+                        target[i] = obj[i];
+                    }
+                },
+                addEvent: function (el, type, fn, capture) {
+                    el.addEventListener(type, fn, !!capture);
+                },
+                removeEvent: function (el, type, fn, capture) {
+                    el.removeEventListener(type, fn, !!capture);
+                }
+            };
+            return _u;
+        })();
+
+        // vector 
+        function Vec() {
+            var v = { x: 0, y: 0, size: 0, direction: 0 };
+            this.set = function (obj) {
+                for (var i in obj) {
+                    v[i] = obj[i]
+                }
+            };
+            this.get = function () {
+                return v;
+            };
+        }
+        fn = Vec.prototype;
+        fn.setPosition = function (x, y) {
+            var v = this.get();
+            v.x = x, v.y = y;
+            v.size = _m.sqrt(v.x * v.x + v.y * v.y);
+            v.direction = _m.atan2(v.y, v.x);
+        };
+        fn.setSize = function (s) {
+            this.set({ size: s });
+            this.updateVector();
+        };
+        fn.setDirection = function (d) {
+            this.set({ direction: d });
+            this.updateVector();
+        };
+        fn.updateVector = function () {
+            var v = this.get();
+            v.x = v.size * _m.cos(v.direction);
+            v.y = v.size * _m.sin(v.direction);
+        };
+
+        function Objects() {
+            var objs = [];
+
+            this.getObjs = function () {
+                return objs;
+            };
+            this.setObj = function (obj) {
+                objs.push(obj);
+            };
+        }
+        Objects.prototype = fn;
+
+        fn.createEggs = function (cnt) {
+            var circle, i, cnt = cnt;
+
+            for (i = 0; i < cnt; i++) {
+                circle = {
+                    type: "circle",
+                    x: _m.floor(_m.random() * 300) - 150,
+                    y: _m.floor(_m.random() * 300) - 150,
+                    r: _m.floor(_m.random() * 10) + 20,
+                    color: "red",
+                    v: null
+                };
+                this.setObj(circle);
+            }
+        };
+
+        fn.update = function (i) {
+            var objs = this.getObjs(), v = objs[i].v.get();
+            objs[i].x += v.size * _m.cos(v.direction);
+            objs[i].y += v.size * _m.sin(v.direction);
+            objs[i].v.setSize(v.size - 2);
+            if (v.size <= 0) {
+                objs[i].v = null;
+            }
+        };
+
+        function Coordinate(width, height, scaleToPixel) {
+            var px = scaleToPixel || 1, width = width || 500, height = height || 500,
+                    objs = new Objects();
+
+            this.get = function (n) {
+                var tmp;
+                switch (n) {
+                    case "px":
+                        tmp = px;
+                        break;
+                    case "width":
+                        tmp = width;
+                        break;
+                    case "height":
+                        tmp = height;
+                        break;
+                    case "objs":
+                        tmp = objs;
+                        break;
+                    default:
+                        tmp = "";
+                        break;
+                }
+                return tmp;
+            };
+
+            this.setProp = function (n, d) {};
+            this.init();
+        }
+
+        fn = Coordinate.prototype;
+
+        fn.init = function () {
+            var w = this.get('width'), h = this.get('height'),
+                    canvas = this.canvas = _d.createElement("canvas"),
+                    ctx = this.ctx = canvas.getContext("2d");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.style.border = "1px solid #000";
+            //ctx.fillRect(0, 0, w, h);
+
+            _d.body.appendChild(canvas);
+
+            this.get('objs').createEggs(2);
+            this.draw();
+
+            utils.addEvent(canvas, "mousedown", this);
+        };
+        fn.X = function (x) {
+            return x * this.get('px') + this.get('width') / 2;
+        };
+        fn.Y = function (y) {
+            return -y * this.get('px') + this.get('height') / 2;
+        };
+        fn.cX = function (x) {
+            return x * this.get('px')  - this.get('height') / 2;
+        };
+        fn.cY = function (y) {
+            return -y * this.get('px')  + this.get('height') / 2;
+        };
+        fn.setObj = function (obj) {
+            this.get('objs').setObj(obj);
+            this.draw();
+        };
+        fn.draw = function (obj) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            var ctx = this.ctx, objs, x = 0, y = 0;
+
+            if (obj) {
+                this.get('objs').setObj(obj);
+            }
+            objs = this.get('objs').getObjs();
+
+            for(var i = 0; i < objs.length; i++) {
+                ctx.beginPath();
+                x = this.X(objs[i].x), y =  this.Y(objs[i].y);
+                switch (objs[i].type) {
+                    case "rect":
+                        x = x - objs[i].width/2, y = y - objs[i].height/2;
+                        ctx.rect(x, y, objs[i].width, objs[i].height);
+                        ctx.fillStyle = '#8ED6FF';
+                        ctx.fill();
+                        break;
+                    case "circle":
+                        ctx.arc(x, y, objs[i].r , 0, 2 * _m.PI, true);
+                        ctx.fillStyle = objs[i].color;
+                        ctx.fill();
+                        break;
+                    case "line":
+                        ctx.moveTo(objs[i].x, objs[i].y);
+                        ctx.lineTo(objs[i].mx, objs[i].my);
+                        ctx.lineWidth = 5;
+                        ctx.strokeStyle = '#ff0000';
+                        ctx.stroke();
+                        break;
+                    default :
+                        break;
+                }
+            }
+            if (obj) {
+                objs.pop();
+            }
+
+        };
+        fn.mouseDown = function (e) {
+            var objs = this.get('objs').getObjs(), o = null, e = [this.cX(e.layerX), this.cY(e.layerY)];
+
+            for (var i = 0; i < objs.length; i++) {
+                o = [objs[i].x, objs[i].y];
+                if (objs[i].r > _m.sqrt( _m.pow(o[0]-e[0],2) + _m.pow(o[1]-e[1],2))) {
+                    objs[i].v = new Vec();
+                    utils.addEvent(window, 'mousemove', this);
+                    utils.addEvent(this.canvas, 'mouseup', this);
+                    break;
+                }
+            }
+            //console.log("mousedown : " + this.cX(e[0]) + " : " + this.cY(e[1]) + " " + this.target);
+        };
+        fn.move = function () {
+            var objs = this.get("objs"), items = objs.getObjs(), clear = true;
+            this.ani = this.ani || setInterval(this.move.bind(this), 20);
+
+            this.ballOverlap();
+
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].v) {
+                    objs.update(i);
+                    clear = false;
+                }
+            }
+
+            if (clear) {
+                clearInterval(this.ani);
+                this.ani = null;
+            }
+
+            this.draw();
+
+
+        };
+        fn.collisionResponse = function () {
+        };
+        fn.vAdd = function (a,b) {
+            return {x: a.x + b.x ,y: a.y + b.y};
+        };
+        fn.vDiff = function (a,b) {
+            return {x: a.x - b.x ,y: a.y - b.y};
+        };
+        fn.vMulti = function (s, a) {
+            return {x: s * a.x, y: s * a.y};
+        };
+        fn.vDot = function (a,b) {
+            return ((a.x) * (b.x) + (a.y) * (b.y));
+        };
+        fn.radiusToMass = function (ballRadius) {
+            return Math.PI * (ballRadius * ballRadius);
+        };
+        fn.ballOverlap = function () {
+            var objs = this.get('objs').getObjs(), arr = [], dx, dy, d, i, m, tmpSize;
+
+            // vector 를 가진 알을 arr에 추가. 
+            for (i = 0; i < objs.length; i++) {
+                objs[i].v && arr.push(objs[i]);
+            }
+
+            if (!arr.length) {
+                return false;
+            }
+
+
+            for (i = 0; i < arr.length; i++) {
+                for (var m = 0; m < objs.length; m++) {
+                    //dx = arr[i].x - objs[m].x,
+                    //dy = arr[i].y - objs[m].y,
+                    dx = objs[m].x - arr[i].x,
+                            dy = objs[m].y - arr[i].y,
+                            d = _m.sqrt(dx * dx + dy * dy);
+
+                    // 충돌 이라면
+                    if (d !== 0 && d <= (arr[i].r + objs[m].r)) {
+                        var tmpV = arr[i].v.get();
+                        if (!objs[m].v) {
+                            objs[m].v = new Vec();
+                        }
+                        var a = _m.atan2(dy, dx);
+
+                        var Vab = {x:dx , y: dy};
+                        var n = {x: _m.cos(a), y: _m.sin(a)};
+                        var Ma = this.radiusToMass(tmpV.size);
+                        var Mb = this.radiusToMass(1);
+
+                        var f_numerator = -(1 + 1) * this.vDot(Vab,n);
+                        var f_denominator = this.vDot(n, n) * (1 / Ma + 1 / Mb);
+                        var f = f_numerator / f_denominator;
+
+
+
+                        var aV = this.vAdd(tmpV, this.vMulti(f / Ma, n));
+                        //arr[i].v.setPosition(aV.x, aV.y);
+                        arr[i].v.setDirection( _m.atan2(aV.y, aV.x) );
+
+                        var bV = this.vDiff(objs[m].v.get(), this.vMulti(f / Mb, n));
+
+                        objs[m].v.setDirection(_m.atan2(bV.y, bV.x));
+                        objs[m].v.setSize(arr[i].v.get().size/2);
+
+
+                    }
+
+                }
+            };
+
+        };
+        fn.collisionN = function () {
+            var objs = this.get('objs');
+            var x = objs[1].x - objs[0].x, y = objs[1].y - objs[0].y,
+                    a = _m.atan2(y, x);
+
+            return [_m.cos(a), _m.sin(a)];
+        };
+
+        fn.handleEvent = function (e) {
+            switch (e.type) {
+                case 'mousedown':
+                    this.mouseDown(e);
+                    break;
+                case 'mousemove':
+                    var objs = this.get('objs').getObjs(), tmp;
+                    for (var i = 0; i < objs.length; i++) {
+                        if (objs[i].v) {
+                            tmp = objs[i];
+                        }
+                    }
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.draw();
+                    var x = tmp.x, y = tmp.y, mx = this.cX(e.layerX), my = this.cY(e.layerY)
+                    this.draw({
+                        type: "line",
+                        x: this.X(x),
+                        y: this.Y(y),
+                        mx: e.layerX,
+                        my: e.layerY
+                    });
+
+                    tmp.v.setPosition((x - mx) / 3, (y - my) / 3);
+                    console.log("mousemove");
+                    break;
+                case 'mouseup':
+                    console.log("mouseup");
+                    utils.removeEvent(window, 'mousemove', this);
+                    utils.removeEvent(this.canvas, 'mouseup', this);
+                    this.move();
+                    break;
+            }
+        };
+
+        _w.Coordinate = Coordinate;
+    })(window, document, Math);
+
+    wCoo1 = new Coordinate();
+
+    var c1 = {
+        x: 0,
+        y: 0,
+        r: 32,
+        fillClor: "#8ED6FF",
+        type: "circle"
+    };
+    var c2 = {
+        x: 100,
+        y: -100,
+        r: 32,
+        fillClor: "red",
+        type: "circle"
+    };
+
+</script>
+</body>
+</html>
