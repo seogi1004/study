@@ -96,7 +96,7 @@
             c.x += Math.cos(r) * s;
             c.y += Math.sin(r) * (s + this.weight);
         }
-        this.groundHit = ground.hitTest(0, ground.y - c.y)
+        this.groundHit = ground.hitTest(c.x + this.width - ground.x, ground.y - c.y)
     };
 
     var game = {
@@ -151,7 +151,7 @@
         },
         init: function () {
             this.ground = new createjs.Bitmap('./assets/grass.png');
-            this.ground.x = 0;
+            this.ground.x = 250;
             this.ground.y = 300;
             this.stage.addChild(this.ground );
 
