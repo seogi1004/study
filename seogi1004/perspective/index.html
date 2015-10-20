@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="../dist/jui.min.css" rel="stylesheet" />
+<link href="../dist/jennifer.theme.min.css" rel="stylesheet" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="../dist/jui.min.js"></script>
+<script src="index.js"></script>
+
+<style>
+    .input {
+        margin-right: 20px !important;
+    }
+    .group {
+        margin-right: 5px !important;
+    }
+    .head {
+        height: 35px !important;
+    }
+</style>
+<script>
+var timer = null;
+
+jui.define("chart.polygon.box", [], function() {
+    var Polygon = function(w, h, z) {
+        var w2 = w / 2,
+            h2 = h / 2;
+
+        this.vertices = [
+            new Float32Array([ -w2, h2, 0, 1 ]),
+            new Float32Array([ w2, h2, 0, 1 ]),
+            new Float32Array([ w2, -h2, 0, 1 ]),
+            new Float32Array([ -w2, -h2, 0, 1 ]),
+
+            new Float32Array([ -w2, h2, z, 1 ]),
+            new Float32Array([ w2, h2, z, 1 ]),
+            new Float32Array([ w2, -h2, z, 1 ]),
+            new Float32Array([ -w2, -h2, z, 1 ]),
+
+            new Float32Array([ -w2, h2, 0, 1 ]),
+            new Float32Array([ w2, h2, 0, 1 ]),
+            new Float32Array([ w2, h2, z, 1 ]),
+            new Float32Array([ -w2, h2, z, 1 ]),
+
+            new Float32Array([ -w2, -h2, 0, 1 ]),
+            new Float32Array([ w2, -h2, 0, 1 ]),
+            new Float32Array([ w2, -h2, z, 1 ]),
+            new Float32Array([ -w2, -h2, z, 1 ]),
+
+            new Float32Array([ -w2, -h2, 0, 1 ]),
+            new Float32Array([ -w2, -h2, z, 1 ]),
+            new Float32Array([ -w2, h2, z, 1 ]),
+            new Float32Array([ -w2, h2, 0, 1 ]),
+
+            new Float32Array([ w2, -h2, 0, 1 ]),
+            new Float32Array([ w2, -h2, z, 1 ]),
+            new Float32Array([ w2, h2, z, 1 ]),
+            new Float32Array([ w2, h2, 0, 1 ])
+        ]
+
+        this.min = new Float32Array([
+            -w2, -h2, 0
+        ]);
+
+        this.max = new Float32Array([
+            w2, h2, z
+        ]);
+    }
+
+    return Polygon;
+});
+
+jui.ready([ "chart.builder", "util.transform", "chart.polygon.box" ], function(builder, Transform, Box) {
+    init();
+
+    function init() {
+        var model = new Box(10, 10, 10),
+            mx = 15,
+            my = 15;
+
+        window.chart = builder("#result", {
+            width: 600,
+            height: 600,
+            padding: 25,
+            axis: [{
+                x: {
+                    type: "range",
+                    domain: [ -mx, mx ],
+                    unit: 1,
+                    line: "solid"
+                },
+                y: {
+                    type: "range",
+                    domain: [ -my, my ],
+                    unit: 1,
+                    line: "solid"
+                },
+                data: model
+            }],
+            brush: [{
+                type: "rectangle3d",
+                clip: false
+            }],
+            style: {
+                gridXAxisBorderWidth: 1,
+                gridYAxisBorderWidth: 1,
+                gridTickBorderSize: 0,
+                gridXFontSize: 9,
+                gridYFontSize: 9
+            },
+            theme: "dark"
+        });
+
+        updateOnce();
+        setEvents(chart, mx, my);
+    }
+
+    function setEvents(chart, maxX, maxY) {
+        var ctrl = new Transform(chart.axis(0).data.vertices);
+            sx = maxX * 0.1,
+            sy = maxY * 0.1,
+            rx = 5,
+            ry = 5,
+            rz = 5;
+
+        $(".rotate-x").off("click").on("click", function() {
+            var val;
+
+            switch($(this).val()) {
+                case "cw": val = -rx; break;
+                case "ccw": val = rx; break;
+            }
+
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dx", val);
+        });
+
+        $(".rotate-y").off("click").on("click", function() {
+            var val;
+
+            switch($(this).val()) {
+                case "cw": val = -ry; break;
+                case "ccw": val = ry; break;
+            }
+
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dy", val);
+        });
+
+        $(".rotate-z").off("click").on("click", function() {
+            var val;
+
+            switch($(this).val()){
+                case "cw": val = -rz; break;
+                case "ccw": val = rz; break;
+            }
+
+            if(timer != null) { clearInterval(timer); }
+            timer = update("rotate3dz", val);
+        });
+
+        $(".scale-x").off("click").on("click", function() {
+            switch($(this).val()){
+                case "cw": maxX -= sx; break;
+                case "ccw": maxX += sx; break;
+            }
+
+            chart.axis(0).updateGrid("x", {
+                domain: [ -maxX, maxX ]
+            });
+        });
+
+        $(".scale-y").off("click").on("click", function() {
+            switch($(this).val()){
+                case "cw": maxY -= sy; break;
+                case "ccw": maxY += sy; break;
+            }
+
+            chart.axis(0).updateGrid("y", {
+                domain: [ -maxY, maxY ]
+            });
+        });
+
+        function update(type, value) {
+            var newData = chart.axis(0).data;
+
+            return setInterval(function() {
+                var cx = (newData.min[0] + newData.max[0]) / 2,
+                    cy = (newData.min[1] + newData.max[1]) / 2,
+                    cz = (newData.min[2] + newData.max[2]) / 2;
+
+                newData.vertices = ctrl.merge(
+                    [ "move3d", cx, cy, cz ],
+                    [ type, value ],
+                    [ "move3d", -cx, -cy, -cz ]
+                );
+
+                chart.axis(0).update(newData);
+                chart.render();
+            }, 100);
+        }
+    }
+
+    function updateOnce() {
+        var newData = chart.axis(0).data,
+            ctrl = new Transform(newData.vertices);
+
+        var cx = (newData.min[0] + newData.max[0]) / 2,
+            cy = (newData.min[1] + newData.max[1]) / 2,
+            cz = (newData.min[2] + newData.max[2]) / 2;
+
+        newData.vertices = ctrl.merge(
+                //[ "perspective", 15, 15, 1, 15, 70 ],
+                [ "perspective2", 15, 15, -15, -15, 15, 15 ],
+                [ "move3d", cx, cy, cz ],
+                [ "rotate3dx", 0 ],
+                [ "rotate3dy", 0 ],
+                [ "move3d", -cx, -cy, -cz ]
+        );
+
+        chart.axis(0).update(newData);
+        chart.render();
+    }
+});
+</script>
+</head>
+
+<body class="jui">
+
+<div class="panel">
+    <div class="head">
+        Rotate-X:
+        <div class="group">
+            <button class="btn small rotate-x" value="cw">&lt;</button>
+            <button class="btn small rotate-x" value="ccw">&gt;</button>
+        </div>
+
+        Rotate-Y:
+        <div class="group">
+            <button class="btn small rotate-y" value="cw">&lt;</button>
+            <button class="btn small rotate-y" value="ccw">&gt;</button>
+        </div>
+
+        Rotate-Z:
+        <div class="group">
+            <button class="btn small rotate-z" value="cw">&lt;</button>
+            <button class="btn small rotate-z" value="ccw">&gt;</button>
+        </div>
+
+        Scale-X:
+        <div class="group">
+            <button class="btn small scale-x" value="cw">+</button>
+            <button class="btn small scale-x" value="ccw">-</button>
+        </div>
+
+        Scale-Y:
+        <div class="group">
+            <button class="btn small scale-y" value="cw">+</button>
+            <button class="btn small scale-y" value="ccw">-</button>
+        </div>
+    </div>
+    <div class="body fit">
+        <div id="result"></div>
+    </div>
+</div>
+
+</body>
+</html>
