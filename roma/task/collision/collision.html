@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>collision</title>
+</head>
+<body>
+
+    <div id="collision" style="width: 650px; height: 500px; background-color: #666;">
+        <svg width="100%" height="100%">
+            <circle cx="100" cy="100" r="16" fill="white" id="white1" />
+            <circle cx="100" cy="400" r="16" fill="white" id="white2" />
+            <circle cx="550" cy="100" r="16" fill="black" id="black1" />
+            <circle cx="550" cy="400" r="16" fill="black" id="black2" />
+        </svg>
+    </div>
+
+    <script src="../../lib/jquery-1.8.0.min.js"></script>
+    <script>
+
+        /*var speed = { x: Math.random()*3+2, y: Math.random()*3+2 };
+        var radius = 8;
+        var stageW = 650;
+        var stageH = 500;
+        var posX = (Math.random()*(stageW-radius))+radius, posY = (Math.random()*(stageH-radius))+radius;
+        function render(){
+            for(var i=0; i<4; i++){
+                posX += speed.x;
+                posY += speed.y;
+                if (posX >= stageW-radius && speed.x > 0) speed.x = -speed.x;
+                if (posX <= radius && speed.x < 0) speed.x = -speed.x;
+                if (posY >= stageH-radius && speed.y > 0) speed.y = -speed.y;
+                if (posY <= radius && speed.y < 0) speed.y = -speed.y;
+
+                balls[i].setAttribute("cx", posX);
+                balls[i].setAttribute("cy", posY);
+            }
+        }*/
+
+        (function(){
+            function Ball(posX, posY, rad){
+                this.cx = posX || 10;
+                this.cy = posY || 10;
+                this.r = rad || 10;
+            }
+
+            var public = {
+
+            }
+
+            var private = {
+
+            }
+
+            Ball.prototype = public;
+            window.Ball = Ball;
+        })();
+
+
+        var Game;
+
+        function init(){
+
+            var radius = 8;
+            var stageW = 650;
+            var stageH = 500;
+
+            Game = {
+                timer: null,
+                ball: {
+                    x: Math.random() * stageW,
+                    y: Math.random() * stageH,
+                    r: radius,
+                    ball: new Ball(),
+                    update: function(){
+
+                    },
+                    render: function(){
+
+                    }
+                },
+                update: function(){
+                    this.ball.update();
+                },
+                render: function(){
+                    this.ball.render();
+                },
+                start: function(){
+                    var self = this;
+                    this.timer = setInterval( function(){
+                        self.update();
+                        self.render();
+                    }, 1000/24 )
+                },
+                stop: function(){
+                    clearInterval( this.timer );
+                }
+            }
+            Game.render();
+        }
+
+        init();
+
+    </script>
+    <!--<script type="text/javascript">
+        var stageW = 650;
+        var stageH = 400;
+        var svg, enterFrame, speed;
+        var balls = [];
+
+        function init(){
+            SVG({
+                width: stageW,
+                height: stageH,
+                style: "background-color: #eee"
+            });
+
+            /*for(var i=0; i<4; i++){
+                var ball = new Ball({"cx":(i * 50) + 40, "cy":(i * 30) + 40, "r":(i * 4) + 10});
+                balls.push(ball);
+            }*/
+            var ball = new Ball({"cx":100, "cy":100, "r":10});
+            balls.push(ball);
+
+            speed = {
+                x: Math.random() * 3 + 2,
+                y: Math.random() * 3 + 2
+            }
+            //render();
+            //update();
+        }
+
+        function update(){
+            enterFrame = window.requestFrame(update);
+            render();
+            //window.cancelFrame(stage);
+        }
+
+        var posX = 0, posY = 0;
+        function render(){
+            for(var i=0; i<1; i++){
+                posX += speed.x;
+                posY += speed.y;
+                if (posX >= stageW-balls[i].r && speed.x > 0) speed.x = -speed.x;
+                if (posX <= balls[i].r && speed.x < 0) speed.x = -speed.x;
+                if (posY >= stageH-balls[i].r && speed.y > 0) speed.y = -speed.y;
+                if (posY <= balls[i].r && speed.y < 0) speed.y = -speed.y;
+                balls[0].setAttribute("cx", "100");
+                balls[0].setAttribute("cy", "200");
+            }
+        }
+
+        function Ball(obj){
+            this.cx = obj.cx;
+            this.cy = obj.cy;
+            this.r = obj.r;
+
+            var circle = SVGElements("circle", {
+                "cx": obj.cx,
+                "cy": obj.cy,
+                "r": obj.r,
+                "fill": "red"
+            });
+            svg.appendChild(circle);
+        }
+
+        function SVG(obj){
+            svg = SVGElements("svg", {
+                "width": obj.width,
+                "height": obj.height,
+                "style": obj.style
+            });
+            document.body.appendChild(svg);
+        }
+
+        function SVGElements(element, obj) {
+            var svgEl, xmlns = "http://www.w3.org/2000/svg";
+            svgEl = document.createElementNS(xmlns, element);
+            for (name in obj) {
+                svgEl.setAttribute(name, obj[name]);
+            }
+            return svgEl;
+        }
+
+        window.requestFrame = (function () {
+            return window.requestFrame || window.webkitRequestFrame || window.mozRequestFrame || window.oRequestFrame || function (callback) {
+                        return window.setTimeout(callback, 1000 / 60);
+                    };
+        })();
+        window.cancelFrame = (function () {
+            return window.cancelFrame || window.webkitCancelFrame || window.mozCancelFrame || window.oCancelFrame || function (id) {
+                        window.clearTimeout(id);
+                    };
+        })();
+
+        init();
+
+    </Script>-->
+    <!--<script>
+        var stageW = 650;
+        var stageH = 400;
+        var svg, enterFrame;
+        var Ball = (function (xPos, yPos, rad) {
+            var speed = {x: Math.random() * 3 + 2, y: Math.random() * 3 + 2};
+            var radius = rad || 0;
+            var x = xPos || 0;
+            var y = yPos || 0;
+
+            function update() {
+                x += speed.x;
+                y += speed.y;
+                if (x >= stageW - radius && speed.x > 0) speed.x = -speed.x;
+                if (x <= radius && speed.x < 0) speed.x = -speed.x;
+                if (y >= stageH - radius && speed.y > 0) speed.y = -speed.y;
+                if (y <= radius && speed.y < 0) speed.y = -speed.y;
+            }
+
+            var svgCircle = SVGElements("circle", {
+                "cx": x,
+                "cy": y,
+                "r": radius
+            });
+
+            svg.appendChild(svgCircle);
+        });
+
+        var Game = (function () {
+            var balls = [];
+
+            for (var n = 0; n < 4; n++) {
+                var ball = new Ball((n * 50) + 40, (n * 30) + 40, (n * 4) + 10);
+                balls.push(ball);
+            }
+
+            return {
+                update: function(){
+                    //for (var n = 0, ballLen = balls.length; n < ballLen; n++)
+                    //balls[n].update();
+                }
+            }
+        })();
+
+        var Stage = (function () {
+
+            svg = SVGElements("svg", {
+                "width": stageW,
+                "height": stageH,
+                "style": "background-color: #eee"
+            });
+            document.body.appendChild(svg);
+            //update();
+            Game.update();
+
+            function update(){
+                enterFrame = window.requestFrame(update);
+                Game.update();
+                //window.cancelFrame(stage);
+            }
+
+
+            window.requestFrame = (function () {
+                return window.requestFrame || window.webkitRequestFrame || window.mozRequestFrame || window.oRequestFrame || function (callback) {
+                            return window.setTimeout(callback, 1000 / 60);
+                        };
+            })();
+            window.cancelFrame = (function () {
+                return window.cancelFrame || window.webkitCancelFrame || window.mozCancelFrame || window.oCancelFrame || function (id) {
+                            window.clearTimeout(id);
+                        };
+            })();
+        })();
+
+        function SVGElements(element, obj){
+            var svgEl, xmlns = "http://www.w3.org/2000/svg";
+            svgEl = document.createElementNS(xmlns, element);
+            for( name in obj){
+                svgEl.setAttribute(name, obj[name]);
+            }
+            return svgEl;
+        }
+    </script>-->
+</body>
+</html>
