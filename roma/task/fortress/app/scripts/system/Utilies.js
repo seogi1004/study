@@ -19,7 +19,6 @@ var Notify;
         warn: "alert-warn",
         error: "alert-error"
     };
-
     function display(header, message, autoHideTime, cssStyle, doNotOverWrite) {
         if (autoHideTime === void 0) {
             autoHideTime = 2800;
@@ -55,7 +54,7 @@ var Notify;
         if (!Notify.locked) {
             $("#notifaction").animate({
                 top: (-parseInt($("#notifaction").css("height"))) - 100 + "px"
-            }, 400, function () => {
+            }, 400, function () {
                 locked = false;
                 if (callback != null) {
                     callback();
@@ -128,7 +127,7 @@ var Utilies;
         if (pickUnqineCollection[stringId]) {
             var items = pickUnqineCollection[stringId];
             if (items.length <= 0) {
-                Logger.error("Out of unqine items in collection " + stringId);
+                console.error("Out of unqine items in collection " + stringId);
                 return;
             }
             var index = random(0, items.length - 1);

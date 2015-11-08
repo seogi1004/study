@@ -1,29 +1,16 @@
-/**
- * Player
- * The player class contains a team objects, which is the team of worms.
- * It also defines the controls for the worms movements.
- *
- *  License: Apache 2.0
- *  author:  Ciar?n McCann
- *  url: http://www.ciaranmccann.me/
- */
-///<reference path="Team.ts"/>
-///<reference path="system/Utilies.ts"/>
-///<reference path="system/Timer.ts"/>
-///<reference path="system/GamePad.ts"/>
-///<reference path="system/Controls.ts"/>
 var Player = (function () {
     function Player(playerId) {
-        if (playerId === void 0) {
+        //if (playerId === void 0) {
             playerId = Utilies.pickUnqine([1, 2, 3, 4], "playerids");
-        }
+        //}
         this.id = playerId;
         this.team = new Team(playerId);
+
         // Global window keyup event
         $(window).keyup(function (e) {
             // Dectects keyup on fire button
             if (e.which == Controls.fire.keyboard) {
-                var wormWeapon = this.team.getCurrentWorm().getWeapon()
+                var wormWeapon = this.team.getCurrentWorm().getWeapon();
 
                 // If the weapon in use is a force charge sytle weapon we will fire otherwise do nothing
                 if (wormWeapon.getForceIndicator().isRequired() && wormWeapon.getForceIndicator().getForce() > 1 && wormWeapon.getIsActive() == false) {

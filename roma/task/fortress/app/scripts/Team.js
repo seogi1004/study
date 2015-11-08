@@ -8,7 +8,7 @@ var Team = (function () {
         Team.teamCount++;
         this.weaponManager = new WeaponManager();
         this.currentWorm = 0;
-        this.initalNumberOfWorms = 4;
+        this.initalNumberOfWorms = 1;
         this.worms = new Array(this.initalNumberOfWorms);
         for (var i = 0; i < this.initalNumberOfWorms; i++) {
             var tmp = Game.map.getNextSpawnPoint();
@@ -76,8 +76,8 @@ var Team = (function () {
             worm.setSpriteDef(Sprites.worms.weWon, true);
         }
         GameInstance.camera.panToPosition(Physics.vectorMetersToPixels(this.worms[0].body.GetPosition()));
-        AssetManager.getSound("victory").play(1, 15);
-        AssetManager.getSound("Ireland").play(1, 16);
+        //AssetManager.getSound("victory").play(1, 15);
+        //AssetManager.getSound("Ireland").play(1, 16);
     };
     Team.prototype.update = function () {
         var cachedLenght = this.worms.length;

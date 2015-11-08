@@ -39,7 +39,7 @@ var WormAnimationManager = (function () {
         }
     };
     WormAnimationManager.prototype.update = function () {
-        if (GameInstance.wormManager.areAllWormsStationary() && this.worm.health == 0 && WormAnimationManger.playerAttentionSemaphore == 0 && this.worm.spriteDef != Sprites.worms.die ) {
+        if (GameInstance.wormManager.areAllWormsStationary() && this.worm.health == 0 && WormAnimationManager.playerAttentionSemaphore == 0 && this.worm.spriteDef != Sprites.worms.die ) {
             WormAnimationManager.playerAttentionSemaphore++;
             GameInstance.camera.panToPosition(Physics.vectorMetersToPixels(this.worm.body.GetPosition()));
             this.worm.onAnimationFinish(function ()
@@ -91,19 +91,19 @@ var WormAnimationManager = (function () {
             this.setIdleAnimation();
         }
 
-        if (this.currentState == WormAnimationManger.WORM_STATE.walking) {
+        if (this.currentState == WormAnimationManager.WORM_STATE.walking) {
             this.worm.setSpriteDef(Sprites.worms.walking);
             this.idleTimer.reset();
         }
 
         if (this.worm.canJump == 0 && this.worm.body.GetLinearVelocity().y > 0) {
             this.worm.setSpriteDef(Sprites.worms.falling);
-            this.currentState = WormAnimationManger.WORM_STATE.failing;
+            this.currentState = WormAnimationManager.WORM_STATE.failing;
             this.idleTimer.reset();
 
         } else if (this.worm.canJump == 0 && this.worm.body.GetLinearVelocity().y < 0) {
             this.worm.setSpriteDef(Sprites.worms.jumpBegin);
-            this.currentState = WormAnimationManger.WORM_STATE.jumping;
+            this.currentState = WormAnimationManager.WORM_STATE.jumping;
             this.idleTimer.reset();
         }
 

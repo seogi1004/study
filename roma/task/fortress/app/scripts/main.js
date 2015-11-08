@@ -27,7 +27,6 @@ $(document).ready(function () {
                 GameInstance.step();
                 GameInstance.update();
                 GameInstance.draw();
-                console.log("update");
                 window.requestAnimationFrame(gameloop);
             }
 

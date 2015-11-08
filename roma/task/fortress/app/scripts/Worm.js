@@ -47,7 +47,7 @@ var Worm = (function (_super) {
 
         this.footSensor = this.body.CreateFixture(fixDef);
         this.body.SetUserData(this);
-        //this.stateAnimationMgmt = new WormAnimationManager(this);
+        this.stateAnimationMgmt = new WormAnimationManager(this);
         this.canJump = 0;
         this.target = new Target(this);
         this.isDead = false;
@@ -81,7 +81,6 @@ var Worm = (function (_super) {
 
             Graphics.roundRect(ctx, 0, 0, nameBoxWidth, 20, 4).fill();
             Graphics.roundRect(ctx, 0, 0, nameBoxWidth, 20, 4).stroke();
-
             //ctx.fillStyle = '#ff00ff'; //this.team.color;
             //ctx.fillText(this.name, (this.name.length * 10) / 2, 15);
 
@@ -164,7 +163,7 @@ var Worm = (function (_super) {
                     this.hit(damage);
                 }
                 if (impulse.normalImpulses[0] > 25) {
-                    AssetManager.getSound("WormLanding").play();
+                    //AssetManager.getSound("WormLanding").play();
                 }
             }
         }
@@ -193,21 +192,21 @@ var Worm = (function (_super) {
         if (this.soundDelayTimer.hasTimePeriodPassed()) {
             if (this.spriteDef == Sprites.worms.walking) {
                 if (_super.prototype.getCurrentFrame.call(this) % 5 == 0) {
-                    AssetManager.getSound("WalkCompress").play(0.5);
+                    //AssetManager.getSound("WalkCompress").play(0.5);
                 }
                 else {
-                    AssetManager.getSound("WalkExpand").play(0.5);
+                    //AssetManager.getSound("WalkExpand").play(0.5);
                 }
             }
         }
     };
 
     Worm.prototype.walkLeft = function () {
-        if (WormAnimationManger.playerAttentionSemaphore == 0) {
+        if (WormAnimationManager.playerAttentionSemaphore == 0) {
             var currentPos = this.body.GetPosition();
             this.direction = Worm.DIRECTION.left;
             this.target.changeDirection(Worm.DIRECTION.left);
-            this.stateAnimationMgmt.setState(WormAnimationManger.WORM_STATE.walking);
+            this.stateAnimationMgmt.setState(WormAnimationManager.WORM_STATE.walking);
             _super.prototype.update.call(this);
             this.body.SetPosition(new b2Vec2(currentPos.x - this.speed / Physics.worldScale, currentPos.y));
             this.playWalkingSound();
@@ -219,11 +218,11 @@ var Worm = (function (_super) {
     };
 
     Worm.prototype.walkRight = function () {
-        if (WormAnimationManger.playerAttentionSemaphore == 0) {
+        if (WormAnimationManager.playerAttentionSemaphore == 0) {
             var currentPos = this.body.GetPosition();
             this.direction = Worm.DIRECTION.right;
             this.target.changeDirection(Worm.DIRECTION.right);
-            this.stateAnimationMgmt.setState(WormAnimationManger.WORM_STATE.walking);
+            this.stateAnimationMgmt.setState(WormAnimationManager.WORM_STATE.walking);
             _super.prototype.update.call(this);
             this.body.SetPosition(new b2Vec2(currentPos.x + this.speed / Physics.worldScale, currentPos.y));
             this.playWalkingSound();
@@ -235,7 +234,7 @@ var Worm = (function (_super) {
     };
 
     Worm.prototype.jump = function () {
-        if (WormAnimationManger.playerAttentionSemaphore == 0) {
+        if (WormAnimationManager.playerAttentionSemaphore == 0) {
             if (this.canJump > 0) {
                 var currentPos = this.body.GetPosition();
                 var forces = new b2Vec2(this.direction, -2);
@@ -250,7 +249,7 @@ var Worm = (function (_super) {
     };
 
     Worm.prototype.backFlip = function () {
-        if (WormAnimationManger.playerAttentionSemaphore == 0) {
+        if (WormAnimationManager.playerAttentionSemaphore == 0) {
             if (this.canJump > 0) {
                 // Setup a callback that once the animation finish
                 // unlock it and set it to idel
@@ -286,7 +285,7 @@ var Worm = (function (_super) {
                     console.log("CLIENT HIT");
                     this.damageTake += damage;
                     GameInstance.wormManager.syncHit(this.name, damage);
-                    AssetManager.getSound("ow" + Utilies.random(1, 2)).play(0.8);
+                    //AssetManager.getSound("ow" + Utilies.random(1, 2)).play(0.8);
                 }
                 //If worm using Jetpack, deactive it if they get hurt.
                 if (this.getWeapon() instanceof JetPack) {
@@ -294,7 +293,7 @@ var Worm = (function (_super) {
                 }
                 //if from same team call the player a tratitor :)
                 if (worm && worm != this && worm.team == this.team) {
-                    AssetManager.getSound("traitor").play(0.8, 10);
+                    //AssetManager.getSound("traitor").play(0.8, 10);
                 }
                 else if (worm) {
                     Utilies.pickRandomSound(["justyouwait", "youllregretthat"]).play(0.8, 10);
@@ -328,7 +327,7 @@ var Worm = (function (_super) {
             //updates the current sprite
             _super.prototype.update.call(this);
             // Always reset to idle
-            this.stateAnimationMgmt.setState(WormAnimationManger.WORM_STATE.idle);
+            this.stateAnimationMgmt.setState(WormAnimationManager.WORM_STATE.idle);
             if (this.isActiveWorm())
                 this.team.getWeaponManager().getCurrentWeapon().update();
             this.target.update();

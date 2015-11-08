@@ -42,6 +42,8 @@ var Terrain = (function () {
             scale
         );
         this.bufferCanvasContext.globalCompositeOperation = "destination-out";
+
+        this.wave = new Waves();
     }
 
     Terrain.prototype.getWidth = function(){
@@ -104,7 +106,84 @@ var Terrain = (function () {
         }
         console.log("Current body count " + bodiesCreated);
     }
-
+    //Adds this deform position to the list so that the deforms
+    //can be batched at the end of the update loop
+    Terrain.prototype.addToDeformBatch = function (x, y, r) {
+        this.deformTerrainBatchList.push({ xPos: x, yPos: y, radius: r });
+    };
+    Terrain.prototype.addRectToDeformBatch = function (x, y, w, h) {
+        this.deformTerrainBatchList.push({ xPos: x, yPos: y, radius: h, width: w });
+    };
+    // This allows the terrain image data to be changed.
+    // It then calls for the box2d physic terrain to be reconstructed from the new image
+    Terrain.prototype.deformRegionBatch = function () {
+        var lenghtCache = this.deformTerrainBatchList.length;
+        var angle = Math.PI * 2;
+        this.bufferCanvasContext.beginPath();
+        // Draw cut outs of all batched deformations
+        for (var i = 0; i < lenghtCache; i++) {
+            var tmp = this.deformTerrainBatchList[i];
+            if (tmp.width) {
+                this.bufferCanvasContext.fillRect(tmp.xPos - tmp.width / 2, tmp.yPos, tmp.width, tmp.radius);
+            }
+            else {
+                this.bufferCanvasContext.arc(tmp.xPos, tmp.yPos, tmp.radius, angle, 0, true);
+            }
+        }
+        this.bufferCanvasContext.closePath();
+        this.bufferCanvasContext.fill();
+        this.terrainData = this.bufferCanvasContext.getImageData(this.Offset.x, this.Offset.y, this.bufferCanvas.width, this.bufferCanvas.height);
+        // for each explision in batch find what rects its radius interects and destory them.
+        // Then scan image from top of explosion radius down to bottom and fill back in the rects
+        for (var i = 0; i < lenghtCache; i++) {
+            var tmp = this.deformTerrainBatchList[i];
+            var normalizedRadis = Math.floor(tmp.radius / this.TERRAIN_RECT_HEIGHT) * this.TERRAIN_RECT_HEIGHT;
+            var y = Math.floor(tmp.yPos / this.TERRAIN_RECT_HEIGHT) * this.TERRAIN_RECT_HEIGHT;
+            //Setup bounding box, to check which terrain rects intercest the box and need to be removed and recreated.
+            var aabb = new b2AABB();
+            aabb.lowerBound.Set(0, Physics.pixelToMeters(y - normalizedRadis));
+            aabb.upperBound.Set(Physics.pixelToMeters(this.bufferCanvas.width), Physics.pixelToMeters(y + normalizedRadis));
+            Physics.world.QueryAABB(function (fixture){
+                if (fixture.GetBody().GetType() == b2Body.b2_staticBody && fixture.GetBody().GetUserData() instanceof Terrain)
+                {
+                    this.world.DestroyBody(fixture.GetBody());
+                }
+                return true;
+            }, aabb);
+            this.createTerrainPhysics(0, //x
+                Physics.metersToPixels(aabb.lowerBound.y) - this.Offset.y, //y
+                this.bufferCanvas.width, //w
+                Physics.metersToPixels(aabb.upperBound.y) + (this.TERRAIN_RECT_HEIGHT * 2) - this.Offset.y, //h
+                this.terrainData.data, this.world, this.scale);
+        }
+        this.deformTerrainBatchList = [];
+    };
+    Terrain.prototype.update = function () {
+        if (this.deformTerrainBatchList.length > 0) {
+            this.deformRegionBatch();
+        }
+        this.wave.update();
+    };
+    Terrain.prototype.draw = function (ctx) {
+        //this.drawingCanvasContext.clearRect(0, 0, this.drawingCanvas.width, this.drawingCanvas.height);
+        // Here we draw an off screen buffer canvas onto our on screen one
+        // this is more effeicent then drawing a pixel buffer onto the canvas
+        var y = GameInstance.camera.getY();
+        var x = GameInstance.camera.getX();
+        var w = this.drawingCanvas.width;
+        var h = this.drawingCanvas.height;
+        if (y + this.drawingCanvas.height > this.bufferCanvas.height) {
+            var diff = (y + this.drawingCanvas.height) - this.bufferCanvas.height;
+            h -= diff;
+        }
+        if (x + this.drawingCanvas.width > this.bufferCanvas.width) {
+            var diff = (x + this.drawingCanvas.width) - this.bufferCanvas.width;
+            w -= diff;
+        }
+        //ctx.drawImage(this.bufferCanvas, -300, -300, this.drawingCanvas.width, this.drawingCanvas.height);
+        ctx.drawImage(this.bufferCanvas, x, y, w, h, 0, -5, w, h);
+        // this.drawingCanvasContext.drawImage(this.bufferCanvas, 2, -6)
+    };
     return Terrain;
 })();
 

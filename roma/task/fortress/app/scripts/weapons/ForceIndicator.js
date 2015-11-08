@@ -38,7 +38,7 @@ var ForceIndicator = (function () {
     };
     ForceIndicator.prototype.charge = function (rate) {
         if (this.isRequired()) {
-            AssetManager.getSound("THROWPOWERUP").play();
+            //AssetManager.getSound("THROWPOWERUP").play();
             this.forcePercentage += rate;
             this.sprite.setCurrentFrame(this.sprite.getCurrentFrame() + 0.4);
             this.needReRender = true;
@@ -57,8 +57,8 @@ var ForceIndicator = (function () {
     ForceIndicator.prototype.reset = function () {
         if (this.isRequired() && this.forcePercentage > 1) {
             this.forcePercentage = 1;
-            AssetManager.getSound("THROWPOWERUP").pause();
-            AssetManager.getSound("THROWRELEASE").play();
+            //AssetManager.getSound("THROWPOWERUP").pause();
+            //AssetManager.getSound("THROWRELEASE").play();
             this.renderCanvas.getContext('2d').clearRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
             //Used to reset the sprite
             this.sprite.currentFrameY = 0;

@@ -5,7 +5,7 @@ var GameStateManager = (function(){
         this.currentPlayerIndex = 0;
         this.players = [];
         this.isStarted = false;
-        this.physicWorldSettled = false;
+        this.physicsWorldSettled = true;
     }
 
     GameStateManager.prototype.init = function(players){

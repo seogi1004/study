@@ -10,7 +10,7 @@ var Game = (function () {
         this.setupCanvas();
 
         $(window).resize(function () {
-            this.setupCanvas();
+            //this.setupCanvas();
         });
 
         Physics.init(this.actionCanvasContext);
@@ -22,7 +22,6 @@ var Game = (function () {
                 this.particleEffectMgmt.add(new ParticleEffect(this.camera.getX() + evt.pageX, this.camera.getY() + evt.pageY));
                 this.spawns.push(new b2Vec2(this.camera.getX() + evt.pageX, this.camera.getY() + evt.pageY));
                 console.log(JSON.stringify(this.spawns));
-
             }, false);
         }
         this.lobby = new Lobby();
@@ -83,10 +82,9 @@ var Game = (function () {
             }
         });
         //Only inited if its a touch device
-        setTimeout(function () {
+        /*setTimeout(function () {
             this.state.physicsWorldSettled = true;
-
-        }, 1200);
+        }, 1200);*/
         this.nextTurn();
     }
 
@@ -113,7 +111,6 @@ var Game = (function () {
     }
 
     Game.prototype.update = function () {
-        console.log("Game.update");
         if (this.state.isStarted) {
             // while no winner, check for one
             if (this.winner == null) {
@@ -123,14 +120,14 @@ var Game = (function () {
                     this.winner.getTeam().celebrate();
                     //TODO fix this up, do server side, just putting in for demo 2moro.
                     if (this.winner.id == Client.id && access_token && GameInstance.gameType != Game.types.LOCAL_GAME) {
-                        //Notify.display("Congratulations you won!", "", -1, Notify.levels.sucess, true);
-                        $.ajax({
+                        Notify.display("Congratulations you won!", "", -1, Notify.levels.sucess, true);
+                        /*$.ajax({
                             url: "http://96.126.111.211/updateUser/" + access_token,
                             dataType: 'jsonp'
-                        });
+                        });*/
                     }
                     else {
-                        //Notify.display("Unlucky you lost, better luck next time", "", -1, Notify.levels.error, true);
+                        Notify.display("Unlucky you lost, better luck next time", "", -1, Notify.levels.error, true);
                     }
                 }
             }
