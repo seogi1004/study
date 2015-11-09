@@ -1,6 +1,7 @@
 var Game = (function () {
-
+var that;
     function Game() {
+      that = this;
         Graphics.init();
         this.gameType = Game.types.LOCAL_GAME;
 
@@ -10,7 +11,7 @@ var Game = (function () {
         this.setupCanvas();
 
         $(window).resize(function () {
-            //this.setupCanvas();
+            that.setupCanvas();
         });
 
         Physics.init(this.actionCanvasContext);
@@ -18,13 +19,13 @@ var Game = (function () {
         this.players = [];
         this.spawns = [];
         if (Settings.DEVELOPMENT_MODE && this.particleEffectMgmt != null) {
-            window.addEventListener("click", function (evt:any) {
+            window.addEventListener("click", function (evt) {
                 this.particleEffectMgmt.add(new ParticleEffect(this.camera.getX() + evt.pageX, this.camera.getY() + evt.pageY));
                 this.spawns.push(new b2Vec2(this.camera.getX() + evt.pageX, this.camera.getY() + evt.pageY));
                 console.log(JSON.stringify(this.spawns));
             }, false);
         }
-        this.lobby = new Lobby();
+        //this.lobby = new Lobby();
     }
 
     Game.prototype.setupCanvas = function () {
@@ -36,9 +37,7 @@ var Game = (function () {
     }
 
     Game.prototype.start = function (playerIds) {
-        if (playerIds === void 0) {
             playerIds = null;
-        }
         this.terrain = new Terrain(this.actionCanvas, Game.map.getTerrainImg(), Physics.world, Physics.worldScale);
         this.camera = new Camera(this.terrain.getWidth(), this.terrain.getHeight(), this.actionCanvas.width, this.actionCanvas.height);
         this.camera.setX(this.terrain.getWidth() / 2);
@@ -85,7 +84,7 @@ var Game = (function () {
         /*setTimeout(function () {
             this.state.physicsWorldSettled = true;
         }, 1200);*/
-        this.nextTurn();
+        //this.nextTurn();
     }
 
     Game.prototype.nextTurn = function () {
@@ -173,23 +172,23 @@ var Game = (function () {
         this.actionCanvasContext.clearRect(0, 0, this.actionCanvas.width, this.actionCanvas.height);
         this.actionCanvasContext.save();
         this.actionCanvasContext.translate(-this.camera.getX(), -this.camera.getY());
-        this.enviormentEffects.draw(this.actionCanvasContext);
-        this.terrain.wave.drawBackgroundWaves(this.actionCanvasContext, 0, this.terrain.bufferCanvas.height, this.terrain.getWidth());
+        //this.enviormentEffects.draw(this.actionCanvasContext);
+        //this.terrain.wave.drawBackgroundWaves(this.actionCanvasContext, 0, this.terrain.bufferCanvas.height, this.terrain.getWidth());
         this.actionCanvasContext.restore();
         this.terrain.draw(this.actionCanvasContext);
         this.actionCanvasContext.save();
         this.actionCanvasContext.translate(-this.camera.getX(), -this.camera.getY());
-        this.terrain.wave.draw(this.actionCanvasContext, this.camera.getX(), this.terrain.bufferCanvas.height, this.terrain.getWidth());
-        if (Settings.PHYSICS_DEBUG_MODE) {
+        //this.terrain.wave.draw(this.actionCanvasContext, this.camera.getX(), this.terrain.bufferCanvas.height, this.terrain.getWidth());
+        //if (Settings.PHYSICS_DEBUG_MODE) {
             Physics.world.DrawDebugData();
-        }
+        //}
         for (var i = this.players.length - 1; i >= 0; --i) {
             this.players[i].draw(this.actionCanvasContext);
         }
         this.miscellaneousEffects.draw(this.actionCanvasContext);
         this.particleEffectMgmt.draw(this.actionCanvasContext);
         this.actionCanvasContext.restore();
-        if (Client.isClientsTurn())
+        //if (Client.isClientsTurn())
             GameInstance.sticks.draw(this.actionCanvasContext);
     }
 

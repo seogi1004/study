@@ -49,7 +49,7 @@ var ThrowableWeapon = (function (_super) {
     // What happens when a worm collies with another object
     ThrowableWeapon.prototype.beginContact = function (contact) {
         if (this.hasImpacted == 0) {
-            AssetManager.getSound(this.impactSound).play(0.6);
+            //AssetManager.getSound(this.impactSound).play(0.6);
         }
         this.hasImpacted++;
     };
@@ -106,7 +106,7 @@ var ThrowableWeapon = (function (_super) {
     };
     //This method is overloaded in sub-classes
     ThrowableWeapon.prototype.playWormVoice = function () {
-        Utilies.pickRandomSound(["watchthis", "fire", "grenade", "incoming", "laugh"]).play();
+        //Utilies.pickRandomSound(["watchthis", "fire", "grenade", "incoming", "laugh"]).play();
     };
     ThrowableWeapon.prototype.activate = function (worm) {
         if (this.ammo > 0 && this.getIsActive() == false) {
@@ -116,7 +116,7 @@ var ThrowableWeapon = (function (_super) {
             this.setupDirectionAndForce(worm);
         }
         else {
-            AssetManager.getSound("cantclickhere").play();
+            //AssetManager.getSound("cantclickhere").play();
         }
     };
     ThrowableWeapon.prototype.detonate = function () {

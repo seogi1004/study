@@ -9,9 +9,12 @@ var Worm = (function (_super) {
 
     __extends(Worm, _super);
 
+  var that;
+
     function Worm(team, x, y) {
+      that = this;
         _super.call(this, Sprites.worms.idle1);
-        this.name = "thomas";
+        this.name = NameGenerator.randomName();
 
         this.health = 80;
         this.damageTake = 0;
@@ -81,8 +84,8 @@ var Worm = (function (_super) {
 
             Graphics.roundRect(ctx, 0, 0, nameBoxWidth, 20, 4).fill();
             Graphics.roundRect(ctx, 0, 0, nameBoxWidth, 20, 4).stroke();
-            //ctx.fillStyle = '#ff00ff'; //this.team.color;
-            //ctx.fillText(this.name, (this.name.length * 10) / 2, 15);
+            ctx.fillStyle = '#ff00ff'; //this.team.color;
+            ctx.fillText(that.name, (that.name.length * 10) / 2, 15);
 
         }, nameBoxWidth, 20);
 
@@ -96,8 +99,8 @@ var Worm = (function (_super) {
             Graphics.roundRect(ctx, 0, 0, healthBoxWidth, healthBoxHeight, 4).fill();
             Graphics.roundRect(ctx, 0, 0, healthBoxWidth, healthBoxHeight, 4).stroke();
 
-            //ctx.fillStyle = '#ff0000'; //this.team.color;
-            //ctx.fillText(Math.floor(this.health), healthBoxWidth / 2, healthBoxHeight - 3);
+            ctx.fillStyle = '#ff0000'; //this.team.color;
+            ctx.fillText(Math.floor(that.health), healthBoxWidth / 2, healthBoxHeight - 3);
 
         }, 39, 20);
     };

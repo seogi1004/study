@@ -1,6 +1,7 @@
 var Terrain = (function () {
+  var that;
     function Terrain(canvas, terrainImage, world, scale){
-
+        that = this;
         this.deformTerrainBatchList = [];
 
         this.world = world;
@@ -9,41 +10,25 @@ var Terrain = (function () {
         this.Offset = new b2Vec2(2300, 1300);
 
         this.drawingCanvas = canvas;
+        this.drawingCanvasContext = this.drawingCanvas.getContext("2d");
 
         this.TERRAIN_RECT_HEIGHT = 5;
 
-        this.bufferCanvas = document.createElement("canvas");
-        this.bufferCanvas.width = this.Offset.x + (terrainImage.width * 1.5);
-        this.bufferCanvas.height = this.Offset.y + (terrainImage.height * 1.5);
-        this.boundary = new TerrainBoundary(this.bufferCanvas.width + this.Offset.x, this.bufferCanvas.height + 100);
-        this.bufferCanvasContext = this.bufferCanvas.getContext('2d');
-        this.bufferCanvasContext.fillStyle = 'rgba(0,0,0,255)'; //Setup alpha colour for cutting out terrain
-        this.bufferCanvasContext.drawImage(
-            terrainImage,
-            this.Offset.x,
-            this.Offset.y,
-            this.bufferCanvas.width - this.Offset.x,
-            this.bufferCanvas.height - this.Offset.y
-        );
+      //Used for increased preformance. Its more effectent to draw one canvas onto another
+      //instead of a large pixel buffer array
+      this.bufferCanvas = document.createElement('canvas');
+      this.bufferCanvas.width = this.Offset.x+(terrainImage.width*1.5);
+      this.bufferCanvas.height =  this.Offset.y+(terrainImage.height*1.5);
+      this.boundary = new TerrainBoundary(this.bufferCanvas.width+this.Offset.x, this.bufferCanvas.height+100);
+      this.bufferCanvasContext = this.bufferCanvas.getContext('2d');
+      this.bufferCanvasContext.fillStyle = 'rgba(0,0,0,255)'; //Setup alpha colour for cutting out terrain
+      this.bufferCanvasContext.drawImage(terrainImage, this.Offset.x,  this.Offset.y, this.bufferCanvas.width-this.Offset.x, this.bufferCanvas.height-this.Offset.y);
 
-        this.terrainData = this.bufferCanvasContext.getImageData(
-            this.Offset.x,
-            this.Offset.y,
-            this.bufferCanvas.width - this.Offset.x,
-            this.bufferCanvas.clientHeight - this.Offset.y
-        );
-        this.createTerrainPhysics(
-            0,
-            0,
-            this.bufferCanvas.width - this.Offset.x,
-            this.bufferCanvas.height - this.Offset.y,
-            this.terrainData.data,
-            world,
-            scale
-        );
-        this.bufferCanvasContext.globalCompositeOperation = "destination-out";
+      this.terrainData = this.bufferCanvasContext.getImageData(this.Offset.x, this.Offset.y, this.bufferCanvas.width-this.Offset.x, this.bufferCanvas.height-this.Offset.y);
+      this.createTerrainPhysics(0, 0, this.bufferCanvas.width-this.Offset.x, this.bufferCanvas.height-this.Offset.y, this.terrainData.data, world, scale)
+      this.bufferCanvasContext.globalCompositeOperation = "destination-out"; // Used for cut out circles
 
-        this.wave = new Waves();
+      this.wave = new Waves();
     }
 
     Terrain.prototype.getWidth = function(){
@@ -55,56 +40,68 @@ var Terrain = (function () {
     }
 
     Terrain.prototype.createTerrainPhysics = function(x, y, width, height, data, world, worldScale){
-        this.x = Math.floor(x);
-        this.y = Math.floor(y);
+      x = Math.floor(x);
+      y = Math.floor(y);
 
-        this.width = width * 4;
-        this.height = height;
+      width = width * 4; // 4 becase of [r,g,b,a]
+      height = height;
 
-        var theAlphaByte = 3;
-        var rectWidth = 0;
-        var rectHeight = this.TERRAIN_RECT_HEIGHT;
-        var fixDef = new b2FixtureDef;
-        fixDef.density = 1.0;
-        fixDef.friction = 1.0;
-        fixDef.restitution = 0.0;
-        fixDef.shape = new b2PolygonShape;
+      var theAlphaByte = 3;
+      var rectWidth = 0;
+      var rectheight = this.TERRAIN_RECT_HEIGHT; // Every 5 lines is used instead of every px line
 
-        var bodyDef = new b2BodyDef;
-        bodyDef.type = b2Body.b2_staticBody;
+      var fixDef = new b2FixtureDef;
+      fixDef.density = 1.0;
+      fixDef.friction = 1.0;
+      fixDef.restitution = 0.0;
+      fixDef.shape = new b2PolygonShape;
 
-        var bodiesCreated = 0;
-        var makeBlock = function(){
-            fixDef.shape.SetAsBox((rectWidth / worldScale) / 2, (rectHeight / worldScale) / 2);
-            bodyDef.position.x = ((xPos / 4) - (rectWidth / 2)) / worldScale;
-            bodyDef.position.y = ((yPos - rectHeight)/ worldScale);
+      var bodyDef = new b2BodyDef;
+      bodyDef.type = b2Body.b2_staticBody;
 
-            var offset = Physics.vectorPixelToMeters(this.Offset);
-            bodyDef.position.x += offset.x;
-            bodyDef.position.y += offset.y;
+      var bodiesCreated = 0;
 
-            var b = world.CreateBody(bodyDef).CreateFixture(fixDef).GetBody();
-            b.SetUserData(this);
-        }
+      // Used to create a single rect out of a series of consecnative solid
+      var makeBlock = function () {
+        fixDef.shape.SetAsBox((rectWidth / worldScale) / 2, (rectheight / worldScale) / 2);
+        bodyDef.position.x = ((xPos / 4) - (rectWidth / 2)) / worldScale;
+        bodyDef.position.y = ((yPos - rectheight) / worldScale);
 
-        for (var yPos = y; yPos <= height; yPos += rectHeight)
+        var offset = Physics.vectorPixelToMeters(that.Offset);
+        bodyDef.position.x += offset.x;
+        bodyDef.position.y += offset.y;
+
+        var b = world.CreateBody(bodyDef).CreateFixture(fixDef).GetBody();
+        b.SetUserData(that);
+      }
+
+      //Loops though the image pixel data, looking
+      // for constecative NON-alpha pixels. To create the physical blocks out of
+      for (var yPos = y; yPos <= height; yPos += rectheight)
+      {
+        rectWidth = 0;
+        for (var xPos = x; xPos <= width; xPos += 4)
         {
-            rectWidth = 0;
-            for (var xPos = x; xPos <= width; xPos += 4) {
-                if (data[xPos + (yPos * width) + theAlphaByte] == 255) {
-                    rectWidth++;
-                    if (rectWidth >= this.drawingCanvas.width) {
-                        makeBlock();
-                        rectWidth = 0; //reset rect
-                    }
-                } else if (rectWidth > 1) {
-                    makeBlock();
-                    bodiesCreated++;
-                    rectWidth = 0; //reset rect
-                }
+          if (data[xPos + (yPos * width) + theAlphaByte] == 255) //if not alpha pixel
+          {
+            rectWidth++;
+            //Check if the box spans the full width of the image.
+            if (rectWidth >= this.drawingCanvas.width)
+            {
+              // if so make the box and reset for the next line
+              makeBlock();
+              rectWidth = 0; //reset rect
             }
+          }
+          else if (rectWidth > 1)
+          {
+            makeBlock();
+            bodiesCreated++;
+            rectWidth = 0; //reset rect
+          }
         }
-        console.log("Current body count " + bodiesCreated);
+      }
+      Logger.log("Current body count " + bodiesCreated);
     }
     //Adds this deform position to the list so that the deforms
     //can be batched at the end of the update loop
@@ -146,7 +143,7 @@ var Terrain = (function () {
             Physics.world.QueryAABB(function (fixture){
                 if (fixture.GetBody().GetType() == b2Body.b2_staticBody && fixture.GetBody().GetUserData() instanceof Terrain)
                 {
-                    this.world.DestroyBody(fixture.GetBody());
+                  that.world.DestroyBody(fixture.GetBody());
                 }
                 return true;
             }, aabb);
@@ -159,7 +156,7 @@ var Terrain = (function () {
         this.deformTerrainBatchList = [];
     };
     Terrain.prototype.update = function () {
-        if (this.deformTerrainBatchList.length > 0) {
+      if (this.deformTerrainBatchList.length > 0) {
             this.deformRegionBatch();
         }
         this.wave.update();

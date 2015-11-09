@@ -1,8 +1,6 @@
 var Sprite = (function () {
     function Sprite(spriteDef, noLoop) {
-        if (noLoop === void 0) {
             noLoop = false;
-        }
         //Defualts to moving forward though the sprite
         //though can be used to move back though the sprite
         this.frameIncremeter = 1;
@@ -20,7 +18,7 @@ var Sprite = (function () {
                 this.accumulateDelta = 0;
                 this.currentFrameY += this.frameIncremeter;
                 if (this.currentFrameY >= this.spriteDef.frameCount) {
-                    // If aniamtion is not meant to loop 
+                    // If aniamtion is not meant to loop
                     if (this.noLoop) {
                         this.finished = true;
                         if (this.onFinishFunc != null) {
@@ -82,12 +80,8 @@ var Sprite = (function () {
             this.onFinishFunc = func;
     };
     Sprite.prototype.setSpriteDef = function (spriteDef, lockSprite, noLoop) {
-        if (lockSprite === void 0) {
-            lockSprite = false;
-        }
-        if (noLoop === void 0) {
-            noLoop = false;
-        }
+          lockSprite = true;
+          noLoop = false;
         if (spriteDef != this.spriteDef) {
             if (this.isSpriteLocked == false) {
                 this.noLoop = noLoop;

@@ -1,5 +1,7 @@
 var ForceIndicator = (function () {
+  var that;
     function ForceIndicator(maxForceForWeapon) {
+      that = this;
         this.forceMax = maxForceForWeapon; // Max force at which worms can throw
         this.forcePercentage = 1;
         this.sprite = new Sprite(Sprites.particleEffects.blob);
@@ -15,8 +17,8 @@ var ForceIndicator = (function () {
         if (this.isCharging() && this.isRequired()) {
             if (this.needReRender) {
                 this.renderCanvas = Graphics.preRenderer.render(function (context) {
-                    this.sprite.draw(context, 0, (this.forcePercentage / 100) * 100);
-                    this.needReRender = false;
+                  that.sprite.draw(context, 0, (that.forcePercentage / 100) * 100);
+                  that.needReRender = false;
                 }, this.sprite.getFrameWidth(), 200, this.renderCanvas);
             }
 
@@ -68,5 +70,4 @@ var ForceIndicator = (function () {
         return (this.forcePercentage / 100) * this.forceMax;
     };
     return ForceIndicator;
-})
-();
+})();

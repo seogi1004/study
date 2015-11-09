@@ -1,8 +1,9 @@
 var Player = (function () {
+  var that;
     function Player(playerId) {
-        //if (playerId === void 0) {
+      that = this;
             playerId = Utilies.pickUnqine([1, 2, 3, 4], "playerids");
-        //}
+      console.log(playerId);
         this.id = playerId;
         this.team = new Team(playerId);
 
@@ -10,14 +11,14 @@ var Player = (function () {
         $(window).keyup(function (e) {
             // Dectects keyup on fire button
             if (e.which == Controls.fire.keyboard) {
-                var wormWeapon = this.team.getCurrentWorm().getWeapon();
+                var wormWeapon = that.team.getCurrentWorm().getWeapon();
 
                 // If the weapon in use is a force charge sytle weapon we will fire otherwise do nothing
-                if (wormWeapon.getForceIndicator().isRequired() && wormWeapon.getForceIndicator().getForce() > 1 && wormWeapon.getIsActive() == false) {
-                    this.team.getCurrentWorm().fire();
+                //if (wormWeapon.getForceIndicator().isRequired() && wormWeapon.getForceIndicator().getForce() > 1 && wormWeapon.getIsActive() == false) {
+              that.team.getCurrentWorm().fire();
                     Client.sendImmediately(Events.client.CURRENT_WORM_ACTION, new InstructionChain("fire"));
                     GameInstance.weaponMenu.refresh();
-                }
+                //}
             }
         });
         this.timer = new Timer(10);
@@ -58,7 +59,7 @@ var Player = (function () {
         this.gamePad.update();
         var onlineSpefic = Client.isClientsTurn();
         if (onlineSpefic && GameInstance.state.getCurrentPlayer() == this && GameInstance.state.hasNextTurnBeenTiggered() == false) {
-            //Player controls 
+            //Player controls
             if (keyboard.isKeyDown(Controls.jump.keyboard, true) ||
                 this.gamePad.isButtonPressed(0) ||
                 TouchUI.isJumpDown(true)) {
@@ -119,7 +120,7 @@ var Player = (function () {
             }
         }
         //Finds the worm traveling at the highest velocity and if its over a therosold
-        // the camera will then pan to the position of that worm. 
+        // the camera will then pan to the position of that worm.
         // So when their is an explosion it gives the player somthing interesting and fun to look at
         var fastestWorm = GameInstance.wormManager.findFastestMovingWorm();
         if (GameInstance.state.physicsWorldSettled && fastestWorm != null && fastestWorm.body.GetLinearVelocity().Length() > 3) {

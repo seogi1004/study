@@ -143,11 +143,11 @@ var Utilies;
 
     Utilies.pickUnqine = pickUnqine;
     function pickRandomSound(collection) {
-        var sound = AssetManager.getSound(collection[random(0, collection.length - 1)]);
+        /*var sound = AssetManager.getSound(collection[random(0, collection.length - 1)]);
         if (!sound.play) {
             Logger.warn(" Somthing looks dogoy with the sound object " + sound);
         }
-        return sound;
+        return sound;*/
     }
 
     Utilies.pickRandomSound = pickRandomSound;
