@@ -4,9 +4,9 @@ var Effects;
         if (entityThatCausedExplosion === void 0) {
             entityThatCausedExplosion = null;
         }
-        if (soundEffectToPlay === void 0) {
+        /*if (soundEffectToPlay === void 0) {
             soundEffectToPlay = AssetManager.getSound("explosion" + Utilies.random(1, 3));
-        }
+        }*/
         if (particleEffectType === void 0) {
             particleEffectType = ParticleEffect;
         }
@@ -51,8 +51,8 @@ var Effects;
 
         var particleAnimation = new particleEffectType(posX, posY);
         GameInstance.particleEffectMgmt.add(particleAnimation);
-        if (soundEffectToPlay != null)
-            soundEffectToPlay.play();
+        /*if (soundEffectToPlay != null)
+            soundEffectToPlay.play();*/
         return particleAnimation;
     }
 

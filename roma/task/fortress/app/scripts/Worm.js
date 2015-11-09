@@ -299,7 +299,7 @@ var Worm = (function (_super) {
                     //AssetManager.getSound("traitor").play(0.8, 10);
                 }
                 else if (worm) {
-                    Utilies.pickRandomSound(["justyouwait", "youllregretthat"]).play(0.8, 10);
+                    //Utilies.pickRandomSound(["justyouwait", "youllregretthat"]).play(0.8, 10);
                 }
             }
         }
@@ -309,7 +309,7 @@ var Worm = (function (_super) {
     // over their head and panning the camera toward him.
     Worm.prototype.activeWorm = function () {
         //This makes no sence, but it works.
-        //if (GameInstance.gameType == Game.types.LOCAL_GAME || !Client.isClientsTurn())
+        if (GameInstance.gameType == Game.types.LOCAL_GAME || !Client.isClientsTurn())
         {
             var pos = Physics.vectorMetersToPixels(this.body.GetPosition());
             this.arrow = new BounceArrow(pos);

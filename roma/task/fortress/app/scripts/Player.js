@@ -14,11 +14,11 @@ var Player = (function () {
                 var wormWeapon = that.team.getCurrentWorm().getWeapon();
 
                 // If the weapon in use is a force charge sytle weapon we will fire otherwise do nothing
-                //if (wormWeapon.getForceIndicator().isRequired() && wormWeapon.getForceIndicator().getForce() > 1 && wormWeapon.getIsActive() == false) {
-              that.team.getCurrentWorm().fire();
+                if (wormWeapon.getForceIndicator().isRequired() && wormWeapon.getForceIndicator().getForce() > 1 && wormWeapon.getIsActive() == false) {
+                    that.team.getCurrentWorm().fire();
                     Client.sendImmediately(Events.client.CURRENT_WORM_ACTION, new InstructionChain("fire"));
                     GameInstance.weaponMenu.refresh();
-                //}
+                }
             }
         });
         this.timer = new Timer(10);

@@ -79,10 +79,10 @@ var WeaponsMenu = (function () {
         $("#" + this.cssId + " li").click(function () {
             var weaponId = parseInt($(this).attr('id'));
             if (weaponId == -1) {
-                AssetManager.getSound("cantclickhere").play();
+                //AssetManager.getSound("cantclickhere").play();d
                 return;
             }
-            AssetManager.getSound("CursorSelect").play();
+            //AssetManager.getSound("CursorSelect").play();
             _this.selectWeapon(weaponId);
             _this.toggle();
         });

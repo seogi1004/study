@@ -95,7 +95,7 @@ var JetPack = (function (_super) {
                 Client.sendImmediately(Events.client.CURRENT_WORM_ACTION, new InstructionChain("getWeapon.right"));
             }
             if (this.forceDir.Length() > 0) {
-                Utilies.pickRandomSound(["JetPackLoop1", "JetPackLoop2"]).play();
+                //Utilies.pickRandomSound(["JetPackLoop1", "JetPackLoop2"]).play();
                 this.fuel -= 0.09;
                 this.forceDir.Multiply(this.thurstScaler);
                 this.worm.body.ApplyImpulse(this.forceDir, this.worm.body.GetWorldCenter());

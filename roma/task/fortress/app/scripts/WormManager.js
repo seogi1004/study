@@ -22,7 +22,7 @@ var WormManager = (function () {
     };
     // are all the worms completely finished, animations, health reduction, actions etc.
     WormManager.prototype.areAllWormsReadyForNextTurn = function () {
-        return WormAnimationManger.playerAttentionSemaphore == 0 && this.areAllWormsStationary() && this.areAllWormsDamageTaken() && this.areAllWeaponsDeactived();
+        return WormAnimationManager.playerAttentionSemaphore == 0 && this.areAllWormsStationary() && this.areAllWormsDamageTaken() && this.areAllWeaponsDeactived();
     };
     // Are all the worms stop, not moving at all. 
     WormManager.prototype.areAllWormsStationary = function () {

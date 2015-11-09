@@ -8,7 +8,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     };
 var Shotgun = (function (_super) {
     __extends(Shotgun, _super);
+    var that;
     function Shotgun(ammo) {
+        that = this;
         _super.call(this, "Shotgun", ammo, Sprites.weaponIcons.shotgun, Sprites.worms.shotgunTakeOut, Sprites.worms.aimingShotgun);
         //Collection of three sprite sheets which
         // we will switch between to create the fire animation
@@ -28,12 +30,12 @@ var Shotgun = (function (_super) {
             _super.prototype.activate.call(this, worm);
             this.animationSheetChangeTimer.reset();
             this.fireAnimationIndex = 0;
-            AssetManager.getSound("SHOTGUNRELOAD").play(1, 0.3);
+            //AssetManager.getSound("SHOTGUNRELOAD").play(1, 0.3);
             this.shotsTaken++;
         }
     };
     Shotgun.prototype.update = function () {
-        if (_super.update()) {
+        if (_super.prototype.update.call(this)) {
             this.animationSheetChangeTimer.update();
             if (this.animationSheetChangeTimer.hasTimePeriodPassed()) {
                 this.worm.swapSpriteSheet(this.fireAnimations[this.fireAnimationIndex]);
@@ -47,19 +49,20 @@ var Shotgun = (function (_super) {
                         1,
                         this.forceScaler,
                         this.damgeToWorm,
-                        this.worm,
-                        AssetManager.getSound("ShotGunFire"));
+                        this.worm);
+
+                        //AssetManager.getSound("ShotGunFire"));
                 } else {
                     //Even if we miss the shot make a sound
-                    AssetManager.getSound("ShotGunFire").play();
+                    //AssetManager.getSound("ShotGunFire").play();
                 }
                 this.animationSheetChangeTimer.pause();
                 this.fireAnimationIndex = 0;
                 setTimeout(function () {
-                    this.setIsActive(false);
-                    this.worm.swapSpriteSheet(this.fireAnimations[this.fireAnimationIndex]);
-                    if (this.shotsTaken >= 2) {
-                        this.shotsTaken = 0;
+                    that.setIsActive(false);
+                    that.worm.swapSpriteSheet(that.fireAnimations[this.fireAnimationIndex]);
+                    if (that.shotsTaken >= 2) {
+                        that.shotsTaken = 0;
                         GameInstance.state.tiggerNextTurn();
                     }
                 }, 400);
@@ -67,5 +70,4 @@ var Shotgun = (function (_super) {
         }
     };
     return Shotgun;
-})
-(RayWeapon);
+})(RayWeapon);

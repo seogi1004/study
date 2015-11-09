@@ -23,7 +23,7 @@ var ThrowableWeapon = (function (_super) {
         //hit damage at center
         this.maxDamage = 30;
         // Counter till bomb explodes
-        this.detonationTimer = new Timer(5000);
+        this.detonationTimer = new Timer(2000);
         //To stop the large amount of edges in the
         // terrain of causing the bound sound been played to many times
         this.hasImpacted = 0;

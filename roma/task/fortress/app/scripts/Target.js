@@ -24,11 +24,11 @@ var Target = (function (_super) {
             var targetDir = this.targetDirection.Copy();
             targetDir.Multiply(95);
             targetDir.Add(wormPos);
-            //ctx.beginPath(); // Start the path
-            //ctx.moveTo(wormPos.x, wormPos.y); // Set the path origin
-            //ctx.lineTo(targetDir.x, targetDir.y); // Set the path destination
-            //ctx.closePath(); // Close the path
-            //ctx.stroke();
+            ctx.beginPath(); // Start the path
+            ctx.moveTo(wormPos.x, wormPos.y); // Set the path origin
+            ctx.lineTo(targetDir.x, targetDir.y); // Set the path destination
+            ctx.closePath(); // Close the path
+            ctx.stroke();
             _super.prototype.draw.call(this, ctx, targetDir.x - radius, targetDir.y - (radius * 2));
         }
     };
