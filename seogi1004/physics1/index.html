@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<link href="lib/jui.min.css" rel="stylesheet" />
+<link href="lib/jennifer.theme.min.css" rel="stylesheet" />
+<script src="lib/jui.min.js"></script>
+<script>
+    var chart = null;
+
+    jui.define("chart.brush.template", [], function() {
+        var Template = function() {
+            this.draw = function() {
+                var g = this.chart.svg.group();
+
+                this.eachData(function(i, data) {
+                    var x = this.axis.x(data.t),
+                            y = this.axis.y(data.s);
+
+                    g.append(this.chart.svg.circle({
+                        fill: this.color(0),
+                        r: 1,
+                        cx: x,
+                        cy: y
+                    }));
+                });
+
+                return g;
+            }
+        }
+
+        return Template;
+    }, "chart.brush.core");
+
+    jui.define("physics.frame", [ "chart.builder" ], function(Builder) {
+        var chart = null,
+            previousTime = 0,
+            currentTime = 0,
+            runningTime = 0;
+
+        var frame = function(options, callback) {
+            // 러닝타임이 종료 되었을 때
+            if(runningTime > options.timeout) {
+                previousTime = 0;
+                currentTime = 0;
+                runningTime = 0;
+
+                return;
+            }
+
+            // 처음 시작되었을 때
+            if(currentTime == 0) {
+                previousTime = new Date().getTime();
+
+                if (chart == null) {
+                    chart = Builder("#chart", {
+                        padding: options.padding,
+                        width: options.width,
+                        height: options.height,
+                        axis: [{
+                            x: {
+                                type: "range",
+                                domain: [0, options.timeout],
+                                step: 10,
+                                line: "solid",
+                                format: function (d) {
+                                    return (d / 1000) + "s";
+                                }
+                            },
+                            y: {
+                                type: "range",
+                                domain: [0, options.distance],
+                                step: 10,
+                                line: "solid",
+                                format: function (d) {
+                                    return (d / 1000) + "km";
+                                }
+                            }
+                        }],
+                        brush: [{
+                            type: "template"
+                        }],
+                        style: {
+                            gridXAxisBorderWidth: 1,
+                            gridYAxisBorderWidth: 1,
+                            gridTickBorderSize: 0,
+                            gridXFontSize: 9,
+                            gridYFontSize: 9
+                        }
+                    });
+                }
+            }
+
+            // 현재 시간 설정
+            currentTime = new Date().getTime();
+
+            requestAnimationFrame(function() {
+                var tpf = currentTime - previousTime,
+                    data = callback(runningTime, 1000 / tpf);
+
+                chart.axis(0).update(data);
+                previousTime = currentTime;
+                runningTime += tpf;
+
+                frame(options, callback);
+            });
+        }
+
+        return frame;
+    });
+
+    function run() {
+        var Frame = jui.include("physics.frame");
+
+        var frames = [],
+            dis = 0,
+            acc = 0,
+            v = parseInt($("#velocity").val());
+
+        Frame({
+            padding: 50,
+            width: 770,
+            height: 400,
+            distance: parseInt($("#distance").val()),
+            timeout: parseInt($("#timeout").val()) * 1000
+        }, function(runtime, fps) {
+            var t = 1 / fps;
+
+            // 50m/s^2 가속도
+            acc += (parseInt($("#accelerator").val()) * t);
+
+            // 가속도 대입
+            dis += (v + acc) * t;
+
+            frames.push({
+                t: runtime,
+                s: dis
+            });
+
+            return frames;
+        });
+
+        $("#panel").removeClass("close");
+    }
+</script>
+</head>
+
+<body class="jui">
+    <div id="panel" class="panel close">
+        <div class="head">
+            <button class="btn small" onclick="run();">시작</button>&nbsp;
+
+            <div class="group">
+                <div class="label small">길이(미터)</div>
+                <input id="distance" class="input small" type="number" value="1000" step="1000" min="1000" max="10000" style="width: 70px;" />
+            </div>
+
+            <div class="group">
+                <div class="label small">시간(초)</div>
+                <input id="timeout" class="input small" type="number" value="10" step="1" min="1" max="10" style="width: 70px;" />
+            </div>
+
+            <div class="group">
+                <div class="label small">속도(미터/초)</div>
+                <input id="velocity" class="input small" type="number" value="100" step="100" min="100" max="1000" style="width: 70px;" />
+            </div>
+
+            <div class="group">
+                <div class="label small">가속도(미터/초^2)</div>
+                <input id="accelerator" class="input small" type="number" value="10" step="10" max="500" style="width: 70px;" />
+            </div>
+        </div>
+        <div class="body fit">
+            <div id="chart"></div>
+        </div>
+    </div>
+
+</body>
+</html>
