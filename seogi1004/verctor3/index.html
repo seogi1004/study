@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="jui.chart.min.js"></script>
+<script>
+var RANGE = [ -10, 10 ],
+    SIZE = 10,
+    BG_COLOR = "#00ba60",
+    BG_OPACITY = 0.3,
+    BR_COLOR = "#00ba60",
+    BR_OPACITY = 1,
+    FONT_SIZE = 13,
+    FONT_COLOR = "#ffffff",
+    LINE_COLOR = "#ffffff";
+
+var NAMES = {
+    "A": 4,
+    "B": 7,
+    "C": 6,
+    "D": 5,
+    "E": 0,
+    "F": 3,
+    "G": 2,
+    "H": 1
+};
+
+var DATA = [];
+DATA[NAMES["A"]] = { name: "A", vectors: [] };
+DATA[NAMES["B"]] = { name: "B", vectors: [ NAMES["A"], NAMES["C"] ] };
+DATA[NAMES["C"]] = { name: "C", vectors: [] };
+DATA[NAMES["D"]] = { name: "D", vectors: [] };
+DATA[NAMES["E"]] = { name: "E", vectors: [] };
+DATA[NAMES["F"]] = { name: "F", vectors: [ NAMES["E"], NAMES["G"] ] };
+DATA[NAMES["G"]] = { name: "G", vectors: [] };
+DATA[NAMES["H"]] = { name: "H", vectors: [] };
+
+var OPERATORS = [
+    { type: "+", start: NAMES["B"], a: "BA", b: "BC", color: "red" },
+    { type: "*", start: NAMES["F"], a: "FG", b: "FE", color: "blue" },
+];
+
+jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
+        function(_, ColorUtil, CubePolygon, PointPolygon, Vector) {
+
+    var Vector3DBrush = function() {
+        var g, vectors = {};
+
+        this.drawCube = function(p) {
+            for(var i = 0; i < p.faces.length; i++) {
+                var key = p.faces[i];
+
+                var face = this.svg.polygon({
+                    fill: BG_COLOR,
+                    "fill-opacity": BG_OPACITY,
+                    stroke: BR_COLOR,
+                    "stroke-opacity": BR_OPACITY
+                });
+
+                for(var j = 0; j < key.length; j++) {
+                    var vector = p.vectors[key[j]];
+                    face.point(vector.x, vector.y);
+                }
+
+                g.append(face);
+            }
+        }
+
+        this.drawTexts = function(p) {
+            for(var i = 0; i < p.vectors.length; i++) {
+                var text = this.chart.text({
+                    "font-size": FONT_SIZE,
+                    "text-anchor": "middle",
+                    fill: FONT_COLOR,
+                    x: -10
+                });
+
+                text.text(DATA[i].name);
+                text.translate(p.vectors[i].x, p.vectors[i].y);
+
+                g.append(text);
+            }
+        }
+
+        this.drawMarker = function(id, color) {
+            var marker = this.svg.marker({
+                id: id,
+                markerWidth: "13",
+                markerHeight: "13",
+                refX: 9,
+                refY: 6,
+                orient: "auto"
+            });
+
+            var path = this.svg.path({
+                fill: color
+            })
+            .MoveTo(2, 2)
+            .LineTo(2, 11)
+            .LineTo(10, 6)
+            .LineTo(2, 2);
+
+            marker.append(path);
+            this.chart.appendDefs(marker);
+        }
+
+        this.drawVectors = function(p) {
+            for(var i = 0; i < p.vectors.length; i++) {
+                var data = DATA[i],
+                    vector = p.vectors[i];
+
+                for(var j = 0; j < data.vectors.length; j++) {
+                    var targetIndex = data.vectors[j],
+                        targetData = DATA[targetIndex],
+                        targetVector = p.vectors[targetIndex];
+
+                    // 새로운 벡터 데이터 만들기
+                    var newKey = data.name + targetData.name,
+                        newVector = new Vector(targetVector.x - vector.x, targetVector.y - vector.y, targetVector.z - vector.z);
+
+                    vectors[newKey] = {
+                        name: newKey,
+                        vector: newVector
+                    };
+
+                    var line = this.svg.line({
+                        "marker-end": "url(#arrow)",
+                        stroke: LINE_COLOR,
+                        "stroke-width": 1,
+                        "stroke-dasharray": "3,3",
+                        x1: vector.x,
+                        y1: vector.y,
+                        x2: targetVector.x,
+                        y2: targetVector.y
+                    });
+
+                    g.append(line);
+                }
+            }
+        }
+
+        this.drawNewVector = function(cmd, startVector, newVector) {
+            var uuid = _.createId("arrow");
+
+            this.drawMarker(uuid, cmd.color);
+
+            var line = this.svg.line({
+                "marker-end": "url(#" + uuid + ")",
+                stroke: cmd.color,
+                "stroke-width": 1,
+                x1: startVector.x,
+                y1: startVector.y,
+                x2: startVector.x + newVector.x,
+                y2: startVector.y + newVector.y
+            });
+
+            var text = this.chart.text({
+                "font-size": FONT_SIZE,
+                "text-anchor": "middle",
+                fill: cmd.color,
+                x: -10
+            });
+
+            text.text(cmd.a + cmd.type + cmd.b);
+            text.translate(startVector.x + newVector.x/2, startVector.y + newVector.y/2);
+
+            g.append(line);
+            g.append(text);
+        }
+
+        this.drawOperators = function(p) {
+            for(var i = 0; i < OPERATORS.length; i++) {
+                var cmd = OPERATORS[i],
+                    startVector = p.vectors[cmd.start],
+                    aVector = vectors[cmd.a].vector,
+                    bVector = vectors[cmd.b].vector,
+                    newVector = null;
+
+                if(cmd.type == "+") { // 덧셈
+                    newVector = aVector.add(bVector);
+                } else if(cmd.type == "-") { // 뺄셈
+                    newVector = aVector.subtract(bVector);
+                } else if(cmd.type == "*") { // 외적
+                    newVector = aVector.crossProduct(bVector);
+                }
+
+                this.drawNewVector(cmd, startVector, newVector);
+            }
+        }
+
+        this.drawBefore = function() {
+            g = this.svg.group();
+        }
+
+        this.draw = function() {
+            var x = this.axis.x(-SIZE/2),
+                y = this.axis.y(-SIZE/2),
+                z = this.axis.z(-SIZE/2),
+                w = this.axis.x(SIZE/2) - x,
+                h = this.axis.y(SIZE/2) - y,
+                d = this.axis.z(SIZE/2) - z,
+                p = new CubePolygon(x, y, z, w, h, d);
+
+            // 3D 좌표 계산
+            this.calculate3d(p);
+
+            // 각각의 요소 그리기
+            this.drawMarker("arrow", LINE_COLOR);
+            this.drawCube(p);
+            this.drawTexts(p);
+            this.drawVectors(p);
+
+            // 벡터 연산 그리기
+            this.drawOperators(p);
+
+            return g;
+        }
+    }
+
+    return Vector3DBrush;
+
+}, "chart.brush.core");
+
+jui.ready([ "chart.builder" ], function(builder) {
+    var chart = builder("#chart", {
+        theme: "dark",
+        padding: 100,
+        width: 600,
+        height: 600,
+        axis: [{
+            x: {
+                type: "range",
+                domain: RANGE,
+                step: 4,
+                hide: true
+            },
+            y: {
+                type: "range",
+                domain: RANGE,
+                step: 4,
+                hide: true
+            },
+            z: {
+                type: "range",
+                domain: RANGE,
+                step: 4,
+                reverse: true,
+                hide: true
+            },
+            degree: {
+                x: 30,
+                y: 30
+            },
+            depth: 400,
+            perspective: 1,
+            data: DATA
+        }],
+        brush: {
+            type: "vector3d"
+        },
+        widget: {
+            type: "polygon.rotate"
+        }
+    });
+});
+</script>
+</head>
+
+<body>
+<div id="chart"></div>
+</body>
+</html>
