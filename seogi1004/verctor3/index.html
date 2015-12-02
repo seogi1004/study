@@ -2,8 +2,10 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="stylesheet" href="dist/jui.css" />
+<link rel="stylesheet" href="dist/jennifer.theme.css" />
 <script src="../lib/jquery-1.8.0.min.js"></script>
-<script src="jui.chart.min.js"></script>
+<script src="dist/jui.min.js"></script>
 <script>
 var RANGE = [ -10, 10 ],
     SIZE = 10,
@@ -28,17 +30,17 @@ var NAMES = {
 
 var DATA = [];
 DATA[NAMES["A"]] = { name: "A", vectors: [] };
-DATA[NAMES["B"]] = { name: "B", vectors: [ NAMES["A"], NAMES["C"] ] };
+DATA[NAMES["B"]] = { name: "B", vectors: [] };
 DATA[NAMES["C"]] = { name: "C", vectors: [] };
 DATA[NAMES["D"]] = { name: "D", vectors: [] };
 DATA[NAMES["E"]] = { name: "E", vectors: [] };
-DATA[NAMES["F"]] = { name: "F", vectors: [ NAMES["E"], NAMES["G"] ] };
+DATA[NAMES["F"]] = { name: "F", vectors: [] };
 DATA[NAMES["G"]] = { name: "G", vectors: [] };
 DATA[NAMES["H"]] = { name: "H", vectors: [] };
 
 var OPERATORS = [
-    { type: "+", start: NAMES["B"], a: "BA", b: "BC", color: "red" },
-    { type: "*", start: NAMES["F"], a: "FG", b: "FE", color: "blue" },
+    //{ type: "+", start: NAMES["B"], a: "BA", b: "BC", color: "red" },
+    //{ type: "*", start: NAMES["F"], a: "FG", b: "FE", color: "blue" },
 ];
 
 jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
@@ -222,7 +224,9 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
 
 }, "chart.brush.core");
 
-jui.ready([ "chart.builder" ], function(builder) {
+jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button" ],
+        function(_, builder, win, combo, table, button) {
+
     var chart = builder("#chart", {
         theme: "dark",
         padding: 100,
@@ -263,11 +267,308 @@ jui.ready([ "chart.builder" ], function(builder) {
             type: "polygon.rotate"
         }
     });
+
+    window.select_vertex = button("#select_vertex", {
+        type: "radio",
+        event: {
+            change: function(data) {
+                reloadTable();
+            }
+        }
+    });
+
+    window.select_operator = button("#select_operator", {
+        type: "radio"
+    });
+
+    var target_vertex = combo("#target_vertex");
+    var start_vertex = combo("#start_vertex");
+
+    var start_vector = combo("#start_vector");
+    var end_vector = combo("#end_vector");
+    var tpl_vector_func = _.template($("#tpl_combo_vectors").html());
+
+    window.win_add = win("#win_add", {
+        width: 500,
+        height: 400,
+        modal: true
+    });
+
+    window.win_calc = win("#win_calc", {
+        width: 500,
+        height: 400,
+        modal: true
+    });
+
+    window.v_table = table("#vectors", {
+        fields: [ "key", null ],
+        scroll: true,
+        scrollHeight: 170,
+        tpl: {
+            row: $("#tpl_row").html(),
+            none: $("#tpl_none").html()
+        }
+    });
+
+    $("#btn_add").on("click", function(e) {
+        win_add.show();
+    });
+
+    $("#btn_calc").on("click", function(e) {
+        win_calc.show();
+
+        $(start_vector.root).find("ul").html(tpl_vector_func());
+        $(end_vector.root).find("ul").html(tpl_vector_func());
+
+        start_vector.reload();
+        end_vector.reload();
+    });
+
+    $("#btn_connect").on("click", function(e) {
+        var btn = select_vertex.getValue(),
+            combo = target_vertex.getValue();
+
+        if(btn == combo) {
+            alert("동일한 값은 추가할 수 없습니다.");
+        } else {
+            var list = DATA[NAMES[btn]].vectors;
+
+            if($.inArray(NAMES[combo], list) == -1) {
+                list.push(NAMES[combo]);
+                v_table.append({ key: combo, value: NAMES[combo] });
+            } else {
+                alert("이미 추가된 값입니다.");
+            }
+        }
+    });
+
+    $("#btn_render").on("click", function(e) {
+        chart.axis(0).update(DATA);
+    });
 });
+
+function reloadTable() {
+    var btn = select_vertex.getValue(),
+        vectors = DATA[NAMES[btn]].vectors,
+        data = [];
+
+    for(var i = 0; i < vectors.length; i++) {
+        for(var key in NAMES) {
+            if(NAMES[key] == vectors[i]) {
+                data.push({
+                    key: key,
+                    value: vectors[i]
+                });
+            }
+        }
+    }
+
+    v_table.update(data);
+}
+
+function removeTable(value) {
+    var btn = select_vertex.getValue(),
+        vectors = DATA[NAMES[btn]].vectors,
+        data = [];
+
+    for(var i = 0; i < vectors.length; i++) {
+        if(vectors[i] != value) {
+            data.push(vectors[i]);
+        }
+    }
+
+    DATA[NAMES[btn]].vectors = data;
+    reloadTable();
+}
+
+function getVectors() {
+    var keys = [];
+
+    for(var i = 0; i < DATA.length; i++) {
+        for(var j = 0; j < DATA[i].vectors.length; j++) {
+            keys.push(DATA[i].name + getValueToKey(DATA[i].vectors[j]));
+        }
+    }
+
+    return keys;
+}
+
+function getValueToKey(value) {
+    for(var key in NAMES) {
+        if(value == NAMES[key]) {
+            return key;
+        }
+    }
+}
 </script>
 </head>
 
-<body>
-<div id="chart"></div>
+<body class="jui">
+<div class="panel" style="width: 602px;">
+    <div class="head">
+        <div class="row">
+            <div class="col col-6">
+                <button id="btn_add" class="btn small">벡터 추가</button>
+                <button id="btn_calc" class="btn small">벡터 연산</button>
+            </div>
+            <div class="col col-6" align="right">
+                <button id="btn_render" class="btn small focus">그리기</button>
+            </div>
+        </div>
+    </div>
+    <div class="body fit">
+        <div id="chart"></div>
+    </div>
+</div>
+
+<div id="win_add" class="window">
+    <div class="head">
+        <div class="left">벡터 추가</div>
+        <div class="right">
+            <a href="#" class="close"><i class="icon-exit"></i></a>
+        </div>
+    </div>
+    <div class="body">
+        <div class="row">
+            <span>꼭지점</span>
+            <div id="select_vertex" class="group">
+                <a class="btn mini" value="A">A</a>
+                <a class="btn mini" value="B">B</a>
+                <a class="btn mini" value="C">C</a>
+                <a class="btn mini" value="D">D</a>
+                <a class="btn mini" value="E">E</a>
+                <a class="btn mini" value="F">F</a>
+                <a class="btn mini" value="G">G</a>
+                <a class="btn mini" value="H">H</a>
+            </div>
+        </div>
+
+        <div class="hr" style="margin-top: 10px;"></div>
+
+        <div class="row" style="margin: 10px 0px 5px 0px; text-align: right;">
+            <span>연결할 꼭지점</span>
+            <div id="target_vertex" class="combo">
+                <a class="btn small">...</a>
+                <ul>
+                    <li><a value="A">A</a></li>
+                    <li><a value="B">B</a></li>
+                    <li><a value="C">C</a></li>
+                    <li><a value="D">D</a></li>
+                    <li><a value="E">E</a></li>
+                    <li><a value="F">F</a></li>
+                    <li><a value="G">G</a></li>
+                    <li><a value="H">H</a></li>
+                </ul>
+                <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+            </div>
+            &nbsp;&nbsp;
+
+            <button id="btn_connect" class="btn small">추가</button>
+        </div>
+
+        <table id="vectors" class="table simple mini headline">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th width="50px">삭제</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="win_calc" class="window">
+    <div class="head">
+        <div class="left">벡터 연산</div>
+        <div class="right">
+            <a href="#" class="close"><i class="icon-exit"></i></a>
+        </div>
+    </div>
+    <div class="body">
+        <div class="row">
+            <span>연산자</span>
+            <div id="select_operator" class="group">
+                <a class="btn mini" value="+">+</a>
+                <a class="btn mini" value="-">-</a>
+                <a class="btn mini" value="*">*</a>
+            </div>
+        </div>
+
+        <div class="hr" style="margin-top: 10px;"></div>
+
+        <div class="row" style="margin: 10px 0px 5px 0px;">
+            <div class="col col-10">
+                <span>시작 꼭지점</span>
+                <div id="start_vertex" class="combo">
+                    <a class="btn small">Select...</a>
+                    <ul>
+                        <li><a value="A">A</a></li>
+                        <li><a value="B">B</a></li>
+                        <li><a value="C">C</a></li>
+                        <li><a value="D">D</a></li>
+                        <li><a value="E">E</a></li>
+                        <li><a value="F">F</a></li>
+                        <li><a value="G">G</a></li>
+                        <li><a value="H">H</a></li>
+                    </ul>
+                    <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                </div>
+                &nbsp;&nbsp;
+
+                <span>연결 벡터</span>
+                <div id="start_vector" class="combo">
+                    <a class="btn small">...</a>
+                    <ul></ul>
+                    <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                </div>
+                :
+                <div id="end_vector" class="combo">
+                    <a class="btn small">...</a>
+                    <ul></ul>
+                    <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                </div>
+            </div>
+
+            <div class="col col-2" align="right">
+                <button id="btn_operator" class="btn small">추가</button>
+            </div>
+        </div>
+
+        <table id="operators" class="table simple mini headline">
+            <thead>
+            <tr>
+                <th>이름</th>
+                <th width="50px">삭제</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script id="tpl_row" type="text/template">
+<tr>
+    <td><!= key !></td>
+    <td><button onclick="removeTable(<!= value !>)" class="btn mini"><i class="icon-close"></i></button></td>
+</tr>
+</script>
+
+<script id="tpl_none" type="text/template">
+    <tr>
+        <td colspan="2">벡터가 없습니다.</td>
+    </tr>
+</script>
+
+<script id="tpl_combo_vectors" type="text/template">
+<!
+    var vectors = getVectors();
+    for(var i = 0; i < vectors.length; i++) { !>
+    <li><a href="#" value="<!= vectors[i] !>"><!= vectors[i] !></a></li>
+<! } !>
+</script>
+
 </body>
 </html>
