@@ -197,8 +197,8 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
         this.drawOperators = function(p) {
             for(var i = 0; i < OPERATORS.length; i++) {
                 var cmd = OPERATORS[i],
-                        ap = vectors[cmd.a],
-                        bp = vectors[cmd.b];
+                    ap = vectors[cmd.a],
+                    bp = vectors[cmd.b];
 
                 if(!ap || !bp) continue;
 
@@ -219,6 +219,17 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             }
         }
 
+        this.drawLocationVector = function(p) {
+            var point = this.svg.circle({
+                fill: "red",
+                r: 5,
+                cx: p.vectors[0].x,
+                cy: p.vectors[0].y
+            });
+
+            g.append(point);
+        }
+
         this.drawBefore = function() {
             g = this.svg.group();
         }
@@ -230,19 +241,33 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
                 w = this.axis.x(SIZE/2) - x,
                 h = this.axis.y(SIZE/2) - y,
                 d = this.axis.z(SIZE/2) - z,
-                p = new CubePolygon(x, y, z, w, h, d);
+                c = new CubePolygon(x, y, z, w, h, d),
+                p = new PointPolygon(this.axis.x(DATA[1001].x), this.axis.y(DATA[1001].y), this.axis.z(DATA[1001].z));
 
             // 3D 좌표 계산
-            this.calculate3d(p);
+            this.calculate3d(c, p);
 
             // 각각의 요소 그리기
             this.drawMarker("arrow", LINE_COLOR);
-            this.drawCube(p);
-            this.drawTexts(p);
-            this.drawVectors(p);
+            this.drawCube(c);
+            this.drawTexts(c);
+            this.drawVectors(c);
 
             // 벡터 연산 그리기
-            this.drawOperators(p);
+            this.drawOperators(c);
+
+            // 위치 벡터 그리기
+            this.drawLocationVector(p);
+
+            // 위치 벡터 계산
+            var nv = new Vector(DATA[1001].x, DATA[1001].y, DATA[1001].z),
+                nv2 = nv.add(DATA[1001].vector);
+
+            DATA[1001].x = nv2.x;
+            DATA[1001].y = nv2.y;
+            DATA[1001].z = nv2.z;
+
+            console.log(DATA[1001]);
 
             return g;
         }
@@ -252,8 +277,17 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
 
 }, "chart.brush.core");
 
-jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button", "ui.colorpicker" ],
-        function(_, builder, win, combo, table, button, colorpicker) {
+jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button", "ui.colorpicker", "chart.vector" ],
+        function(_, builder, win, combo, table, button, colorpicker, Vector) {
+
+    // 움직이는 위치 벡터 생성
+    DATA[1001] = {
+        name: "P",
+        x: 0,
+        y: 0,
+        z: 0,
+        vector: new Vector(1, 1, 1)
+    };
 
     window.chart = builder("#chart", {
         theme: "dark",
@@ -264,21 +298,21 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
             x: {
                 type: "range",
                 domain: RANGE,
-                step: 4,
-                hide: true
+                unit: 1,
+                line: true
             },
             y: {
                 type: "range",
                 domain: RANGE,
-                step: 4,
-                hide: true
+                unit: 1,
+                line: true
             },
             z: {
                 type: "range",
                 domain: RANGE,
-                step: 4,
+                unit: 1,
                 reverse: true,
-                hide: true
+                line: true
             },
             degree: {
                 x: 30,
@@ -295,6 +329,10 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
             type: "polygon.rotate"
         }
     });
+
+    setInterval(function() {
+        chart.render();
+    }, 1000);
 
     var target_vertex = combo("#target_vertex", { width: 50 });
     var start_vertex = combo("#start_vertex", { width: 50 });
