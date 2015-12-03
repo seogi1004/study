@@ -6,6 +6,29 @@
 <link rel="stylesheet" href="dist/jennifer.theme.css" />
 <script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="dist/jui.min.js"></script>
+<style>
+    .btn.active:not(.toggle) {
+        color: #ffffff !important;
+        border: 1px solid #9663f4 !important;
+        -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        -moz-box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        background-color: #9c74ea !important;
+        background-image: -moz-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#a57ff2), to(#8f64de)) !important;
+        background-image: -webkit-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: -o-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: linear-gradient(to bottom, #a57ff2, #8f64de) !important;
+        background-repeat: repeat-x !important;
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffa57ff2', endColorstr='#ff8f64de', GradientType=0) !important;
+    }
+
+    #color_vector {
+        position: absolute;
+        right: 0px;
+        z-index: 10000;
+    }
+</style>
 <script>
 var RANGE = [ -10, 10 ],
     SIZE = 10,
@@ -224,10 +247,10 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
 
 }, "chart.brush.core");
 
-jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button" ],
-        function(_, builder, win, combo, table, button) {
+jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button", "ui.colorpicker" ],
+        function(_, builder, win, combo, table, button, colorpicker) {
 
-    var chart = builder("#chart", {
+    window.chart = builder("#chart", {
         theme: "dark",
         padding: 100,
         width: 600,
@@ -268,6 +291,13 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
         }
     });
 
+    var target_vertex = combo("#target_vertex", { width: 50 });
+    var start_vertex = combo("#start_vertex", { width: 50 });
+
+    var start_vector = combo("#start_vector", { width: 60 });
+    var end_vector = combo("#end_vector", { width: 60 });
+    var tpl_vector_func = _.template($("#tpl_combo_vectors").html());
+
     window.select_vertex = button("#select_vertex", {
         type: "radio",
         event: {
@@ -278,36 +308,69 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
     });
 
     window.select_operator = button("#select_operator", {
-        type: "radio"
-    });
-
-    var target_vertex = combo("#target_vertex");
-    var start_vertex = combo("#start_vertex");
-
-    var start_vector = combo("#start_vector");
-    var end_vector = combo("#end_vector");
-    var tpl_vector_func = _.template($("#tpl_combo_vectors").html());
-
-    window.win_add = win("#win_add", {
-        width: 500,
-        height: 400,
-        modal: true
-    });
-
-    window.win_calc = win("#win_calc", {
-        width: 500,
-        height: 400,
-        modal: true
+        type: "radio",
+        event: {
+            change: function(data) {
+                $("#span_operator").html(data.value);
+            }
+        }
     });
 
     window.v_table = table("#vectors", {
         fields: [ "key", null ],
         scroll: true,
-        scrollHeight: 170,
+        scrollHeight: 230,
         tpl: {
             row: $("#tpl_row").html(),
             none: $("#tpl_none").html()
         }
+    });
+
+    window.c_table = table("#operators", {
+        fields: [ "start", "operator", null ],
+        scroll: true,
+        scrollHeight: 230,
+        tpl: {
+            row: $("#tpl_row2").html(),
+            none: $("#tpl_none2").html()
+        }
+    });
+
+    window.color_vector = colorpicker("#color_vector", {
+        event: {
+            change: function(color) {
+                $("#color_vector_value").css("background", color).val(color);
+            }
+        }
+    });
+
+    $(color_vector.root).hide();
+
+    window.win_add = win("#win_add", {
+        width: 550,
+        height: 450,
+        modal: true
+    });
+
+    window.win_calc = win("#win_calc", {
+        width: 550,
+        height: 450,
+        modal: true
+    });
+
+    $(win_calc.root).find(".body").on("mousedown", function(e) {
+        if($(color_vector.root).css("display") == "block") {
+            if(!$(e.target).hasClass("value") && !$(e.target).hasClass("container") &&  !$(e.target).hasClass("control") &&
+            !$(e.target).hasClass("drag-bar") && !$(e.target).hasClass("drag-bar2")) {
+                $(color_vector.root).hide();
+                return false;
+            }
+        }
+    });
+
+    $("#color_vector_value").on("click", function(e) {
+        $(color_vector.root).show();
+        return false;
     });
 
     $("#btn_add").on("click", function(e) {
@@ -335,17 +398,66 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
 
             if($.inArray(NAMES[combo], list) == -1) {
                 list.push(NAMES[combo]);
-                v_table.append({ key: combo, value: NAMES[combo] });
+                reloadTable();
             } else {
                 alert("이미 추가된 값입니다.");
             }
         }
     });
 
-    $("#btn_render").on("click", function(e) {
-        chart.axis(0).update(DATA);
+    $("#btn_operator").on("click", function(e) {
+        var a = start_vector.getValue(),
+            b = end_vector.getValue();
+
+        if(a == b) {
+            alert("동일한 벡터를 연산할 수 없습니다.");
+        } else {
+            var keys = getOperatorKeys(),
+                obj = {
+                    type: select_operator.getValue(),
+                    start: NAMES[start_vertex.getValue()],
+                    a: start_vector.getValue(),
+                    b: end_vector.getValue(),
+                    color: $("#color_vector_value").val()
+                };
+
+            if($.inArray(obj.a + obj.type + obj.b, keys) != -1) {
+                alert("이미 존재하는 연산 벡터입니다.");
+            } else {
+                OPERATORS.push(obj);
+                reloadTable2();
+            }
+        }
     });
 });
+
+function reloadTable2() {
+    var list = [];
+
+    for(var i = 0; i < OPERATORS.length; i++) {
+        list.push({
+            start: getValueToKey(OPERATORS[i].start),
+            operator: OPERATORS[i].a + OPERATORS[i].type + OPERATORS[i].b,
+            color: OPERATORS[i].color
+        });
+    }
+
+    c_table.update(list);
+    chart.axis(0).update(DATA);
+}
+
+function removeTable2(index) {
+    var list = [];
+
+    for(var i = 0; i < OPERATORS.length; i++) {
+        if(i != index) {
+            list.push(OPERATORS[i]);
+        }
+    }
+
+    OPERATORS = list;
+    reloadTable2();
+}
 
 function reloadTable() {
     var btn = select_vertex.getValue(),
@@ -364,6 +476,7 @@ function reloadTable() {
     }
 
     v_table.update(data);
+    chart.axis(0).update(DATA);
 }
 
 function removeTable(value) {
@@ -400,6 +513,16 @@ function getValueToKey(value) {
         }
     }
 }
+
+function getOperatorKeys() {
+    var list = [];
+
+    for(var i = 0; i < OPERATORS.length; i++) {
+        list.push(OPERATORS[i].a + OPERATORS[i].type + OPERATORS[i].b);
+    }
+
+    return list;
+}
 </script>
 </head>
 
@@ -412,7 +535,6 @@ function getValueToKey(value) {
                 <button id="btn_calc" class="btn small">벡터 연산</button>
             </div>
             <div class="col col-6" align="right">
-                <button id="btn_render" class="btn small focus">그리기</button>
             </div>
         </div>
     </div>
@@ -463,7 +585,7 @@ function getValueToKey(value) {
             </div>
             &nbsp;&nbsp;
 
-            <button id="btn_connect" class="btn small">추가</button>
+            <button id="btn_connect" class="btn small focus">추가</button>
         </div>
 
         <table id="vectors" class="table simple mini headline">
@@ -517,29 +639,33 @@ function getValueToKey(value) {
                 </div>
                 &nbsp;&nbsp;
 
-                <span>연결 벡터</span>
+                <span>연산 벡터</span>
                 <div id="start_vector" class="combo">
                     <a class="btn small">...</a>
                     <ul></ul>
                     <a class="btn small toggle"><i class="icon-arrow2"></i></a>
-                </div>
-                :
-                <div id="end_vector" class="combo">
+                </div><span id="span_operator">+</span><div id="end_vector" class="combo">
                     <a class="btn small">...</a>
                     <ul></ul>
                     <a class="btn small toggle"><i class="icon-arrow2"></i></a>
                 </div>
+
+                &nbsp;&nbsp;
+                <span>색상</span>
+                <input id="color_vector_value" type="text" class="input small" style="width: 40px; background: #FF0000" value="#FF0000"/>
+                <div id="color_vector" class="colorpicker"></div>
             </div>
 
             <div class="col col-2" align="right">
-                <button id="btn_operator" class="btn small">추가</button>
+                <button id="btn_operator" class="btn small focus">추가</button>
             </div>
         </div>
 
         <table id="operators" class="table simple mini headline">
             <thead>
             <tr>
-                <th>이름</th>
+                <th>시작 꼭지점</th>
+                <th>연산 벡터</th>
                 <th width="50px">삭제</th>
             </tr>
             </thead>
@@ -558,9 +684,24 @@ function getValueToKey(value) {
 
 <script id="tpl_none" type="text/template">
     <tr>
-        <td colspan="2">벡터가 없습니다.</td>
+        <td colspan="2" align="center">연결된 벡터가 없습니다.</td>
     </tr>
 </script>
+
+<script id="tpl_row2" type="text/template">
+    <tr>
+        <td style="color: <!= color !> !important;"><!= start !></td>
+        <td style="color: <!= color !> !important;"><!= operator !></td>
+        <td><button onclick="removeTable2(<!= row.index !>)" class="btn mini"><i class="icon-close"></i></button></td>
+    </tr>
+</script>
+
+<script id="tpl_none2" type="text/template">
+    <tr>
+        <td colspan="3" align="center">연산 벡터가 없습니다.</td>
+    </tr>
+</script>
+
 
 <script id="tpl_combo_vectors" type="text/template">
 <!
