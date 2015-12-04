@@ -70,27 +70,7 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
         function(_, ColorUtil, CubePolygon, PointPolygon, Vector) {
 
     var Vector3DBrush = function() {
-        var g, vectors = {};
-
-        this.drawCube = function(p) {
-            for(var i = 0; i < p.faces.length; i++) {
-                var key = p.faces[i];
-
-                var face = this.svg.polygon({
-                    fill: BG_COLOR,
-                    "fill-opacity": BG_OPACITY,
-                    stroke: BR_COLOR,
-                    "stroke-opacity": BR_OPACITY
-                });
-
-                for(var j = 0; j < key.length; j++) {
-                    var vector = p.vectors[key[j]];
-                    face.point(vector.x, vector.y);
-                }
-
-                g.append(face);
-            }
-        }
+        var g, groups = [], vectors = {};
 
         this.drawTexts = function(p) {
             for(var i = 0; i < p.vectors.length; i++) {
@@ -219,6 +199,32 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             }
         }
 
+        this.drawCube = function(p) {
+            for(var i = 0; i < p.faces.length; i++) {
+                var key = p.faces[i],
+                    min = 9999;
+
+                var face = this.svg.polygon({
+                    fill: BG_COLOR,
+                    "fill-opacity": BG_OPACITY,
+                    stroke: BR_COLOR,
+                    "stroke-opacity": BR_OPACITY
+                });
+
+                for(var j = 0; j < key.length; j++) {
+                    var vector = p.vectors[key[j]];
+
+                    face.point(vector.x, vector.y);
+                    min = Math.min(min, vector.z);
+                }
+
+                groups.push({
+                    element: face,
+                    depth: min
+                });
+            }
+        }
+
         this.drawLocationVector = function(p) {
             var point = this.svg.circle({
                 fill: "red",
@@ -227,7 +233,22 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
                 cy: p.vectors[0].y
             });
 
-            g.append(point);
+            groups.push({
+                element: point,
+                depth: p.vectors[0].z
+            });
+        }
+
+        this.drawSortedElements = function() {
+            groups.sort(function(a, b) {
+                return b.depth - a.depth;
+            });
+
+            console.log(groups);
+
+            for(var i = 0; i < groups.length; i++) {
+                g.append(groups[i].element);
+            }
         }
 
         this.drawBefore = function() {
@@ -259,15 +280,18 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             // 위치 벡터 그리기
             this.drawLocationVector(p);
 
+            // 정렬된 엘리먼트 그리기
+            this.drawSortedElements();
+
             // 위치 벡터 계산
+            /*/
             var nv = new Vector(DATA[1001].x, DATA[1001].y, DATA[1001].z),
                 nv2 = nv.add(DATA[1001].vector);
 
             DATA[1001].x = nv2.x;
             DATA[1001].y = nv2.y;
             DATA[1001].z = nv2.z;
-
-            console.log(DATA[1001]);
+            /**/
 
             return g;
         }
@@ -299,6 +323,36 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 type: "range",
                 domain: RANGE,
                 unit: 1,
+                line: true,
+                hide: true
+            },
+            y: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
+                line: true,
+                hide: true
+            },
+            z: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
+                reverse: true,
+                line: true,
+                hide: true
+            },
+            degree: {
+                x: 30,
+                y: 30
+            },
+            depth: 400,
+            perspective: 1,
+            data: DATA
+        }, {
+            x: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
                 line: true
             },
             y: {
@@ -314,24 +368,22 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 reverse: true,
                 line: true
             },
-            degree: {
-                x: 30,
-                y: 30
-            },
             depth: 400,
-            perspective: 1,
-            data: DATA
+            perspective: 1
         }],
         brush: {
             type: "vector3d"
         },
         widget: {
             type: "polygon.rotate"
+        },
+        style: {
+            gridZFontColor: "red"
         }
     });
 
     setInterval(function() {
-        chart.render();
+        //chart.render();
     }, 1000);
 
     var target_vertex = combo("#target_vertex", { width: 50 });
