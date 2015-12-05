@@ -250,18 +250,18 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
         }
 
         this.drawSortedElements = function(ox, oy) {
+            var max = this.axis.depth;
+
             for(var i = 0; i < groups.length; i++) {
                 var t = groups[i];
 
                 for(var j = 0; j < t.points.length; j++) {
-                    var depth = Math.abs(t.points[j].z - this.axis.depth);
+                    var depth = Math.abs(t.points[j].z - max);
 
                     if(t.type == "point") {
                         t.depth = depth;
-
-                        console.log(t.points[j].z, this.axis.depth)
                     } else {
-                        t.depth = Math.max(t.depth || 0, depth);
+                        t.depth = Math.min(t.depth || max, depth);
                     }
 
                     g.append(this.svg.line({
@@ -345,7 +345,7 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
         name: "P",
         x: 0,
         y: 0,
-        z: -10,
+        z: -6,
         vector: new Vector(1, 1, 1)
     };
 
@@ -373,7 +373,7 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 type: "range",
                 domain: RANGE,
                 unit: 1,
-                reverse: true,
+                reverse: false,
                 line: true,
                 hide: false
             },
