@@ -249,18 +249,17 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
             });
         }
 
-        this.drawSortedElements = function(ox, oy, oz) {
-            var self = this;
-
+        this.drawSortedElements = function(ox, oy) {
             for(var i = 0; i < groups.length; i++) {
                 var t = groups[i];
 
                 for(var j = 0; j < t.points.length; j++) {
-                    var depth = Math.abs(t.points[j].z - oz);
+                    var depth = Math.abs(t.points[j].z - this.axis.depth);
 
                     if(t.type == "point") {
                         t.depth = depth;
-                        console.log(depth);
+
+                        console.log(t.points[j].z, this.axis.depth)
                     } else {
                         t.depth = Math.max(t.depth || 0, depth);
                     }
@@ -276,12 +275,6 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
             }
 
             groups.sort(function(a, b) {
-                var isReverse = self.axis.get("z").reverse;
-
-                if(isReverse) {
-                    return b.depth - a.depth;
-                }
-
                 return a.depth - b.depth;
             });
 
@@ -308,10 +301,6 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
                 vz = this.axis.z(DATA[1001].z),
                 vp = new PointPolygon(vx, vy, vz);
 
-            var ox = this.axis.x(0),
-                oy = this.axis.y(0),
-                oz = this.axis.z(RANGE[1]);
-
             // 3D 좌표 계산
             this.calculate3d(c, vp);
 
@@ -328,7 +317,7 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
             this.drawLocation(vp);
 
             // 정렬된 엘리먼트 그리기
-            this.drawSortedElements(ox, oy, oz);
+            this.drawSortedElements(this.axis.x(0), this.axis.y(0));
 
             // 위치 벡터 계산
             /*/
@@ -384,7 +373,7 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 type: "range",
                 domain: RANGE,
                 unit: 1,
-                reverse: false,
+                reverse: true,
                 line: true,
                 hide: false
             },
