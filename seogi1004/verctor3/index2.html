@@ -52,22 +52,22 @@ var NAMES = {
 };
 
 var DATA = [];
-DATA[NAMES["A"]] = { name: "A", vectors: [] };
-DATA[NAMES["B"]] = { name: "B", vectors: [] };
-DATA[NAMES["C"]] = { name: "C", vectors: [] };
-DATA[NAMES["D"]] = { name: "D", vectors: [] };
-DATA[NAMES["E"]] = { name: "E", vectors: [] };
-DATA[NAMES["F"]] = { name: "F", vectors: [] };
-DATA[NAMES["G"]] = { name: "G", vectors: [] };
-DATA[NAMES["H"]] = { name: "H", vectors: [] };
+DATA[NAMES["A"]] = { name: "", vectors: [] };
+DATA[NAMES["B"]] = { name: "", vectors: [] };
+DATA[NAMES["C"]] = { name: "", vectors: [] };
+DATA[NAMES["D"]] = { name: "", vectors: [] };
+DATA[NAMES["E"]] = { name: "", vectors: [] };
+DATA[NAMES["F"]] = { name: "", vectors: [] };
+DATA[NAMES["G"]] = { name: "", vectors: [] };
+DATA[NAMES["H"]] = { name: "", vectors: [] };
 
 var OPERATORS = [
     //{ type: "+", start: NAMES["B"], a: "BA", b: "BC", color: "red" },
     //{ type: "*", start: NAMES["F"], a: "FG", b: "FE", color: "blue" },
 ];
 
-jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
-        function(_, ColorUtil, CubePolygon, PointPolygon, Vector) {
+jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
+        function(_, ColorUtil, TransformUtil, CubePolygon, PointPolygon, Vector) {
 
     var Vector3DBrush = function() {
         var g, groups = [], vectors = {};
@@ -199,10 +199,10 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             }
         }
 
-        this.drawCube = function(p) {
+        this.drawCubes = function(p) {
             for(var i = 0; i < p.faces.length; i++) {
                 var key = p.faces[i],
-                    min = 9999;
+                    points = [];
 
                 var face = this.svg.polygon({
                     fill: BG_COLOR,
@@ -213,19 +213,24 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
 
                 for(var j = 0; j < key.length; j++) {
                     var vector = p.vectors[key[j]];
-
                     face.point(vector.x, vector.y);
-                    min = Math.min(min, vector.z);
+
+                    points.push({
+                        x: vector.x,
+                        y: vector.y,
+                        z: vector.z
+                    });
                 }
 
                 groups.push({
+                    type: "face",
                     element: face,
-                    depth: min
+                    points: points
                 });
             }
         }
 
-        this.drawLocationVector = function(p) {
+        this.drawLocation = function(p) {
             var point = this.svg.circle({
                 fill: "red",
                 r: 5,
@@ -234,17 +239,51 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             });
 
             groups.push({
+                type: "point",
                 element: point,
-                depth: p.vectors[0].z
+                points: [{
+                    x: p.vectors[0].x,
+                    y: p.vectors[0].y,
+                    z: p.vectors[0].z
+                }]
             });
         }
 
-        this.drawSortedElements = function() {
-            groups.sort(function(a, b) {
-                return b.depth - a.depth;
-            });
+        this.drawSortedElements = function(ox, oy, oz) {
+            var self = this;
 
-            console.log(groups);
+            for(var i = 0; i < groups.length; i++) {
+                var t = groups[i];
+
+                for(var j = 0; j < t.points.length; j++) {
+                    var depth = Math.abs(t.points[j].z - oz);
+
+                    if(t.type == "point") {
+                        t.depth = depth;
+                        console.log(depth);
+                    } else {
+                        t.depth = Math.max(t.depth || 0, depth);
+                    }
+
+                    g.append(this.svg.line({
+                        stroke: "blue",
+                        x1: ox,
+                        y1: oy,
+                        x2: t.points[j].x,
+                        y2: t.points[j].y
+                    }));
+                }
+            }
+
+            groups.sort(function(a, b) {
+                var isReverse = self.axis.get("z").reverse;
+
+                if(isReverse) {
+                    return b.depth - a.depth;
+                }
+
+                return a.depth - b.depth;
+            });
 
             for(var i = 0; i < groups.length; i++) {
                 g.append(groups[i].element);
@@ -262,15 +301,22 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
                 w = this.axis.x(SIZE/2) - x,
                 h = this.axis.y(SIZE/2) - y,
                 d = this.axis.z(SIZE/2) - z,
-                c = new CubePolygon(x, y, z, w, h, d),
-                p = new PointPolygon(this.axis.x(DATA[1001].x), this.axis.y(DATA[1001].y), this.axis.z(DATA[1001].z));
+                c = new CubePolygon(x, y, z, w, h, d);
+
+            var vx = this.axis.x(DATA[1001].x),
+                vy = this.axis.y(DATA[1001].y),
+                vz = this.axis.z(DATA[1001].z),
+                vp = new PointPolygon(vx, vy, vz);
+
+            var ox = this.axis.x(0),
+                oy = this.axis.y(0),
+                oz = this.axis.z(RANGE[1]);
 
             // 3D 좌표 계산
-            this.calculate3d(c, p);
+            this.calculate3d(c, vp);
 
             // 각각의 요소 그리기
             this.drawMarker("arrow", LINE_COLOR);
-            this.drawCube(c);
             this.drawTexts(c);
             this.drawVectors(c);
 
@@ -278,10 +324,11 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "chart.polygon.c
             this.drawOperators(c);
 
             // 위치 벡터 그리기
-            this.drawLocationVector(p);
+            this.drawCubes(c);
+            this.drawLocation(vp);
 
             // 정렬된 엘리먼트 그리기
-            this.drawSortedElements();
+            this.drawSortedElements(ox, oy, oz);
 
             // 위치 벡터 계산
             /*/
@@ -309,7 +356,7 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
         name: "P",
         x: 0,
         y: 0,
-        z: 0,
+        z: -10,
         vector: new Vector(1, 1, 1)
     };
 
@@ -324,22 +371,22 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 domain: RANGE,
                 unit: 1,
                 line: true,
-                hide: true
+                hide: false
             },
             y: {
                 type: "range",
                 domain: RANGE,
                 unit: 1,
                 line: true,
-                hide: true
+                hide: false
             },
             z: {
                 type: "range",
                 domain: RANGE,
                 unit: 1,
-                reverse: true,
+                reverse: false,
                 line: true,
-                hide: true
+                hide: false
             },
             degree: {
                 x: 30,
@@ -348,7 +395,9 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
             depth: 400,
             perspective: 1,
             data: DATA
-        }, {
+        },
+        /*/
+        {
             x: {
                 type: "range",
                 domain: RANGE,
@@ -370,7 +419,9 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
             },
             depth: 400,
             perspective: 1
-        }],
+        }
+        /**/
+        ],
         brush: {
             type: "vector3d"
         },
