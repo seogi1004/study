@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="dist/jui.css" />
+<link rel="stylesheet" href="dist/jennifer.theme.css" />
+<script src="../lib/jquery-1.8.0.min.js"></script>
+<script src="dist/jui.min.js"></script>
+<style>
+    .btn.active:not(.toggle) {
+        color: #ffffff !important;
+        border: 1px solid #9663f4 !important;
+        -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        -moz-box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        box-shadow: rgba(0, 0, 0, 0.3) 0 1px 5px inset, rgba(255, 255, 255, 0.2) 0 1px 0 !important;
+        background-color: #9c74ea !important;
+        background-image: -moz-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#a57ff2), to(#8f64de)) !important;
+        background-image: -webkit-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: -o-linear-gradient(top, #a57ff2, #8f64de) !important;
+        background-image: linear-gradient(to bottom, #a57ff2, #8f64de) !important;
+        background-repeat: repeat-x !important;
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffa57ff2', endColorstr='#ff8f64de', GradientType=0) !important;
+    }
+
+    #color_vector {
+        position: absolute;
+        right: 0px;
+        z-index: 10000;
+    }
+</style>
+<script>
+var RANGE = [ -10, 10 ],
+    SIZE = 10;
+
+jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
+        function(_, ColorUtil, TransformUtil, CubePolygon, PointPolygon, Vector) {
+
+    var Vector3DBrush = function() {
+        var g, groups = [];
+        var r;
+
+        this.drawPoint = function(index, p) {
+            var point = this.svg.circle({
+                fill: this.color(index),
+                r: r,
+                cx: p.vectors[0].x,
+                cy: p.vectors[0].y
+            });
+
+            groups.push({
+                type: "point",
+                element: point,
+                points: [{
+                    x: p.vectors[0].x,
+                    y: p.vectors[0].y,
+                    z: p.vectors[0].z
+                }]
+            });
+        }
+
+        this.sortingPoints = function() {
+            var max = this.axis.depth;
+
+            for(var i = 0; i < groups.length; i++) {
+                var t = groups[i];
+
+                for(var j = 0; j < t.points.length; j++) {
+                    var depth = Math.abs(t.points[j].z - max);
+
+                    if(t.type == "point") {
+                        t.depth = depth;
+                    } else {
+                        t.depth = Math.min(t.depth || max, depth);
+                    }
+                }
+            }
+
+            groups.sort(function(a, b) {
+                return a.depth - b.depth;
+            });
+
+            for(var i = 0; i < groups.length; i++) {
+                g.append(groups[i].element);
+            }
+        }
+
+        this.relocateVector = function(data) {
+            if(data.x <= RANGE[0] || data.x >= RANGE[1]) {
+                data.vector.x = -data.vector.x;
+            }
+
+            if(data.y <= RANGE[0] || data.y >= RANGE[1]) {
+                data.vector.y = -data.vector.y;
+            }
+
+            if(data.z <= RANGE[0] || data.z >= RANGE[1]) {
+                data.vector.z = -data.vector.z;
+            }
+
+            var nv = new Vector(data.x, data.y, data.z),
+                nv2 = nv.add(data.vector);
+
+            data.x = nv2.x;
+            data.y = nv2.y;
+            data.z = nv2.z;
+        }
+
+        this.drawBefore = function() {
+            g = this.svg.group();
+            r = ((this.axis.x.rangeBand() + this.axis.y.rangeBand() + this.axis.z.rangeBand()) / 3) / 2;
+        }
+
+        this.draw = function() {
+            this.eachData(function(i, data) {
+                var x = this.axis.x(data.x),
+                    y = this.axis.y(data.y),
+                    z = this.axis.z(data.z),
+                    p = new PointPolygon(x, y, z);
+
+                // 3D 좌표 계산
+                this.calculate3d(p);
+
+                // 계산된 원 그리기
+                this.drawPoint(i, p);
+
+                // 벡터 이동하기
+                this.relocateVector(data, x, y, z);
+            });
+
+            // 포인트 정렬하기
+            this.sortingPoints();
+
+            return g;
+        }
+    }
+
+    return Vector3DBrush;
+
+}, "chart.brush.core");
+
+jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table", "ui.button", "ui.colorpicker", "chart.vector" ],
+        function(_, builder, win, combo, table, button, colorpicker, Vector) {
+
+    var data = [{
+        name: "P1",
+        x: 0,
+        y: 0,
+        z: -6,
+        vector: new Vector(0.1, 0.1, 0.1)
+    }, {
+        name: "P2",
+        x: 0,
+        y: 0,
+        z: 0,
+        vector: new Vector(-0.1, 0.1, -0.1)
+    }];
+
+    window.chart = builder("#chart", {
+        theme: "dark",
+        padding: 100,
+        width: 600,
+        height: 600,
+        axis: [{
+            x: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
+                line: true,
+                hide: false
+            },
+            y: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
+                line: true,
+                hide: false
+            },
+            z: {
+                type: "range",
+                domain: RANGE,
+                unit: 1,
+                reverse: false,
+                line: true,
+                hide: false
+            },
+            degree: {
+                x: 30,
+                y: 30
+            },
+            depth: 400,
+            perspective: 1,
+            data: data
+        }],
+        brush: {
+            type: "vector3d"
+        },
+        widget: {
+            type: "polygon.rotate"
+        }
+    });
+
+    setInterval(function() {
+        chart.render();
+    }, 30);
+});
+
+</script>
+</head>
+
+<body class="jui">
+
+<div id="chart"></div>
+
+</body>
+</html>
