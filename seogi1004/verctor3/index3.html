@@ -31,10 +31,11 @@
 </style>
 <script>
 var RANGE = [ -10, 10 ],
-    SIZE = 10;
+    SIZE = 10,
+    RADIUS = 0.5;
 
-jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform", "chart.polygon.cube", "chart.polygon.point", "chart.vector" ],
-        function(_, ColorUtil, TransformUtil, CubePolygon, PointPolygon, Vector) {
+jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform", "chart.polygon.cube", "chart.polygon.point", "chart.vector", "util.math" ],
+        function(_, ColorUtil, TransformUtil, CubePolygon, PointPolygon, Vector, MathUtil) {
 
     var Vector3DBrush = function() {
         var g, groups = [];
@@ -86,15 +87,15 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
         }
 
         this.relocateVector = function(data) {
-            if(data.x <= RANGE[0] || data.x >= RANGE[1]) {
+            if(data.x <= RANGE[0] + RADIUS || data.x >= RANGE[1] - RADIUS) {
                 data.vector.x = -data.vector.x;
             }
 
-            if(data.y <= RANGE[0] || data.y >= RANGE[1]) {
+            if(data.y <= RANGE[0] + RADIUS || data.y >= RANGE[1] - RADIUS) {
                 data.vector.y = -data.vector.y;
             }
 
-            if(data.z <= RANGE[0] || data.z >= RANGE[1]) {
+            if(data.z <= RANGE[0] + RADIUS || data.z >= RANGE[1] - RADIUS) {
                 data.vector.z = -data.vector.z;
             }
 
@@ -106,13 +107,32 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
             data.z = nv2.z;
         }
 
+        this.checkCollision = function() {
+            var data = this.listData();
+
+            for(var i = 0; i < data.length; i++) {
+                for(var j = 0; j < data.length; j++) {
+                    if(i != j) {
+                        var v1 = data[i].vector,
+                            v2 = data[j].vector,
+                            value = v1.dotProduct(v2);
+
+                        console.log(i + "->" + j + " : " + MathUtil.degree(Math.acos(value)));
+                    }
+                }
+            }
+        }
+
         this.drawBefore = function() {
             g = this.svg.group();
-            r = ((this.axis.x.rangeBand() + this.axis.y.rangeBand() + this.axis.z.rangeBand()) / 3) / 2;
+            r = Math.abs(this.axis.x(RADIUS) - this.axis.x(0));
         }
 
         this.draw = function() {
             this.eachData(function(i, data) {
+                // 벡터 이동하기
+                this.relocateVector(data);
+
                 var x = this.axis.x(data.x),
                     y = this.axis.y(data.y),
                     z = this.axis.z(data.z),
@@ -123,13 +143,13 @@ jui.define("chart.brush.vector3d", [ "util.base", "util.color", "util.transform"
 
                 // 계산된 원 그리기
                 this.drawPoint(i, p);
-
-                // 벡터 이동하기
-                this.relocateVector(data, x, y, z);
             });
 
             // 포인트 정렬하기
             this.sortingPoints();
+
+            // 충돌 체크하기
+            this.checkCollision();
 
             return g;
         }
@@ -146,14 +166,14 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
         name: "P1",
         x: 0,
         y: 0,
-        z: -6,
-        vector: new Vector(0.1, 0.1, 0.1)
+        z: 0,
+        vector: new Vector(1, 1, 1)
     }, {
         name: "P2",
         x: 0,
         y: 0,
         z: 0,
-        vector: new Vector(-0.1, 0.1, -0.1)
+        vector: new Vector(1, 1, 1)
     }];
 
     window.chart = builder("#chart", {
@@ -185,8 +205,8 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
                 hide: false
             },
             degree: {
-                x: 30,
-                y: 30
+                x: 45,
+                y: 45
             },
             depth: 400,
             perspective: 1,
@@ -202,7 +222,7 @@ jui.ready([ "util.base", "chart.builder", "uix.window", "ui.combo", "uix.table",
 
     setInterval(function() {
         chart.render();
-    }, 30);
+    }, 100);
 });
 
 </script>
